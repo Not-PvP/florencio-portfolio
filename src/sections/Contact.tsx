@@ -25,8 +25,8 @@ const MOVES: ComboMove[] = [
     triggerKey: "j",
     accent: "#e8283c",
     moveName: "SIGNAL FLARE",
-    target: "you@email.com",
-    url: "mailto:you@email.com",
+    target: "contactmarkflorencio@gmail.com",
+    url: "mailto:contactmarkflorencio@gmail.com",
     resultText: "TRANSMISSION SENT",
   },
   {
@@ -35,8 +35,8 @@ const MOVES: ComboMove[] = [
     triggerKey: "k",
     accent: "#ff8a5b",
     moveName: "ARCHIVE DIVE",
-    target: "github.com/yourname",
-    url: "https://github.com/yourname",
+    target: "github.com/Not-PvP",
+    url: "https://github.com/Not-PvP",
     resultText: "VAULT UNLOCKED",
   },
   {
@@ -45,19 +45,9 @@ const MOVES: ComboMove[] = [
     triggerKey: "l",
     accent: "#c9a227",
     moveName: "NETWORK LINK",
-    target: "linkedin.com/in/yourname",
-    url: "https://linkedin.com/in/yourname",
+    target: "linkedin.com/in/mark-angelo-florencio",
+    url: "https://www.linkedin.com/in/mark-angelo-florencio-597765423/",
     resultText: "CONNECTION FORGED",
-  },
-  {
-    id: "resume",
-    keys: ["ArrowDown", "ArrowDown", "ArrowDown"],
-    triggerKey: "u",
-    accent: "#9aa0ab",
-    moveName: "FULL LOADOUT",
-    target: "resume.pdf",
-    url: "/resume.pdf",
-    resultText: "FILE ACQUIRED",
   },
 ];
 
@@ -109,6 +99,18 @@ export default function Contact() {
   const swipeStartRef = useRef<{ x: number; y: number; time: number } | null>(
     null
   );
+  // Mirrors `buffer` but is readable/writable synchronously, in the same
+  // tick as the triggering key/touch event. executeMove's window.open only
+  // survives the browser's popup blocker when called synchronously inside
+  // the original user gesture — reading the buffer out of a setState
+  // updater (which React can defer past that gesture) silently breaks
+  // that, so combo/swipe completion checks read this ref instead.
+  const bufferRef = useRef<ArrowKey[]>([]);
+
+  function updateBuffer(next: ArrowKey[]) {
+    bufferRef.current = next;
+    setBuffer(next);
+  }
 
   // Detect no-hover devices once on mount so we can swap "PRESS THE COMBO"
   // copy and the trigger-key badge for a dedicated swipe pad — matches the
@@ -176,18 +178,22 @@ export default function Contact() {
     }
     playHit();
 
-    setBuffer([]);
+    updateBuffer([]);
     setLastTrigger(null);
     setShaking(true);
     setBurst({ text: move.resultText, color: move.accent });
 
+    // window.open must fire synchronously inside the user gesture (this
+    // click/keydown handler) or browsers treat it as an unrequested popup
+    // and silently block it. Opening it here — instead of inside the
+    // setTimeout below — is what makes the links actually work; the burst
+    // animation still plays out on its own timers afterward.
+    window.open(move.url, "_blank", "noopener,noreferrer");
+
     const shakeTimer = setTimeout(() => setShaking(false), 380);
-    const openTimer = setTimeout(() => {
-      window.open(move.url, "_blank", "noopener,noreferrer");
-    }, 480);
     const clearTimer = setTimeout(() => setBurst(null), 900);
 
-    pendingTimers.current.push(shakeTimer, openTimer, clearTimer);
+    pendingTimers.current.push(shakeTimer, clearTimer);
   }
 
   function flashMiss() {
@@ -198,7 +204,7 @@ export default function Contact() {
   function armBufferTimeout() {
     if (bufferTimerRef.current) clearTimeout(bufferTimerRef.current);
     bufferTimerRef.current = setTimeout(() => {
-      setBuffer([]);
+      updateBuffer([]);
       setLastTrigger(null);
     }, BUFFER_TIMEOUT_MS);
   }
@@ -213,7 +219,7 @@ export default function Contact() {
       ([entry]) => {
         inViewRef.current = entry.isIntersecting;
         if (!entry.isIntersecting) {
-          setBuffer([]);
+          updateBuffer([]);
           setLastTrigger(null);
         }
       },
@@ -231,7 +237,7 @@ export default function Contact() {
 
       if ((ARROW_KEYS as string[]).includes(e.key)) {
         e.preventDefault();
-        setBuffer((prev) => [...prev, e.key as ArrowKey].slice(-MAX_BUFFER));
+        updateBuffer([...bufferRef.current, e.key as ArrowKey].slice(-MAX_BUFFER));
         armBufferTimeout();
         return;
       }
@@ -242,16 +248,14 @@ export default function Contact() {
 
       e.preventDefault();
       setLastTrigger(lower.toUpperCase());
-      setBuffer((prev) => {
-        const tail = prev.slice(-candidate.keys.length);
-        if (sequencesMatch(tail, candidate.keys)) {
-          executeMove(candidate);
-          return [];
-        }
+      const tail = bufferRef.current.slice(-candidate.keys.length);
+      updateBuffer([]);
+      if (sequencesMatch(tail, candidate.keys)) {
+        executeMove(candidate);
+      } else {
         flashMiss();
         setTimeout(() => setLastTrigger(null), 320);
-        return [];
-      });
+      }
     }
 
     window.addEventListener("keydown", onKeyDown);
@@ -299,26 +303,26 @@ export default function Contact() {
         ? "ArrowDown"
         : "ArrowUp";
 
-    setBuffer((prev) => {
-      const next = [...prev, direction].slice(-MAX_BUFFER);
-      const completed = MOVES.find((m) => sequencesMatch(next, m.keys));
-      if (completed) {
-        executeMove(completed);
-        return [];
-      }
-      // Wrong direction anywhere in a sequence-in-progress reads as a
-      // miss rather than silently building toward nothing — same feedback
-      // language as a mistimed keyboard combo.
-      const couldStillMatch = MOVES.some((m) =>
-        m.keys.slice(0, next.length).every((k, i) => k === next[i])
-      );
-      if (!couldStillMatch) {
-        flashMiss();
-        return [];
-      }
-      armBufferTimeout();
-      return next;
-    });
+    const next = [...bufferRef.current, direction].slice(-MAX_BUFFER);
+    const completed = MOVES.find((m) => sequencesMatch(next, m.keys));
+    if (completed) {
+      updateBuffer([]);
+      executeMove(completed);
+      return;
+    }
+    // Wrong direction anywhere in a sequence-in-progress reads as a
+    // miss rather than silently building toward nothing — same feedback
+    // language as a mistimed keyboard combo.
+    const couldStillMatch = MOVES.some((m) =>
+      m.keys.slice(0, next.length).every((k, i) => k === next[i])
+    );
+    if (!couldStillMatch) {
+      updateBuffer([]);
+      flashMiss();
+      return;
+    }
+    updateBuffer(next);
+    armBufferTimeout();
   }
 
   return (
