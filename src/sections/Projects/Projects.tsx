@@ -35,7 +35,7 @@ const PROJECTS: Project[] = [
       "A real-time multiplayer card game — turn-based battles, a competitive leaderboard, and randomly generated cards with their own rarity and tier. Equal parts strategy and luck.",
     stack: ["TypeScript", "React", "Vite", "Socket.io", "Turso", "Railway"],
     links: [{ label: "GitHub", url: "https://github.com/Not-PvP/KramKard" }],
-    cartColor: "#1c1e22",
+    cartColor: "#d95d00",
   },
   {
     id: "parcomm",
@@ -128,6 +128,12 @@ export default function Projects() {
   const [statsByProject, setStatsByProject] = useState<Record<string, StatsState>>({});
   const rootRef = useRef<HTMLDivElement | null>(null);
 
+  // Insertion & Screen Power State
+  const [poweredOn, setPoweredOn] = useState<boolean>(false);
+  const [inserting, setInserting] = useState<boolean>(false);
+  const [insertingProject, setInsertingProject] = useState<Project | null>(null);
+  const hasAutoInserted = useRef<boolean>(false);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -195,15 +201,33 @@ export default function Projects() {
     };
   }, []);
 
-  const selected = PROJECTS.find((p) => p.id === selectedId) ?? PROJECTS[0];
-  const selectedIndex = PROJECTS.findIndex((p) => p.id === selectedId);
+  const triggerCartridgeInsertion = (project: Project) => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setSelectedId(project.id);
+
+    if (reduceMotion) {
+      setPoweredOn(true);
+      return;
+    }
+
+    setPoweredOn(false);
+    setInsertingProject(project);
+    setInserting(true);
+
+    window.setTimeout(() => {
+      setInserting(false);
+      setPoweredOn(true);
+      setFlash(true);
+      window.setTimeout(() => setFlash(false), 260);
+    }, 900);
+  };
 
   function selectProject(id: string) {
-    if (id === selectedId) return;
+    if (inserting) return;
+    if (id === selectedId && poweredOn) return;
 
-    setFlash(true);
-    setSelectedId(id);
-    setTimeout(() => setFlash(false), 260);
+    const project = PROJECTS.find((p) => p.id === id) ?? PROJECTS[0];
+    triggerCartridgeInsertion(project);
   }
 
   useEffect(() => {
@@ -213,6 +237,12 @@ export default function Projects() {
       ([entry]) => {
         if (entry.isIntersecting) {
           setSectionIn(true);
+          
+          if (!hasAutoInserted.current) {
+            hasAutoInserted.current = true;
+            triggerCartridgeInsertion(PROJECTS[0]);
+          }
+          
           observer.disconnect();
         }
       },
@@ -221,6 +251,9 @@ export default function Projects() {
     observer.observe(node);
     return () => observer.disconnect();
   }, []);
+
+  const selected = PROJECTS.find((p) => p.id === selectedId) ?? PROJECTS[0];
+  const selectedIndex = PROJECTS.findIndex((p) => p.id === selectedId);
 
   return (
     <div
@@ -272,6 +305,28 @@ export default function Projects() {
         @keyframes panelSlideRight {
           from { opacity: 0; transform: translateX(24px); }
           to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes cartInsertSlide {
+          0%   { transform: translateY(-240px) rotate(-1.5deg); opacity: 0; }
+          10%  { opacity: 1; }
+          62%  { transform: translateY(8px) rotate(0deg); }
+          74%  { transform: translateY(-3px); }
+          86%  { transform: translateY(4px); opacity: 1; }
+          100% { transform: translateY(4px); opacity: 0; }
+        }
+        .mk-cart-insert-anim {
+          animation: cartInsertSlide 0.9s cubic-bezier(0.32, 0.72, 0.23, 1) forwards;
+        }
+        @keyframes slotFlash {
+          0%, 70% { opacity: 0; }
+          78% { opacity: 1; }
+          100% { opacity: 0; }
+        }
+        @keyframes blinkText {
+          50% { opacity: 0; }
+        }
+        .mk-blink {
+          animation: blinkText 1.1s steps(1) infinite;
         }
         .mk-stat-fill {
           transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -337,9 +392,10 @@ export default function Projects() {
           .mk-wipe { display: none !important; }
           .mk-cart { transition: filter 0.15s ease; }
           .mk-fade { animation: none !important; opacity: 1 !important; transform: none !important; filter: none !important; box-shadow: none !important; }
+          .mk-cart-insert-anim { animation: none !important; opacity: 0 !important; }
+          .mk-blink { animation: none !important; }
         }
 
-        /* Responsive Layout Overrides */
         @media (max-width: 1100px) {
           .mk-arena-row {
             grid-template-columns: 1fr !important;
@@ -414,7 +470,7 @@ export default function Projects() {
         </h1>
       </div>
 
-      {/* 3-Column Arena Layout: [ Cartridges ] [ Gameboy Console (Centered) ] [ Stats Sidebar ] */}
+      {/* 3-Column Arena Layout */}
       <div
         className="mk-arena-row"
         style={{
@@ -489,6 +545,7 @@ export default function Projects() {
                   <CartridgeSVG
                     color={project.cartColor}
                     highlighted={isSelected}
+                    id={project.id}
                     name={project.name}
                     tagline={project.tagline}
                   />
@@ -497,7 +554,6 @@ export default function Projects() {
             })}
           </div>
 
-          {/* Cartridge Counter Indicator */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span
               style={{
@@ -536,6 +592,50 @@ export default function Projects() {
         >
           <ConsoleShellSVG leftLink={selected.links[0]} rightLink={selected.links[1]} />
 
+          {/* Top-down Insertion Overlay & Slot Flash Glow */}
+          {inserting && insertingProject && (
+            <>
+              <div
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  top: "-4px",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: "100px",
+                  height: "24px",
+                  background: "radial-gradient(ellipse, rgba(232,40,60,0.9), transparent 70%)",
+                  animation: "slotFlash 0.9s ease-out forwards",
+                  pointerEvents: "none",
+                  zIndex: 14,
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  top: "-100px",
+                  transform: "translateX(-50%)",
+                  width: "132px",
+                  height: "110px",
+                  overflow: "hidden",
+                  zIndex: 15,
+                  pointerEvents: "none",
+                }}
+              >
+                <div className="mk-cart-insert-anim" style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+                  <CartridgeSVG
+                    color={insertingProject.cartColor}
+                    highlighted
+                    id={insertingProject.id}
+                    name={insertingProject.name}
+                    tagline={insertingProject.tagline}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
           {/* Screen Content Overlay */}
           <div
             style={{
@@ -550,7 +650,6 @@ export default function Projects() {
               boxSizing: "border-box",
             }}
           >
-            {/* Scanline pattern */}
             <div
               style={{
                 position: "absolute",
@@ -575,77 +674,81 @@ export default function Projects() {
               />
             )}
 
-            <div
-              key={selected.id}
-              className="mk-panel"
-              style={{
-                position: "relative",
-                animation: "panelIn 0.3s ease-out both",
-                height: "100%",
-                overflowY: "auto",
-              }}
-            >
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: "10.5px",
-                  letterSpacing: "0.2em",
-                  color: "#e8283c",
-                  fontWeight: 700,
-                }}
-              >
-                {selected.tagline.toUpperCase()}
-              </p>
-              <h2
-                style={{
-                  margin: "4px 0 10px",
-                  fontFamily: "'Anton', sans-serif",
-                  fontSize: "22px",
-                  color: "#f2f2f2",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.02em",
-                  lineHeight: 1,
-                }}
-              >
-                {selected.name}
-              </h2>
-
-              <p
-                style={{
-                  margin: "0 0 12px",
-                  fontSize: "11px",
-                  lineHeight: 1.55,
-                  color: "rgba(255,255,255,0.65)",
-                }}
-              >
-                {selected.description}
-              </p>
-
+            {poweredOn ? (
               <div
+                key={selected.id}
+                className="mk-panel"
                 style={{
-                  display: "flex",
-                  gap: "6px",
-                  flexWrap: "wrap",
-                  marginBottom: "10px",
+                  position: "relative",
+                  animation: "panelIn 0.3s ease-out both",
+                  height: "100%",
+                  overflowY: "auto",
                 }}
               >
-                {selected.stack.map((tech) => (
-                  <span
-                    key={tech}
-                    style={{
-                      fontSize: "9px",
-                      padding: "4px 7px",
-                      border: "1px solid rgba(232,40,60,0.5)",
-                      color: "#ff6b7a",
-                      letterSpacing: "0.03em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {tech}
-                  </span>
-                ))}
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "10.5px",
+                    letterSpacing: "0.2em",
+                    color: "#e8283c",
+                    fontWeight: 700,
+                  }}
+                >
+                  {selected.tagline.toUpperCase()}
+                </p>
+                <h2
+                  style={{
+                    margin: "4px 0 10px",
+                    fontFamily: "'Anton', sans-serif",
+                    fontSize: "22px",
+                    color: "#f2f2f2",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.02em",
+                    lineHeight: 1,
+                  }}
+                >
+                  {selected.name}
+                </h2>
+
+                <p
+                  style={{
+                    margin: "0 0 12px",
+                    fontSize: "11px",
+                    lineHeight: 1.55,
+                    color: "rgba(255,255,255,0.65)",
+                  }}
+                >
+                  {selected.description}
+                </p>
+
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "6px",
+                    flexWrap: "wrap",
+                    marginBottom: "10px",
+                  }}
+                >
+                  {selected.stack.map((tech) => (
+                    <span
+                      key={tech}
+                      style={{
+                        fontSize: "9px",
+                        padding: "4px 7px",
+                        border: "1px solid rgba(232,40,60,0.5)",
+                        color: "#ff6b7a",
+                        letterSpacing: "0.03em",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <NoSignalPlaceholder />
+            )}
           </div>
         </div>
 
@@ -679,14 +782,47 @@ export default function Projects() {
 }
 
 // ── Sub-components & Helpers ─────────────────────────────────────────
+function NoSignalPlaceholder() {
+  return (
+    <div
+      style={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "10px",
+      }}
+    >
+      <p
+        style={{
+          margin: 0,
+          fontSize: "11px",
+          letterSpacing: "0.25em",
+          color: "rgba(255,255,255,0.3)",
+          fontFamily: "'Space Mono', monospace",
+        }}
+      >
+        NO CARTRIDGE DETECTED
+      </p>
+      <p className="mk-blink" style={{ margin: 0, fontSize: "10px", letterSpacing: "0.15em", color: "#e8283c" }}>
+        ▸ INSERT TO CONTINUE
+      </p>
+    </div>
+  );
+}
+
 interface CartridgeSVGProps {
   color: string;
   highlighted: boolean;
+  id: string;
   name: string;
   tagline: string;
 }
 
-function CartridgeSVG({ color, highlighted, name, tagline }: CartridgeSVGProps) {
+function CartridgeSVG({ color, highlighted, id, name, tagline }: CartridgeSVGProps) {
+  const safeId = id.replace(/[^a-zA-Z0-9_-]/g, "");
+
   return (
     <svg
       width="200"
@@ -702,7 +838,7 @@ function CartridgeSVG({ color, highlighted, name, tagline }: CartridgeSVGProps) 
       }}
     >
       <defs>
-        <linearGradient id={`cartGrad-${name}`} x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id={`cartGrad-${safeId}`} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor={color} />
           <stop offset="100%" stopColor="#101114" />
         </linearGradient>
@@ -710,7 +846,7 @@ function CartridgeSVG({ color, highlighted, name, tagline }: CartridgeSVGProps) 
 
       <path
         d="M 10 0 L 190 0 C 195 0 200 5 200 10 L 200 115 C 200 122 195 128 188 128 L 12 128 C 5 128 0 122 0 115 L 0 10 C 0 5 5 0 10 0 Z"
-        fill={`url(#cartGrad-${name})`}
+        fill={`url(#cartGrad-${safeId})`}
         stroke={highlighted ? "#e8283c" : "#3a3b3f"}
         strokeWidth={highlighted ? "2" : "1"}
       />
