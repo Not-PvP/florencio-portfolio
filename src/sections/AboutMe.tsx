@@ -136,19 +136,6 @@ export default function AboutMe() {
             radial-gradient(ellipse 38% 50% at 100% 100%, rgba(196, 30, 30, 0.38), transparent 70%);
         }
 
-        /* Shrink progressively rather than vanishing outright — on a
-           laptop or a HiDPI display, a screenshot's pixel width is
-           often 2x the actual CSS viewport width, so a single hard
-           cutoff tends to hide this more often than intended. Pull it
-           toward the edge as it shrinks so it clears the text column.
-           More tiers than usual since the base size is large (2150px).
-           Right offsets are large and negative at EVERY tier on purpose —
-           we don't know which tier a given viewport lands in, so each one
-           needs its own strong push rather than relying on the base tier
-           alone. The globe is now sized to overflow the viewport
-           vertically too (it's vertically centered via top:50% +
-           translateY(-50%), so growing it clips top and bottom
-           symmetrically without any extra positioning work). */
         @media (max-width: 2200px) {
           .mk-globe-slot { --globe-scale: 0.78; --globe-right: -1480px; }
         }

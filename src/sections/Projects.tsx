@@ -52,43 +52,160 @@ const PROJECTS: Project[] = [
   },
 ];
 
-// More theatrical fan spread now that the cartridges have more room to
-// themselves: wider spacing, sharper rotation, bigger pop on the selected card.
+// ── GitHub stats ────────────────────────────────────────────────────
+interface GithubStats {
+  stars: number;
+  forks: number;
+  openIssues: number;
+  language: string | null;
+  pushedAt: string;
+  createdAt: string;
+  sizeKb: number;
+  license: string | null;
+  contributors: number;
+}
+
+type StatsState =
+  | { status: "private" }
+  | { status: "loading" }
+  | { status: "error" }
+  | { status: "ready"; data: GithubStats };
+
+function parseGithubRepo(url: string): { owner: string; repo: string } | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname !== "github.com") return null;
+    const [, owner, repo] = u.pathname.split("/");
+    if (!owner || !repo) return null;
+    return { owner, repo: repo.replace(/\.git$/, "") };
+  } catch {
+    return null;
+  }
+}
+
+function tierFromStars(stars: number): string {
+  if (stars >= 10) return "S-TIER";
+  if (stars >= 5) return "A-TIER";
+  if (stars >= 1) return "B-TIER";
+  return "C-TIER";
+}
+
+function formatSize(kb: number | undefined): string {
+  if (kb == null || Number.isNaN(kb)) return "UNKNOWN";
+  if (kb >= 1024) return `${(kb / 1024).toFixed(1)} MB`;
+  return `${kb} KB`;
+}
+
+function timeAgo(iso: string): string {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
+  if (days <= 0) return "TODAY";
+  if (days === 1) return "1 DAY AGO";
+  if (days < 30) return `${days} DAYS AGO`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months} MO AGO`;
+  return `${Math.floor(months / 12)} YR AGO`;
+}
+
 function fanTransform(offset: number, isSelected: boolean, hovered: boolean): string {
   if (isSelected && !hovered) {
-    return "translate(0px, -20px) rotate(0deg) scale(1.12)";
+    return "translate(0px, 0px) rotate(0deg) scale(1.08)";
   }
-  const spread = hovered ? 54 : 46;
-  const lift = hovered ? -10 : 0;
-  const rotate = offset * (hovered ? 6 : 9);
+  const spread = hovered ? 42 : 32;
+  const lift = hovered ? -8 : 0;
+  const rotate = offset * (hovered ? 6 : 8);
   const translateX = offset * spread;
-  const translateY = Math.abs(offset) * (hovered ? 5 : 10) + (isSelected ? lift - 20 : lift);
-  const scale = isSelected ? (hovered ? 1.03 : 1.12) : hovered ? 0.96 : 0.86;
+  const translateY = Math.abs(offset) * (hovered ? 4 : 8) + (isSelected ? lift : lift);
+  const scale = isSelected ? (hovered ? 1.02 : 1.08) : hovered ? 0.94 : 0.85;
   return `translate(${translateX}px, ${translateY}px) rotate(${rotate}deg) scale(${scale})`;
 }
 
-// ── Component ────────────────────────────────────────────────────────
+// ── Main Component ───────────────────────────────────────────────────
 export default function Projects() {
   const [selectedId, setSelectedId] = useState<string>(PROJECTS[0].id);
   const [flash, setFlash] = useState<boolean>(false);
   const [cartsHovered, setCartsHovered] = useState<boolean>(false);
   const [sectionIn, setSectionIn] = useState<boolean>(false);
+  const [statsByProject, setStatsByProject] = useState<Record<string, StatsState>>({});
   const rootRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setStatsByProject(
+      Object.fromEntries(
+        PROJECTS.map((p) => {
+          const hasGithub = p.links.some((l) => l.label.toLowerCase() === "github");
+          return [p.id, { status: hasGithub ? "loading" : "private" } as StatsState];
+        })
+      )
+    );
+
+    (async () => {
+      const entries = await Promise.all(
+        PROJECTS.map(async (project) => {
+          const ghLink = project.links.find((l) => l.label.toLowerCase() === "github");
+          const parsed = ghLink ? parseGithubRepo(ghLink.url) : null;
+          if (!parsed) return [project.id, { status: "private" } as StatsState] as const;
+
+          try {
+            const res = await fetch(`https://api.github.com/repos/${parsed.owner}/${parsed.repo}`);
+            if (!res.ok) throw new Error("bad response");
+            const json = await res.json();
+
+            let contributors = 0;
+            try {
+              const contribRes = await fetch(
+                `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/contributors?per_page=100&anon=true`
+              );
+              if (contribRes.ok) {
+                const contribJson = await contribRes.json();
+                if (Array.isArray(contribJson)) contributors = contribJson.length;
+              }
+            } catch {
+              // fallback
+            }
+
+            return [
+              project.id,
+              {
+                status: "ready",
+                data: {
+                  stars: json.stargazers_count ?? 0,
+                  forks: json.forks_count ?? 0,
+                  openIssues: json.open_issues_count ?? 0,
+                  language: json.language ?? null,
+                  pushedAt: json.pushed_at ?? json.updated_at ?? new Date().toISOString(),
+                  createdAt: json.created_at ?? new Date().toISOString(),
+                  sizeKb: json.size ?? 0,
+                  license: json.license?.spdx_id ?? null,
+                  contributors,
+                },
+              } as StatsState,
+            ] as const;
+          } catch {
+            return [project.id, { status: "error" } as StatsState] as const;
+          }
+        })
+      );
+      if (!cancelled) setStatsByProject(Object.fromEntries(entries));
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const selected = PROJECTS.find((p) => p.id === selectedId) ?? PROJECTS[0];
   const selectedIndex = PROJECTS.findIndex((p) => p.id === selectedId);
 
   function selectProject(id: string) {
     if (id === selectedId) return;
+
     setFlash(true);
     setSelectedId(id);
     setTimeout(() => setFlash(false), 260);
   }
 
-  // Fade this section in the first time it scrolls into view, rather
-  // than all at once on page mount — otherwise it (and everything below
-  // the hero) would just be sitting there at full opacity before the
-  // user ever scrolls to it.
   useEffect(() => {
     const node = rootRef.current;
     if (!node) return;
@@ -118,7 +235,7 @@ export default function Projects() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "40px 48px",
+        padding: "40px 24px",
         boxSizing: "border-box",
         position: "relative",
         overflow: "hidden",
@@ -128,16 +245,12 @@ export default function Projects() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-        /* Title punches in with a hit-stop snap, like a combo landing,
-           instead of a plain fade. */
         @keyframes titleSlam {
           0% { opacity: 0; transform: scale(1.4); filter: blur(6px); }
           55% { opacity: 1; transform: scale(0.96); filter: blur(0px); }
           70% { transform: scale(1.04); }
           100% { transform: scale(1); }
         }
-        /* Select row slots up from below like a cartridge being pushed
-           into the console, with a brief red flash at the moment it lands. */
         @keyframes rowSlotIn {
           0% { opacity: 0; transform: translateY(60px); }
           65% { opacity: 1; transform: translateY(-6px); }
@@ -155,6 +268,20 @@ export default function Projects() {
         @keyframes panelIn {
           from { opacity: 0; transform: translateY(6px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes panelSlideRight {
+          from { opacity: 0; transform: translateX(24px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        .mk-stat-fill {
+          transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .mk-stat-box {
+          background: linear-gradient(160deg, #1c1d21 0%, #131316 100%);
+          border: 1px solid rgba(232,40,60,0.28);
+          border-radius: 8px;
+          padding: 16px 18px 18px;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 8px 20px rgba(0,0,0,0.35);
         }
         .mk-cart {
           transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.2s ease;
@@ -212,30 +339,33 @@ export default function Projects() {
           .mk-fade { animation: none !important; opacity: 1 !important; transform: none !important; filter: none !important; box-shadow: none !important; }
         }
 
-        /* Two fixed 360px columns side by side don't fit a phone screen.
-           Stack cartridges above the console instead, and let both
-           shrink together (same aspect ratio, so the SVG's percentage-
-           based screen cutout still lines up at any width). */
-        @media (max-width: 780px) {
-          .mk-select-row { flex-direction: column !important; gap: 36px !important; }
-          .mk-cart-cluster, .mk-console-wrap {
-            width: 360px !important;
-            transform: scale(var(--mk-project-scale, 1));
-            transform-origin: top center;
+        /* Responsive Layout Overrides */
+        @media (max-width: 1100px) {
+          .mk-arena-row {
+            grid-template-columns: 1fr !important;
+            gap: 40px !important;
+          }
+          .mk-stats-sidebar {
+            width: 100% !important;
+            max-width: 360px !important;
+            flex-direction: row !important;
+            gap: 16px !important;
+          }
+          .mk-stat-box {
+            flex: 1;
           }
         }
-        @media (max-width: 500px) {
-          .mk-projects-root { padding: 40px 16px !important; }
-        }
-        @media (max-width: 420px) {
-          .mk-cart-cluster, .mk-console-wrap { --mk-project-scale: 0.82; }
-        }
-        @media (max-width: 360px) {
-          .mk-cart-cluster, .mk-console-wrap { --mk-project-scale: 0.72; }
+        @media (max-width: 600px) {
+          .mk-stats-sidebar {
+            flex-direction: column !important;
+          }
+          .mk-projects-root {
+            padding: 40px 16px !important;
+          }
         }
       `}</style>
 
-      {/* low red uplight, like stage lights hitting the floor from below — static, cheap, grounded */}
+      {/* Red ambient background glow */}
       <div
         style={{
           position: "absolute",
@@ -247,11 +377,12 @@ export default function Projects() {
         }}
       />
 
+      {/* Section Header */}
       <div
         className="mk-fade"
         style={{
           textAlign: "center",
-          marginBottom: "26px",
+          marginBottom: "32px",
           opacity: sectionIn ? 1 : 0,
           animation: sectionIn ? "titleSlam 0.7s cubic-bezier(0.2, 0.9, 0.25, 1) both" : "none",
         }}
@@ -283,35 +414,33 @@ export default function Projects() {
         </h1>
       </div>
 
-      {/* Select screen — cartridges + console, side by side. maxWidth is sized
-          to actually fit both (cluster 360 + gap 72 + console 360 = 792px)
-          so it no longer wraps onto two lines on desktop. */}
+      {/* 3-Column Arena Layout: [ Cartridges ] [ Gameboy Console (Centered) ] [ Stats Sidebar ] */}
       <div
-        className="mk-select-row mk-fade"
+        className="mk-arena-row"
         style={{
-          display: "flex",
+          display: "grid",
+          gridTemplateColumns: "1fr auto 1fr",
           alignItems: "center",
-          justifyContent: "center",
-          gap: "72px",
-          flexWrap: "wrap",
+          justifyItems: "center",
           width: "100%",
-          maxWidth: "920px",
-          borderRadius: "24px",
-          opacity: sectionIn ? 1 : 0,
-          animation: sectionIn
-            ? "rowSlotIn 0.6s cubic-bezier(0.2, 0.85, 0.25, 1) 0.22s both, rowFlash 0.6s ease-out 0.22s both"
-            : "none",
+          maxWidth: "1280px",
+          gap: "24px",
         }}
       >
-        {/* Cartridges */}
+        {/* LEFT COLUMN: Cartridge Fan / Stack */}
         <div
-          className="mk-cart-cluster"
+          className="mk-cart-cluster mk-fade"
           style={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: "18px",
-            width: "360px",
+            justifySelf: "center",
+            gap: "20px",
+            zIndex: 6,
+            opacity: sectionIn ? 1 : 0,
+            animation: sectionIn
+              ? "rowSlotIn 0.6s cubic-bezier(0.2, 0.85, 0.25, 1) 0.22s both"
+              : "none",
           }}
         >
           <div
@@ -319,8 +448,8 @@ export default function Projects() {
             onMouseLeave={() => setCartsHovered(false)}
             style={{
               position: "relative",
-              width: "360px",
-              height: "260px",
+              width: "280px",
+              height: "160px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -331,7 +460,7 @@ export default function Projects() {
                 position: "absolute",
                 inset: 0,
                 background:
-                  "radial-gradient(circle at 50% 55%, rgba(232,40,60,0.34), transparent 68%)",
+                  "radial-gradient(circle at 50% 50%, rgba(232,40,60,0.25), transparent 70%)",
                 opacity: cartsHovered ? 1 : 0,
                 transition: "opacity 0.35s ease",
                 pointerEvents: "none",
@@ -368,7 +497,8 @@ export default function Projects() {
             })}
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {/* Cartridge Counter Indicator */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span
               style={{
                 fontSize: "12px",
@@ -391,10 +521,22 @@ export default function Projects() {
           </div>
         </div>
 
-        {/* Console */}
-        <div className="mk-console-wrap" style={{ position: "relative", width: "360px", flexShrink: 0 }}>
+        {/* CENTER COLUMN: Console Shell */}
+        <div
+          className="mk-console-wrap mk-fade"
+          style={{
+            position: "relative",
+            width: "360px",
+            flexShrink: 0,
+            opacity: sectionIn ? 1 : 0,
+            animation: sectionIn
+              ? "rowSlotIn 0.6s cubic-bezier(0.2, 0.85, 0.25, 1) 0.22s both, rowFlash 0.6s ease-out 0.22s both"
+              : "none",
+          }}
+        >
           <ConsoleShellSVG leftLink={selected.links[0]} rightLink={selected.links[1]} />
 
+          {/* Screen Content Overlay */}
           <div
             style={{
               position: "absolute",
@@ -408,6 +550,7 @@ export default function Projects() {
               boxSizing: "border-box",
             }}
           >
+            {/* Scanline pattern */}
             <div
               style={{
                 position: "absolute",
@@ -502,11 +645,227 @@ export default function Projects() {
                   </span>
                 ))}
               </div>
-
             </div>
           </div>
         </div>
+
+        {/* RIGHT COLUMN: Stats Sidebar */}
+        <div
+          className="mk-stats-sidebar mk-fade"
+          style={{
+            width: "220px",
+            justifySelf: "center",
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px",
+            opacity: sectionIn ? 1 : 0,
+            animation: sectionIn
+              ? "panelSlideRight 0.6s cubic-bezier(0.2, 0.85, 0.25, 1) 0.32s both"
+              : "none",
+          }}
+        >
+          <div className="mk-stat-box">
+            <PanelHeader label="P1 VITALS" />
+            <VitalsPanel stats={statsByProject[selectedId]} />
+          </div>
+          <div className="mk-stat-box">
+            <PanelHeader label="COMBAT LOG" />
+            <IntelPanel stats={statsByProject[selectedId]} />
+          </div>
+        </div>
       </div>
+    </div>
+  );
+}
+
+// ── Sub-components & Helpers ─────────────────────────────────────────
+interface CartridgeSVGProps {
+  color: string;
+  highlighted: boolean;
+  name: string;
+  tagline: string;
+}
+
+function CartridgeSVG({ color, highlighted, name, tagline }: CartridgeSVGProps) {
+  return (
+    <svg
+      width="200"
+      height="130"
+      viewBox="0 0 200 130"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{
+        filter: highlighted
+          ? "drop-shadow(0 12px 20px rgba(0,0,0,0.6)) drop-shadow(0 0 12px rgba(232,40,60,0.4))"
+          : "drop-shadow(0 6px 10px rgba(0,0,0,0.5))",
+        transition: "filter 0.2s ease",
+      }}
+    >
+      <defs>
+        <linearGradient id={`cartGrad-${name}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={color} />
+          <stop offset="100%" stopColor="#101114" />
+        </linearGradient>
+      </defs>
+
+      <path
+        d="M 10 0 L 190 0 C 195 0 200 5 200 10 L 200 115 C 200 122 195 128 188 128 L 12 128 C 5 128 0 122 0 115 L 0 10 C 0 5 5 0 10 0 Z"
+        fill={`url(#cartGrad-${name})`}
+        stroke={highlighted ? "#e8283c" : "#3a3b3f"}
+        strokeWidth={highlighted ? "2" : "1"}
+      />
+
+      <rect x="20" y="8" width="160" height="3" rx="1.5" fill="rgba(255,255,255,0.15)" />
+      <rect x="20" y="15" width="160" height="3" rx="1.5" fill="rgba(0,0,0,0.3)" />
+
+      <rect x="16" y="28" width="168" height="84" rx="4" fill="#0d0e10" stroke="#25262a" strokeWidth="1" />
+
+      <rect x="22" y="34" width="156" height="72" rx="2" fill="#17181c" />
+      <rect x="22" y="34" width="156" height="18" fill="#e8283c" />
+
+      <text x="30" y="46" fontSize="8" fill="#ffffff" fontWeight="bold" fontFamily="monospace" letterSpacing="0.05em">
+        {tagline.toUpperCase().slice(0, 22)}
+      </text>
+
+      <text x="30" y="72" fontSize="15" fill="#f2f2f2" fontWeight="bold" fontFamily="'Anton', sans-serif" letterSpacing="0.02em">
+        {name.toUpperCase()}
+      </text>
+
+      <text x="30" y="94" fontSize="7" fill="#8a8c92" fontFamily="monospace">
+        GAME CARTRIDGE
+      </text>
+
+      <path d="M 160 85 L 168 90 L 160 95 Z" fill="#e8283c" opacity="0.8" />
+    </svg>
+  );
+}
+
+function PanelHeader({ label }: { label: string }) {
+  return (
+    <div
+      style={{
+        fontFamily: "'Press Start 2P', monospace",
+        fontSize: "9px",
+        letterSpacing: "0.12em",
+        color: "#e8283c",
+        marginBottom: "16px",
+        paddingBottom: "8px",
+        borderBottom: "2px solid rgba(232,40,60,0.4)",
+      }}
+    >
+      {label}
+    </div>
+  );
+}
+
+function RedactedNotice({ text, dim }: { text: string; dim?: boolean }) {
+  return (
+    <div
+      style={{
+        fontSize: "9px",
+        letterSpacing: "0.06em",
+        color: dim ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.35)",
+        fontFamily: "'Space Mono', monospace",
+        padding: "20px 12px",
+        textAlign: "center",
+        lineHeight: 1.6,
+        border: dim ? "none" : "1px dashed rgba(255,255,255,0.15)",
+      }}
+    >
+      {text}
+    </div>
+  );
+}
+
+function StatBar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
+  const pct = Math.max(value > 0 ? 6 : 0, Math.min(100, (value / max) * 100));
+  return (
+    <div style={{ marginBottom: "14px" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontSize: "9px",
+          letterSpacing: "0.08em",
+          color: "rgba(255,255,255,0.5)",
+          marginBottom: "5px",
+        }}
+      >
+        <span>{label}</span>
+        <span style={{ color: "#f2f2f2" }}>{value}</span>
+      </div>
+      <div style={{ height: "8px", background: "rgba(255,255,255,0.08)", position: "relative", overflow: "hidden" }}>
+        <div
+          className="mk-stat-fill"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: `${pct}%`,
+            background: color,
+            backgroundImage:
+              "repeating-linear-gradient(90deg, rgba(0,0,0,0.35) 0px, rgba(0,0,0,0.35) 1px, transparent 1px, transparent 7px)",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function VitalsPanel({ stats }: { stats?: StatsState }) {
+  const status = stats?.status ?? "loading";
+  if (status === "private") return <RedactedNotice text="CLASSIFIED BUILD — VITALS SEALED" />;
+  if (status === "loading") return <RedactedNotice text="SCANNING..." dim />;
+  if (status === "error") return <RedactedNotice text="SIGNAL LOST" dim />;
+  const data = (stats as { status: "ready"; data: GithubStats }).data;
+  return (
+    <div key={JSON.stringify(data)}>
+      <StatBar label="STARS" value={data.stars} max={20} color="#e8283c" />
+      <StatBar label="FORKS" value={data.forks} max={20} color="#c41e30" />
+      <StatBar label="OPEN ISSUES" value={data.openIssues} max={20} color="#8a6d1f" />
+    </div>
+  );
+}
+
+function IntelRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        padding: "9px 0",
+        borderBottom: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      <span style={{ fontSize: "9px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.45)" }}>{label}</span>
+      <span
+        style={{
+          fontSize: highlight ? "11px" : "10px",
+          fontWeight: highlight ? 700 : 400,
+          color: highlight ? "#e8283c" : "#f2f2f2",
+          letterSpacing: "0.04em",
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function IntelPanel({ stats }: { stats?: StatsState }) {
+  const status = stats?.status ?? "loading";
+  if (status === "private") return <RedactedNotice text="INTEL REDACTED" />;
+  if (status === "loading") return <RedactedNotice text="DECRYPTING..." dim />;
+  if (status === "error") return <RedactedNotice text="SIGNAL LOST" dim />;
+  const data = (stats as { status: "ready"; data: GithubStats }).data;
+  return (
+    <div key={JSON.stringify(data)}>
+      <IntelRow label="TIER" value={tierFromStars(data.stars)} highlight />
+      <IntelRow label="LANGUAGE" value={(data.language ?? "MIXED").toUpperCase()} />
+      <IntelRow label="LAST COMMIT" value={timeAgo(data.pushedAt)} />
+      <IntelRow label="REPO SIZE" value={formatSize(data.sizeKb)} />
+      <IntelRow label="LICENSE" value={data.license ?? "NONE"} />
+      <IntelRow label="CONTRIBUTORS" value={data.contributors != null ? String(data.contributors) : "UNKNOWN"} />
     </div>
   );
 }
@@ -653,111 +1012,6 @@ function ConsoleShellSVG({ leftLink, rightLink }: ConsoleShellSVGProps) {
           </text>
         </>
       )}
-
-      <g stroke="#3a3b3f" strokeWidth="4" strokeLinecap="round" opacity="0.8">
-        <line x1="330" y1="592" x2="346" y2="576" />
-        <line x1="346" y1="592" x2="362" y2="576" />
-        <line x1="362" y1="592" x2="378" y2="576" />
-        <line x1="378" y1="592" x2="394" y2="576" />
-      </g>
-    </svg>
-  );
-}
-
-interface CartridgeSVGProps {
-  color: string;
-  highlighted: boolean;
-  name: string;
-  tagline: string;
-}
-
-// Scaled up from 132×109 to 160×132 so the cartridges hold their own
-// against the console now that they have more room.
-function CartridgeSVG({ color, highlighted, name, tagline }: CartridgeSVGProps) {
-  // Only clamp text that would actually overflow the label — short names
-  // like "COSIGN" should render at their natural size, not get stretched
-  // out to fill the box. Rough width estimate is enough here since we're
-  // only deciding whether to engage the safety clamp, not doing precise typesetting.
-  const displayName = name.toUpperCase();
-  const nameNaturalWidth = displayName.length * 8.5 * 0.62;
-  const nameClamp =
-    nameNaturalWidth > 118 ? { textLength: 118, lengthAdjust: "spacingAndGlyphs" as const } : {};
-
-  const displayTagline = `> ${tagline.toUpperCase()}_`;
-  const taglineNaturalWidth = displayTagline.length * 7.5 * 0.6;
-  const taglineClamp =
-    taglineNaturalWidth > 128 ? { textLength: 128, lengthAdjust: "spacingAndGlyphs" as const } : {};
-
-  return (
-    <svg
-      viewBox="0 0 170 140"
-      width="160"
-      height="132"
-      style={{
-        filter: highlighted
-          ? "drop-shadow(0 10px 20px rgba(232,40,60,0.4))"
-          : "drop-shadow(0 4px 8px rgba(0,0,0,0.5))",
-      }}
-    >
-      <rect x="5" y="16" width="160" height="118" rx="7" fill="#2c2e33" stroke="#111214" strokeWidth="2" />
-      <rect x="48" y="0" width="72" height="19" rx="3" fill="#1a1b1e" />
-      <rect x="56" y="4" width="56" height="6" rx="2" fill="#0d0d0e" />
-
-      <rect
-        x="17"
-        y="38"
-        width="134"
-        height="72"
-        rx="3"
-        fill={color}
-        stroke={highlighted ? "#e8283c" : "rgba(255,255,255,0.15)"}
-        strokeWidth={highlighted ? "2.5" : "1"}
-      />
-
-      {/* Name is printed in a chunky pixel font, like art on the actual
-          plastic — rendered twice (a dark "ink" pass offset behind a
-          bright pass) for a cheap little print-shadow / chromatic pop.
-          Only clamps to a fixed width when the name is actually too long. */}
-      <text
-        x="85"
-        y="63"
-        textAnchor="middle"
-        fontSize="8.5"
-        fill="#00000055"
-        fontFamily="'Press Start 2P', monospace"
-        {...nameClamp}
-      >
-        {displayName}
-      </text>
-      <text
-        x="84"
-        y="62"
-        textAnchor="middle"
-        fontSize="8.5"
-        fill="#f2f2f2"
-        fontFamily="'Press Start 2P', monospace"
-        {...nameClamp}
-      >
-        {displayName}
-      </text>
-
-      {/* Tagline reads like a status line on a boot screen. Same
-          clamp logic — only compresses when it would otherwise spill
-          past the cartridge edge. */}
-      <text
-        x="84"
-        y="90"
-        textAnchor="middle"
-        fontSize="7.5"
-        fill="rgba(255,255,255,0.55)"
-        fontFamily="'Space Mono', monospace"
-        {...taglineClamp}
-      >
-        {displayTagline}
-      </text>
-
-      <rect x="21" y="120" width="126" height="7" rx="2" fill="#111214" />
-      <rect x="21" y="120" width="126" height="1.5" fill="#3a3b3f" />
     </svg>
   );
 }
