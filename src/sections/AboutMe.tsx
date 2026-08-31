@@ -122,7 +122,7 @@ export default function AboutMe() {
 
         .mk-globe-slot {
           --globe-scale: 1;
-          --globe-right: -45%;
+          --globe-right: -1750px;
           transition: opacity 0.4s ease;
         }
 
@@ -137,16 +137,16 @@ export default function AboutMe() {
         }
 
 @media (max-width: 2200px) {
-  .mk-globe-slot { --globe-scale: 0.78; --globe-right: -1250px; } /* Was -1480px */
+  .mk-globe-slot { --globe-scale: 0.78; --globe-right: -1440px; } /* Was -1480px */
 }
 @media (max-width: 1900px) {
-  .mk-globe-slot { --globe-scale: 0.6; --globe-right: -1080px; }  /* Was -1280px */
+  .mk-globe-slot { --globe-scale: 0.6; --globe-right: -1240px; }  /* Was -1280px */
 }
 @media (max-width: 1560px) {
-  .mk-globe-slot { --globe-scale: 0.45; --globe-right: -880px; }  /* Was -1070px */
+  .mk-globe-slot { --globe-scale: 0.45; --globe-right: -1020px; }  /* Was -1070px */
 }
 @media (max-width: 1300px) {
-  .mk-globe-slot { --globe-scale: 0.32; --globe-right: -680px; }  /* Was -840px */
+  .mk-globe-slot { --globe-scale: 0.32; --globe-right: -790x; }  /* Was -840px */
 }
         @media (max-width: 1080px) {
           .mk-globe-slot { display: none !important; }
