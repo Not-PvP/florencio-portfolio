@@ -120,8 +120,18 @@ export default function AboutMe() {
 
         .mk-globe-slot {
           --globe-scale: 1;
-          --globe-right: 260px;
+          --globe-right: -1750px;
           transition: opacity 0.4s ease;
+        }
+
+        .mk-corner-glow {
+          position: absolute;
+          inset: 0;
+          z-index: -1;
+          pointer-events: none;
+          background:
+            radial-gradient(ellipse 38% 50% at 100% 0%, rgba(196, 30, 30, 0.38), transparent 70%),
+            radial-gradient(ellipse 38% 50% at 100% 100%, rgba(196, 30, 30, 0.38), transparent 70%);
         }
 
         /* Shrink progressively rather than vanishing outright — on a
@@ -129,21 +139,29 @@ export default function AboutMe() {
            often 2x the actual CSS viewport width, so a single hard
            cutoff tends to hide this more often than intended. Pull it
            toward the edge as it shrinks so it clears the text column.
-           More tiers than usual since the base size is large (1120px). */
+           More tiers than usual since the base size is large (2150px).
+           Right offsets are large and negative at EVERY tier on purpose —
+           we don't know which tier a given viewport lands in, so each one
+           needs its own strong push rather than relying on the base tier
+           alone. The globe is now sized to overflow the viewport
+           vertically too (it's vertically centered via top:50% +
+           translateY(-50%), so growing it clips top and bottom
+           symmetrically without any extra positioning work). */
         @media (max-width: 2200px) {
-          .mk-globe-slot { --globe-scale: 0.78; --globe-right: 160px; }
+          .mk-globe-slot { --globe-scale: 0.78; --globe-right: -1480px; }
         }
         @media (max-width: 1900px) {
-          .mk-globe-slot { --globe-scale: 0.6; --globe-right: 90px; }
+          .mk-globe-slot { --globe-scale: 0.6; --globe-right: -1280px; }
         }
         @media (max-width: 1560px) {
-          .mk-globe-slot { --globe-scale: 0.45; --globe-right: 40px; }
+          .mk-globe-slot { --globe-scale: 0.45; --globe-right: -1070px; }
         }
         @media (max-width: 1300px) {
-          .mk-globe-slot { --globe-scale: 0.32; --globe-right: 0px; }
+          .mk-globe-slot { --globe-scale: 0.32; --globe-right: -840px; }
         }
         @media (max-width: 1080px) {
           .mk-globe-slot { display: none !important; }
+          .mk-corner-glow { display: none !important; }
         }
 
         @media (max-width: 720px) {
@@ -151,10 +169,21 @@ export default function AboutMe() {
           .mk-drawer {
             width: 100% !important;
             min-width: 100% !important;
-            height: 34vh !important;
-            min-height: 220px !important;
+            height: 38vh !important;
+            min-height: 260px !important;
           }
-          .mk-tab { display: none !important; }
+          .mk-hero-photo {
+            object-position: center 20% !important;
+          }
+          .mk-tab {
+            display: flex !important;
+            top: max(38vh, 260px) !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) rotate(90deg) !important;
+          }
+          .mk-tab:hover {
+            transform: translate(-50%, -50%) rotate(90deg) !important;
+          }
           .mk-hero-copy { padding: 32px 22px !important; }
         }
       `}</style>
@@ -215,6 +244,7 @@ export default function AboutMe() {
           overflow: "hidden",
         }}
       >
+        <div className="mk-corner-glow" aria-hidden="true" />
         <div
           className="mk-drawer"
           style={{
@@ -237,6 +267,7 @@ export default function AboutMe() {
               <img
                 src={heroPortrait}
                 alt="Hero Portrait"
+                className="mk-hero-photo"
                 style={{
                   width: "100%",
                   height: "100%",
@@ -326,7 +357,7 @@ export default function AboutMe() {
             }}
           >
             <Suspense fallback={null}>
-              <EarthGlobe size={1120} />
+              <EarthGlobe size={2500} />
             </Suspense>
           </div>
 
