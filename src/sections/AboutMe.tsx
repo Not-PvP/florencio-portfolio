@@ -1,5 +1,10 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import heroPortrait from "../assets/hero-portrait.jpg";
+
+// Lazy-loaded: the globe's land-mask bitmaps make it a heavy chunk on their
+// own, and it's only ever visible in the roster (drawer-closed) view — no
+// reason to make it part of AboutMe's initial bundle.
+const EarthGlobe = lazy(() => import("./EarthGlobe"));
 
 // Simplified roster data without explicit photos to reduce payload size
 type Ally = { name: string; link: string };
@@ -111,6 +116,34 @@ export default function AboutMe() {
           border-color: #ff8a5b;
           color: #ff8a5b;
           background: rgba(232,40,60,0.08);
+        }
+
+        .mk-globe-slot {
+          --globe-scale: 1;
+          --globe-right: 260px;
+          transition: opacity 0.4s ease;
+        }
+
+        /* Shrink progressively rather than vanishing outright — on a
+           laptop or a HiDPI display, a screenshot's pixel width is
+           often 2x the actual CSS viewport width, so a single hard
+           cutoff tends to hide this more often than intended. Pull it
+           toward the edge as it shrinks so it clears the text column.
+           More tiers than usual since the base size is large (1120px). */
+        @media (max-width: 2200px) {
+          .mk-globe-slot { --globe-scale: 0.78; --globe-right: 160px; }
+        }
+        @media (max-width: 1900px) {
+          .mk-globe-slot { --globe-scale: 0.6; --globe-right: 90px; }
+        }
+        @media (max-width: 1560px) {
+          .mk-globe-slot { --globe-scale: 0.45; --globe-right: 40px; }
+        }
+        @media (max-width: 1300px) {
+          .mk-globe-slot { --globe-scale: 0.32; --globe-right: 0px; }
+        }
+        @media (max-width: 1080px) {
+          .mk-globe-slot { display: none !important; }
         }
 
         @media (max-width: 720px) {
@@ -271,11 +304,38 @@ export default function AboutMe() {
             transition: "opacity 0.6s ease, transform 0.6s ease",
           }}
         >
-          {/* Watermark emblem — only shows when the photo drawer is closed (roster view) */}
-          {!open && <MkEmblem />}
+          {/* Globe — fills the empty right-hand space in the roster view.
+              Drops in with a bounce whenever the drawer closes and lifts
+              back out when it opens; fully unmounted below 1440px where
+              there isn't room for it next to the text. */}
+          <div
+            className="mk-globe-slot"
+            aria-hidden={open}
+            style={{
+              position: "absolute",
+              top: "50%",
+              right: "var(--globe-right, 170px)",
+              transform: open
+                ? "translateY(calc(-50% - 140px)) scale(var(--globe-scale, 1))"
+                : "translateY(-50%) scale(var(--globe-scale, 1))",
+              opacity: open ? 0 : 1,
+              transition:
+                "opacity 0.4s ease, transform 0.75s cubic-bezier(0.34, 1.56, 0.64, 1)",
+              pointerEvents: open ? "none" : "auto",
+              zIndex: 0,
+            }}
+          >
+            <Suspense fallback={null}>
+              <EarthGlobe size={1120} />
+            </Suspense>
+          </div>
 
-          {/* Real content, above the emblem */}
-          <div style={{ position: "relative", zIndex: 1 }}>
+          {/* Real content — capped to the same width as its children so this
+              wrapper doesn't silently stretch across the globe's space and
+              swallow its hover/click events (it's zIndex 1, above the globe's
+              zIndex 0, so an unconstrained full-width div here would block
+              the canvas underneath even where nothing is visibly drawn). */}
+          <div style={{ position: "relative", zIndex: 1, maxWidth: "640px" }}>
             <div
               style={{
                 color: "#e8283c",

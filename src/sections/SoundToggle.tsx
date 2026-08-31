@@ -25,7 +25,7 @@ export default function SoundToggle() {
       className="mk-sound-btn"
       style={{
         position: "fixed",
-        left: "18px",
+        right: "18px",
         bottom: "18px",
         zIndex: 20,
         width: "44px",
