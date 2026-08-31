@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { playHit } from "./audio";
+import { playHit } from "../shared/audio";
 
 // ── Data ─────────────────────────────────────────────────────────────
 // Each move is a real input sequence: press the arrow keys in `keys`

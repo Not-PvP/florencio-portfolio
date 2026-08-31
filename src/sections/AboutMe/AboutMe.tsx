@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import heroPortrait from "../assets/hero-portrait.jpg";
+import heroPortrait from "../../assets/hero-portrait.jpg";
 
 // Lazy-loaded: the globe's land-mask bitmaps make it a heavy chunk on their
 // own, and it's only ever visible in the roster (drawer-closed) view — no

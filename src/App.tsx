@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import AboutMe from "./sections/AboutMe";
-import Projects from "./sections/Projects";
-import Skills from "./sections/Skills";
-import Contact from "./sections/Contact";
-import EmberBackground from "./sections/Background";
-import BootGate from "./sections/BootGate";
-import EasterEgg from "./sections/EasterEgg";
-import SoundToggle from "./sections/SoundToggle";
+import AboutMe from "./sections/AboutMe/AboutMe";
+import Projects from "./sections/Projects/Projects";
+import Skills from "./sections/Skills/Skills";
+import Contact from "./sections/Contact/Contact";
+import EmberBackground from "./sections/shared/Background";
+import BootGate from "./sections/shared/BootGate";
+import EasterEgg from "./sections/shared/EasterEgg";
+import SoundToggle from "./sections/shared/SoundToggle";
+import Separator from "./sections/shared/Separator";
 
 // ── Section registry ─────────────────────────────────────────────────
 // Order here controls both the scroll order and the nav dots below.
@@ -50,7 +51,7 @@ export default function App() {
           if (id) setActiveId(id);
         }
       },
-      { threshold: [0.4, 0.6] }
+      { threshold: [0.4, 0.6] },
     );
 
     Object.values(sectionRefs.current).forEach((node) => {
@@ -142,24 +143,19 @@ export default function App() {
           }
         }
       `}</style>
-
       {/* Boot gate — held until the visitor's first tap/click/keypress,
           which also unlocks the Web Audio context for everything below. */}
       {!booted && <BootGate onDismiss={() => setBooted(true)} />}
-
       {/* Global hidden combo — listens everywhere, not just in Contact. */}
       <EasterEgg />
-
       {/* Single global ember/cursor background layer — fixed, mounted once
           here so it persists continuously under every section instead of
           restarting or duplicating per-section. */}
       <EmberBackground />
-
       {/* Sound toggle — sits opposite the side nav dots. Starts muted; the
           boot gate's tap already satisfied the browser's audio-gesture
           requirement, so unmuting here plays sound immediately. */}
       <SoundToggle />
-
       {/* Side nav dots — jump between rounds without hunting for a scrollbar */}
       <nav
         aria-label="Section navigation"
@@ -203,7 +199,6 @@ export default function App() {
           );
         })}
       </nav>
-
       {SECTIONS.map(({ id, Component }, i) => (
         <div key={id}>
           <div
@@ -214,40 +209,8 @@ export default function App() {
           >
             <Component />
           </div>
-          {/* Fight-screen-style divider: a glowing horizontal bar with a
-              rotated diamond marker centered on it — visible at a glance
-              instead of the near-invisible 1px gradient this replaces,
-              without going back to a busy jagged crack line. */}
           {i < SECTIONS.length - 1 && (
-            <div
-              aria-hidden="true"
-              style={{
-                position: "relative",
-                zIndex: 2,
-                width: "100%",
-                maxWidth: "1100px",
-                margin: "0 auto",
-                height: "1px",
-                background:
-                  "linear-gradient(90deg, transparent 0%, rgba(232,40,60,0.75) 50%, transparent 100%)",
-                boxShadow: "0 0 12px rgba(232,40,60,0.35)",
-                pointerEvents: "none",
-              }}
-            >
-              <span
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  width: "12px",
-                  height: "12px",
-                  background: "#e8283c",
-                  border: "1px solid rgba(255,255,255,0.4)",
-                  transform: "translate(-50%, -50%) rotate(45deg)",
-                  boxShadow: "0 0 14px rgba(232,40,60,0.85)",
-                }}
-              />
-            </div>
+            <Separator next={SECTIONS[i + 1].label} />
           )}
         </div>
       ))}
