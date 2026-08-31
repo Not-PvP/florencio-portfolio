@@ -53,6 +53,7 @@ export default function AboutMe() {
 
   return (
     <div
+      className="mk-about-root"
       style={{
         width: "100%",
         height: "100vh",
@@ -98,6 +99,7 @@ export default function AboutMe() {
         .mk-ally {
           transition: transform 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
           filter: grayscale(0.55);
+          flex-shrink: 0;
         }
         .mk-ally:hover, .mk-ally:focus-visible {
           transform: scale(1.06);
@@ -165,7 +167,20 @@ export default function AboutMe() {
         }
 
         @media (max-width: 720px) {
-          .mk-hero-row { flex-direction: column !important; }
+          /* Let the section grow to fit its content instead of hard-clipping
+             at 100vh. The drawer height below is a fixed vh, so the tab's
+             top offset (also vh-based) still lines up with its bottom edge
+             even once total content height exceeds one viewport. */
+          .mk-about-root {
+            height: auto !important;
+            min-height: 100vh !important;
+            overflow: visible !important;
+          }
+          .mk-hero-row {
+            flex-direction: column !important;
+            height: auto !important;
+            min-height: 100vh !important;
+          }
           .mk-drawer {
             width: 100% !important;
             min-width: 100% !important;
@@ -173,7 +188,8 @@ export default function AboutMe() {
             min-height: 260px !important;
           }
           .mk-hero-photo {
-            object-position: center 20% !important;
+            /* Was cutting off top of head at 20%; pull the focal point up. */
+            object-position: center 12% !important;
           }
           .mk-tab {
             display: flex !important;
@@ -184,7 +200,27 @@ export default function AboutMe() {
           .mk-tab:hover {
             transform: translate(-50%, -50%) rotate(90deg) !important;
           }
-          .mk-hero-copy { padding: 32px 22px !important; }
+          .mk-hero-copy {
+            padding: 32px 22px 56px !important;
+            flex: none !important;
+          }
+          .mk-hero-copy h1 {
+            font-size: clamp(34px, 11vw, 56px) !important;
+          }
+          .mk-hero-copy p {
+            font-size: 15px !important;
+            line-height: 1.6 !important;
+          }
+
+          /* Roster: horizontal strip instead of a vertical column. */
+          .mk-roster-scroll {
+            flex-direction: row !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            padding: 0 20px !important;
+            -webkit-mask-image: linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%) !important;
+            mask-image: linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%) !important;
+          }
         }
       `}</style>
 
