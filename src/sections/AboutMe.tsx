@@ -317,6 +317,21 @@ export default function AboutMe() {
                   height: "100%",
                   objectFit: "cover",
                   objectPosition: "center top",
+                  filter:
+                    "saturate(0.78) contrast(1.12) brightness(0.9) hue-rotate(-12deg)",
+                }}
+              />
+              {/* Color-grade overlay: nudges the warm cast toward the site's
+                  cool crimson/black palette without touching the source file. */}
+              <div
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  pointerEvents: "none",
+                  background:
+                    "linear-gradient(160deg, rgba(20,4,8,0.35) 0%, rgba(10,6,10,0.15) 45%, rgba(120,20,20,0.22) 100%)",
+                  mixBlendMode: "multiply",
                 }}
               />
             </>
