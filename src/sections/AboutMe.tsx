@@ -10,16 +10,16 @@ const EarthGlobe = lazy(() => import("./EarthGlobe"));
 type Ally = { name: string; link: string };
 
 const ALLIES: Ally[] = [
-  { name: "Maya",   link: "https://instagram.com" },
-  { name: "Jonas",  link: "https://instagram.com" },
-  { name: "Aria",   link: "https://instagram.com" },
-  { name: "Leo",    link: "https://instagram.com" },
-  { name: "Nadia",  link: "https://instagram.com" },
-  { name: "Ken",    link: "https://instagram.com" },
-  { name: "Priya",  link: "https://instagram.com" },
-  { name: "Rico",   link: "https://instagram.com" },
-  { name: "Elin",   link: "https://instagram.com" },
-  { name: "Tomas",  link: "https://instagram.com" },
+  { name: "Maya", link: "https://instagram.com" },
+  { name: "Jonas", link: "https://instagram.com" },
+  { name: "Aria", link: "https://instagram.com" },
+  { name: "Leo", link: "https://instagram.com" },
+  { name: "Nadia", link: "https://instagram.com" },
+  { name: "Ken", link: "https://instagram.com" },
+  { name: "Priya", link: "https://instagram.com" },
+  { name: "Rico", link: "https://instagram.com" },
+  { name: "Elin", link: "https://instagram.com" },
+  { name: "Tomas", link: "https://instagram.com" },
 ];
 
 const LEARNING_TAGS = [
@@ -136,18 +136,18 @@ export default function AboutMe() {
             radial-gradient(ellipse 38% 50% at 100% 100%, rgba(196, 30, 30, 0.38), transparent 70%);
         }
 
-        @media (max-width: 2200px) {
-          .mk-globe-slot { --globe-scale: 0.78; --globe-right: -1480px; }
-        }
-        @media (max-width: 1900px) {
-          .mk-globe-slot { --globe-scale: 0.6; --globe-right: -1280px; }
-        }
-        @media (max-width: 1560px) {
-          .mk-globe-slot { --globe-scale: 0.45; --globe-right: -1070px; }
-        }
-        @media (max-width: 1300px) {
-          .mk-globe-slot { --globe-scale: 0.32; --globe-right: -840px; }
-        }
+@media (max-width: 2200px) {
+  .mk-globe-slot { --globe-scale: 0.78; --globe-right: -1250px; } /* Was -1480px */
+}
+@media (max-width: 1900px) {
+  .mk-globe-slot { --globe-scale: 0.6; --globe-right: -1080px; }  /* Was -1280px */
+}
+@media (max-width: 1560px) {
+  .mk-globe-slot { --globe-scale: 0.45; --globe-right: -880px; }  /* Was -1070px */
+}
+@media (max-width: 1300px) {
+  .mk-globe-slot { --globe-scale: 0.32; --globe-right: -680px; }  /* Was -840px */
+}
         @media (max-width: 1080px) {
           .mk-globe-slot { display: none !important; }
           .mk-corner-glow { display: none !important; }
@@ -289,7 +289,8 @@ export default function AboutMe() {
             alignItems: "center",
             justifyContent: "center",
             overflow: "hidden",
-            transition: "width 0.65s cubic-bezier(0.16, 0.9, 0.2, 1), min-width 0.65s cubic-bezier(0.16, 0.9, 0.2, 1)",
+            transition:
+              "width 0.65s cubic-bezier(0.16, 0.9, 0.2, 1), min-width 0.65s cubic-bezier(0.16, 0.9, 0.2, 1)",
           }}
         >
           {open ? (
@@ -460,10 +461,9 @@ export default function AboutMe() {
               }}
             >
               Hello, I'm a junior (2nd year) student pursuing my Bachelor of
-              Science in Software Engineering. I love writing code, picking
-              up new skills, and gaming in my free time. This portfolio
-              follows a fighter-theme style, keep scrolling to continue your
-              journey.
+              Science in Software Engineering. I love writing code, picking up
+              new skills, and gaming in my free time. This portfolio follows a
+              fighter-theme style, keep scrolling to continue your journey.
             </p>
 
             <div
