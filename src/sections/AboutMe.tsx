@@ -122,7 +122,7 @@ export default function AboutMe() {
 
         .mk-globe-slot {
           --globe-scale: 1;
-          --globe-right: -1450px;
+          --globe-right: -45%;
           transition: opacity 0.4s ease;
         }
 
