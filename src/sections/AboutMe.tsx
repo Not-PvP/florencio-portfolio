@@ -212,14 +212,22 @@ export default function AboutMe() {
             line-height: 1.6 !important;
           }
 
-          /* Roster: horizontal strip instead of a vertical column. */
+          /* Roster: static grid, no scrolling — all allies visible at once. */
           .mk-roster-scroll {
             flex-direction: row !important;
-            overflow-x: auto !important;
-            overflow-y: hidden !important;
-            padding: 0 20px !important;
-            -webkit-mask-image: linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%) !important;
-            mask-image: linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%) !important;
+            flex-wrap: wrap !important;
+            overflow: hidden !important;
+            align-content: center !important;
+            justify-content: center !important;
+            gap: 10px !important;
+            padding: 12px 24px !important;
+            -webkit-mask-image: none !important;
+            mask-image: none !important;
+          }
+          .mk-ally {
+            width: 38px !important;
+            height: 38px !important;
+            font-size: 11px !important;
           }
         }
       `}</style>
@@ -472,7 +480,7 @@ export default function AboutMe() {
               style={{
                 display: "flex",
                 flexWrap: "wrap",
-                gap: "12px",
+                gap: "8px",
                 maxWidth: "640px",
               }}
             >
@@ -484,9 +492,9 @@ export default function AboutMe() {
                     border: "1px solid rgba(196,30,30,0.55)",
                     color: "#d8d0c8",
                     fontFamily: "'Press Start 2P', monospace",
-                    fontSize: "10px",
-                    letterSpacing: "1px",
-                    padding: "10px 16px",
+                    fontSize: "8px",
+                    letterSpacing: "0.5px",
+                    padding: "6px 10px",
                     borderRadius: "2px",
                   }}
                 >
