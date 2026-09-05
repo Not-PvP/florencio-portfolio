@@ -70,6 +70,11 @@ export default function App() {
       <style>{`
         html {
           scroll-behavior: smooth;
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* old Edge/IE */
+        }
+        html::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, new Edge */
         }
         @media (prefers-reduced-motion: reduce) {
           html { scroll-behavior: auto; }

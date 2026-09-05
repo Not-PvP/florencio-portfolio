@@ -58,6 +58,27 @@ const ARROW_GLYPH: Record<ArrowKey, string> = {
   ArrowRight: "→",
 };
 const ARROW_KEYS = Object.keys(ARROW_GLYPH) as ArrowKey[];
+// Rotation applied to the nub/trail group so a single "kicks upward"
+// animation can be reused for every swipe direction — see the pad JSX.
+const DIR_ANGLE: Record<ArrowKey, number> = {
+  ArrowUp: 0,
+  ArrowRight: 90,
+  ArrowDown: 180,
+  ArrowLeft: 270,
+};
+// Regular flat-topped octagon (radius 64, center 80,80) used for the
+// fight-stick gate — vertices land so the N/E/S/W faces are flat, like
+// a real arcade restrictor plate.
+const OCTAGON_VERTS: [number, number][] = [
+  [104.49, 20.87],
+  [139.13, 55.51],
+  [139.13, 104.49],
+  [104.49, 139.13],
+  [55.51, 139.13],
+  [20.87, 104.49],
+  [20.87, 55.51],
+  [55.51, 20.87],
+];
 const MAX_BUFFER = Math.max(...MOVES.map((m) => m.keys.length));
 const BUFFER_TIMEOUT_MS = 1600;
 
@@ -90,9 +111,17 @@ export default function Contact() {
   );
 
   const [isTouch, setIsTouch] = useState<boolean>(false);
+  // Transient — set on every valid swipe, cleared ~450ms later. Drives
+  // the momentary nub-kick/trail-streak flash and the brightest face
+  // highlight on the gate. `padPulse` is bumped alongside it purely to
+  // force the nub/trail elements to remount and replay their keyframe
+  // even when the same direction swipes twice in a row.
+  const [padDir, setPadDir] = useState<ArrowKey | null>(null);
+  const [padPulse, setPadPulse] = useState<number>(0);
 
   const burstActiveRef = useRef<boolean>(false);
   const bufferTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const padDirTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const inViewRef = useRef<boolean>(false);
@@ -118,8 +147,16 @@ export default function Contact() {
   // cursor glow on touch.
   useEffect(() => {
     const mq = window.matchMedia("(hover: none)");
-    setIsTouch(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setIsTouch(e.matches);
+    // hover:none alone misses some real touch devices (certain Android
+    // browsers, foldables, anything with a paired mouse/stylus), so we
+    // OR it with a hard capability check rather than relying on the
+    // media query in isolation.
+    const hasTouchSupport =
+      typeof window !== "undefined" &&
+      ("ontouchstart" in window || navigator.maxTouchPoints > 0);
+    setIsTouch(mq.matches || hasTouchSupport);
+    const onChange = (e: MediaQueryListEvent) =>
+      setIsTouch(e.matches || hasTouchSupport);
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
   }, []);
@@ -163,6 +200,7 @@ export default function Contact() {
     return () => {
       timers.forEach(clearTimeout);
       if (bufferTimerRef.current) clearTimeout(bufferTimerRef.current);
+      if (padDirTimerRef.current) clearTimeout(padDirTimerRef.current);
     };
   }, []);
 
@@ -303,6 +341,11 @@ export default function Contact() {
         ? "ArrowDown"
         : "ArrowUp";
 
+    setPadDir(direction);
+    setPadPulse((n) => n + 1);
+    if (padDirTimerRef.current) clearTimeout(padDirTimerRef.current);
+    padDirTimerRef.current = setTimeout(() => setPadDir(null), 450);
+
     const next = [...bufferRef.current, direction].slice(-MAX_BUFFER);
     const completed = MOVES.find((m) => sequencesMatch(next, m.keys));
     if (completed) {
@@ -401,6 +444,28 @@ export default function Contact() {
           25% { transform: translateX(-4px); }
           75% { transform: translateX(4px); }
         }
+        @keyframes padCoreBreathe {
+          0%, 100% { transform: scale(1); opacity: 0.75; }
+          50% { transform: scale(1.08); opacity: 1; }
+        }
+        @keyframes padGlowBreathe {
+          0%, 100% { transform: scale(1); opacity: 0.7; }
+          50% { transform: scale(1.1); opacity: 1; }
+        }
+        @keyframes padNubKick {
+          0% { transform: translateY(0) scale(1); }
+          28% { transform: translateY(-16px) scale(1.15); }
+          100% { transform: translateY(0) scale(1); }
+        }
+        @keyframes padTrailStreak {
+          0% { opacity: 0; transform: scaleY(0.4) translateY(0); }
+          25% { opacity: 0.95; }
+          100% { opacity: 0; transform: scaleY(1.6) translateY(-22px); }
+        }
+        .mk-pad-core { transform-origin: 80px 80px; animation: padCoreBreathe 2.6s ease-in-out infinite; }
+        .mk-pad-glow { animation: padGlowBreathe 2.6s ease-in-out infinite; }
+        .mk-pad-nub { animation: padNubKick 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .mk-pad-trail { animation: padTrailStreak 0.45s ease-out; }
 
         .mk-shake { animation: screenShake 0.38s ease-in-out; }
 
@@ -425,11 +490,9 @@ export default function Contact() {
           .mk-shake { animation: none !important; }
           .mk-move { transform: none !important; }
           .mk-finish-overlay { display: none !important; }
+          .mk-pad-core, .mk-pad-glow, .mk-pad-nub, .mk-pad-trail { animation: none !important; }
         }
 
-        @media (max-width: 560px) {
-          .mk-notation { display: none !important; }
-        }
       `}</style>
 
       {/* Giant announcer-callout overlay: fires once on scroll-in, slams
@@ -584,37 +647,141 @@ export default function Contact() {
         {isTouch && (
           <div
             className="mk-fade"
-            onTouchStart={handlePadTouchStart}
-            onTouchEnd={handlePadTouchEnd}
             style={{
-              width: "148px",
-              height: "148px",
-              margin: "0 auto 32px",
-              borderRadius: "50%",
-              border: "1px solid rgba(255,255,255,0.15)",
-              background:
-                "radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%)",
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
               flexDirection: "column",
-              gap: "4px",
-              touchAction: "none",
+              alignItems: "center",
+              gap: "8px",
+              margin: "0 auto 32px",
               opacity: titleIn ? 1 : 0,
               animation: titleIn ? "fadeUp 0.5s ease-out 0.3s both" : "none",
             }}
           >
-            <span style={{ fontSize: "18px", color: "rgba(255,255,255,0.35)" }}>
-              ↑ ↓ ← →
-            </span>
+            <div
+              onTouchStart={handlePadTouchStart}
+              onTouchEnd={handlePadTouchEnd}
+              style={{
+                position: "relative",
+                width: "176px",
+                height: "176px",
+                touchAction: "none",
+              }}
+            >
+              {/* Ambient glow ring behind the gate — idle breathing pulse */}
+              <div
+                className="mk-pad-glow"
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  inset: "18px",
+                  borderRadius: "50%",
+                  background:
+                    "radial-gradient(circle, rgba(232,40,60,0.18) 0%, transparent 72%)",
+                  pointerEvents: "none",
+                }}
+              />
+
+              <svg
+                viewBox="0 0 160 160"
+                width="176"
+                height="176"
+                aria-hidden="true"
+                style={{ position: "relative", pointerEvents: "none" }}
+              >
+                <defs>
+                  <radialGradient id="mkPadCore" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#ff8a5b" stopOpacity="0.9" />
+                    <stop offset="55%" stopColor="#e8283c" stopOpacity="0.5" />
+                    <stop offset="100%" stopColor="#e8283c" stopOpacity="0" />
+                  </radialGradient>
+                </defs>
+
+                {/* 8 gate faces — cardinal faces (N/E/S/W) light up from
+                    dim -> armed (mid-combo) -> flash (just swiped/miss);
+                    diagonal faces stay a fixed dim tone as pure structure. */}
+                {OCTAGON_VERTS.map(([x1, y1], i) => {
+                  const [x2, y2] = OCTAGON_VERTS[(i + 1) % OCTAGON_VERTS.length];
+                  const cardinal: ArrowKey | null =
+                    i === 7 ? "ArrowUp" : i === 1 ? "ArrowRight" : i === 3 ? "ArrowDown" : i === 5 ? "ArrowLeft" : null;
+
+                  let stroke = "rgba(255,255,255,0.14)";
+                  let width = 2;
+                  if (cardinal) {
+                    if (miss) {
+                      stroke = "#e8283c";
+                      width = 4;
+                    } else if (padDir === cardinal) {
+                      stroke = "#ff8a5b";
+                      width = 4;
+                    } else if (buffer.includes(cardinal)) {
+                      stroke = "rgba(255,138,91,0.55)";
+                      width = 3;
+                    } else {
+                      stroke = "rgba(255,255,255,0.22)";
+                    }
+                  }
+
+                  return (
+                    <line
+                      key={i}
+                      x1={x1}
+                      y1={y1}
+                      x2={x2}
+                      y2={y2}
+                      stroke={stroke}
+                      strokeWidth={width}
+                      strokeLinecap="round"
+                      style={{ transition: "stroke 0.15s ease, stroke-width 0.15s ease" }}
+                    />
+                  );
+                })}
+
+                <circle
+                  className="mk-pad-core"
+                  cx={80}
+                  cy={80}
+                  r={26}
+                  fill="url(#mkPadCore)"
+                />
+
+                {/* Nub + trail live in one rotated group so a single
+                    "kick upward" animation reads correctly for every
+                    swipe direction — see DIR_ANGLE. */}
+                <g style={{ transform: `rotate(${DIR_ANGLE[padDir ?? "ArrowUp"]}deg)`, transformOrigin: "80px 80px" }}>
+                  {padDir && (
+                    <rect
+                      key={`trail-${padPulse}`}
+                      className="mk-pad-trail"
+                      x={76}
+                      y={34}
+                      width={8}
+                      height={26}
+                      rx={4}
+                      fill={miss ? "#e8283c" : "#ff8a5b"}
+                      style={{ transformOrigin: "80px 80px" }}
+                    />
+                  )}
+                  <circle
+                    key={`nub-${padPulse}`}
+                    className="mk-pad-nub"
+                    cx={80}
+                    cy={80}
+                    r={11}
+                    fill={miss ? "#e8283c" : "#f2f2f2"}
+                    style={{ transformOrigin: "80px 80px" }}
+                  />
+                </g>
+              </svg>
+            </div>
+
             <span
               style={{
                 fontSize: "9.5px",
-                letterSpacing: "0.1em",
+                letterSpacing: "0.14em",
                 color: "rgba(255,255,255,0.3)",
               }}
             >
-              SWIPE HERE
+              SWIPE THE GATE
             </span>
           </div>
         )}
@@ -633,9 +800,15 @@ export default function Contact() {
               className="mk-move mk-fade"
               onClick={() => executeMove(move)}
               onKeyDown={(e) => handleKeyDown(e, move)}
-              aria-label={`Execute ${move.moveName}: press ${move.keys
-                .map((k) => ARROW_GLYPH[k])
-                .join(" ")} then ${move.triggerKey.toUpperCase()}, or activate to open ${move.target}`}
+              aria-label={
+                isTouch
+                  ? `Execute ${move.moveName}: swipe ${move.keys
+                      .map((k) => ARROW_GLYPH[k])
+                      .join(" ")} on the gate above, or activate to open ${move.target}`
+                  : `Execute ${move.moveName}: press ${move.keys
+                      .map((k) => ARROW_GLYPH[k])
+                      .join(" ")} then ${move.triggerKey.toUpperCase()}, or activate to open ${move.target}`
+              }
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -661,7 +834,7 @@ export default function Contact() {
                   alignItems: "center",
                   gap: "4px",
                   flexShrink: 0,
-                  width: "108px",
+                  width: isTouch ? "auto" : "108px",
                 }}
               >
                 {move.keys.map((k, gi) => (
@@ -677,28 +850,32 @@ export default function Contact() {
                     {ARROW_GLYPH[k]}
                   </span>
                 ))}
-                <span
-                  style={{
-                    fontSize: "9px",
-                    color: "rgba(255,255,255,0.3)",
-                    margin: "0 2px",
-                  }}
-                >
-                  +
-                </span>
-                <span
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    padding: "3px 8px",
-                    borderRadius: "3px",
-                    color: "#0a0a0a",
-                    background: move.accent,
-                    letterSpacing: "0.03em",
-                  }}
-                >
-                  {move.triggerKey.toUpperCase()}
-                </span>
+                {!isTouch && (
+                  <>
+                    <span
+                      style={{
+                        fontSize: "9px",
+                        color: "rgba(255,255,255,0.3)",
+                        margin: "0 2px",
+                      }}
+                    >
+                      +
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        padding: "3px 8px",
+                        borderRadius: "3px",
+                        color: "#0a0a0a",
+                        background: move.accent,
+                        letterSpacing: "0.03em",
+                      }}
+                    >
+                      {move.triggerKey.toUpperCase()}
+                    </span>
+                  </>
+                )}
               </span>
 
               <div style={{ flex: 1, minWidth: 0 }}>
