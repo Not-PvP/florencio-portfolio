@@ -781,7 +781,7 @@ export default function Contact() {
                 color: "rgba(255,255,255,0.3)",
               }}
             >
-              SWIPE THE GATE
+              SWIPE THE JOYSTICK
             </span>
           </div>
         )}
