@@ -1,5 +1,3 @@
-import React, { useEffect } from "react";
-
 export interface ProjectLink {
   label: string;
   url: string;

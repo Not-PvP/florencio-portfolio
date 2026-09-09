@@ -112,12 +112,12 @@ function fanTransform(offset: number, isSelected: boolean, hovered: boolean): st
   if (isSelected && !hovered) {
     return "translate(0px, 0px) rotate(0deg) scale(1.08)";
   }
-  const spread = hovered ? 42 : 32;
-  const lift = hovered ? -8 : 0;
-  const rotate = offset * (hovered ? 6 : 8);
+  const spread = hovered ? 46 : 34;
+  const lift = hovered ? -12 : 0;
+  const rotate = offset * (hovered ? 7 : 9);
   const translateX = offset * spread;
-  const translateY = Math.abs(offset) * (hovered ? 4 : 8) + (isSelected ? lift : lift);
-  const scale = isSelected ? (hovered ? 1.02 : 1.08) : hovered ? 0.94 : 0.85;
+  const translateY = Math.abs(offset) * (hovered ? 6 : 10) + (isSelected ? lift : lift);
+  const scale = isSelected ? (hovered ? 1.04 : 1.08) : hovered ? 0.96 : 0.85;
   return `translate(${translateX}px, ${translateY}px) rotate(${rotate}deg) scale(${scale})`;
 }
 
@@ -264,13 +264,13 @@ export default function Projects() {
       style={{
         width: "100%",
         minHeight: "100vh",
-        background: "transparent",
+        background: "#08080a",
         fontFamily: "'Space Mono', 'JetBrains Mono', monospace",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "40px 24px",
+        padding: "50px 24px",
         boxSizing: "border-box",
         position: "relative",
         overflow: "hidden",
@@ -278,116 +278,117 @@ export default function Projects() {
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Anton&family=Press+Start+2P&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 
         @keyframes titleSlam {
-          0% { opacity: 0; transform: scale(1.4); filter: blur(6px); }
-          55% { opacity: 1; transform: scale(0.96); filter: blur(0px); }
-          70% { transform: scale(1.04); }
-          100% { transform: scale(1); }
+          0% { opacity: 0; transform: translateY(-20px) scale(1.1); filter: blur(10px); }
+          60% { opacity: 1; transform: translateY(2px) scale(0.98); filter: blur(0px); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes rowSlotIn {
-          0% { opacity: 0; transform: translateY(60px); }
-          65% { opacity: 1; transform: translateY(-6px); }
+          0% { opacity: 0; transform: translateY(40px); }
           100% { opacity: 1; transform: translateY(0); }
         }
         @keyframes rowFlash {
           0%, 60% { box-shadow: 0 0 0 rgba(232,40,60,0); }
-          68% { box-shadow: 0 0 80px rgba(232,40,60,0.35); }
+          68% { box-shadow: 0 0 100px rgba(232,40,60,0.4); }
           100% { box-shadow: 0 0 0 rgba(232,40,60,0); }
         }
         @keyframes wipeFlash {
-          from { opacity: 0.9; }
-          to { opacity: 0; }
+          from { opacity: 1; background: #ffffff; }
+          to { opacity: 0; background: rgba(232,40,60,0); }
         }
         @keyframes panelIn {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
+          from { opacity: 0; transform: translateY(8px) scale(0.98); filter: blur(2px); }
+          to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
         @keyframes panelSlideRight {
-          from { opacity: 0; transform: translateX(24px); }
+          from { opacity: 0; transform: translateX(30px); }
           to { opacity: 1; transform: translateX(0); }
         }
         @keyframes cartInsertSlide {
-          0%   { transform: translateY(-240px) rotate(-1.5deg); opacity: 0; }
-          10%  { opacity: 1; }
-          62%  { transform: translateY(8px) rotate(0deg); }
-          74%  { transform: translateY(-3px); }
-          86%  { transform: translateY(4px); opacity: 1; }
-          100% { transform: translateY(4px); opacity: 0; }
+          0%   { transform: translateY(-260px) rotate(-2deg); opacity: 0; }
+          15%  { opacity: 1; }
+          65%  { transform: translateY(12px) rotate(0deg); }
+          80%  { transform: translateY(-4px); }
+          90%  { transform: translateY(2px); opacity: 1; }
+          100% { transform: translateY(6px); opacity: 0; }
         }
         .mk-cart-insert-anim {
-          animation: cartInsertSlide 0.9s cubic-bezier(0.32, 0.72, 0.23, 1) forwards;
+          animation: cartInsertSlide 0.9s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
         @keyframes slotFlash {
-          0%, 70% { opacity: 0; }
-          78% { opacity: 1; }
-          100% { opacity: 0; }
+          0%, 65% { opacity: 0; transform: translateX(-50%) scaleX(0.5); }
+          75% { opacity: 1; transform: translateX(-50%) scaleX(1.3); }
+          100% { opacity: 0; transform: translateX(-50%) scaleX(1); }
         }
         @keyframes blinkText {
-          50% { opacity: 0; }
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.15; }
+        }
+        @keyframes gridPulse {
+          0%, 100% { opacity: 0.15; }
+          50% { opacity: 0.25; }
         }
         .mk-blink {
-          animation: blinkText 1.1s steps(1) infinite;
+          animation: blinkText 0.9s infinite ease-in-out;
         }
         .mk-stat-fill {
-          transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+          transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .mk-stat-box {
-          background: linear-gradient(160deg, #1c1d21 0%, #131316 100%);
-          border: 1px solid rgba(232,40,60,0.28);
-          border-radius: 8px;
-          padding: 16px 18px 18px;
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 8px 20px rgba(0,0,0,0.35);
+          background: rgba(18, 19, 23, 0.75);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(232,40,60,0.3);
+          border-radius: 10px;
+          padding: 18px 20px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .mk-stat-box:hover {
+          border-color: rgba(232,40,60,0.6);
+          box-shadow: 0 12px 35px rgba(232,40,60,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
         }
         .mk-cart {
-          transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.2s ease;
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease;
           cursor: pointer;
+          outline: none;
         }
         .mk-cart:hover {
-          filter: brightness(1.15);
+          filter: drop-shadow(0 12px 24px rgba(232,40,60,0.4)) brightness(1.15);
         }
         .mk-cart:focus-visible {
-          outline: 2px solid #e8283c;
-          outline-offset: 4px;
+          filter: drop-shadow(0 0 16px #e8283c);
         }
         .mk-link {
-          transition: background 0.15s ease, color 0.15s ease;
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .mk-link:hover {
-          background: #e8283c;
-          color: #0a0a0a;
-        }
-        .mk-console-btn {
-          cursor: pointer;
-        }
-        .mk-console-btn .mk-console-pill {
-          transition: fill 0.15s ease;
-        }
-        .mk-console-btn:hover .mk-console-pill {
-          fill: #e8283c;
-        }
-        .mk-console-btn:hover .mk-console-btn-label {
-          fill: #ff9aa5;
+          background: #e8283c !important;
+          color: #ffffff !important;
+          box-shadow: 0 0 15px rgba(232,40,60,0.6);
+          transform: translateY(-2px);
         }
         .mk-panel {
           scrollbar-width: thin;
-          scrollbar-color: rgba(232,40,60,0.5) transparent;
+          scrollbar-color: rgba(232,40,60,0.6) transparent;
         }
         .mk-panel::-webkit-scrollbar {
           width: 4px;
         }
         .mk-panel::-webkit-scrollbar-track {
-          background: transparent;
+          background: rgba(0,0,0,0.2);
         }
         .mk-panel::-webkit-scrollbar-thumb {
-          background: rgba(232,40,60,0.5);
-          border-radius: 2px;
+          background: rgba(232,40,60,0.6);
+          border-radius: 4px;
         }
-        .mk-panel::-webkit-scrollbar-button {
-          display: none;
-          width: 0;
-          height: 0;
+        .mk-bg-grid {
+          background-size: 40px 40px;
+          background-image: 
+            linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+          animation: gridPulse 4s ease-in-out infinite;
         }
         @media (prefers-reduced-motion: reduce) {
           .mk-panel { animation: none !important; }
@@ -401,13 +402,13 @@ export default function Projects() {
         @media (max-width: 1100px) {
           .mk-arena-row {
             grid-template-columns: 1fr !important;
-            gap: 40px !important;
+            gap: 48px !important;
           }
           .mk-stats-sidebar {
             width: 100% !important;
-            max-width: 360px !important;
+            max-width: 420px !important;
             flex-direction: row !important;
-            gap: 16px !important;
+            gap: 20px !important;
           }
           .mk-stat-box {
             flex: 1;
@@ -416,21 +417,29 @@ export default function Projects() {
         @media (max-width: 600px) {
           .mk-stats-sidebar {
             flex-direction: column !important;
+            max-width: 100% !important;
           }
           .mk-projects-root {
-            padding: 40px 16px !important;
+            padding: 32px 16px !important;
+          }
+          .mk-console-wrap {
+            width: 100% !important;
+            max-width: 340px !important;
           }
         }
       `}</style>
 
-      {/* Red ambient background glow */}
+      {/* Cyber Grid Background */}
+      <div className="mk-bg-grid" style={{ position: "absolute", inset: 0, zIndex: -2, pointerEvents: "none" }} />
+
+      {/* Ambient Radial Glow */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           zIndex: -1,
           background:
-            "radial-gradient(ellipse 55% 35% at 50% 100%, rgba(232,40,60,0.14), transparent 70%)",
+            "radial-gradient(ellipse 65% 45% at 50% 60%, rgba(232,40,60,0.18), transparent 70%), radial-gradient(ellipse 40% 30% at 50% 20%, rgba(232,40,60,0.08), transparent 60%)",
           pointerEvents: "none",
         }}
       />
@@ -440,35 +449,49 @@ export default function Projects() {
         className="mk-fade"
         style={{
           textAlign: "center",
-          marginBottom: "32px",
+          marginBottom: "40px",
           opacity: sectionIn ? 1 : 0,
-          animation: sectionIn ? "titleSlam 0.7s cubic-bezier(0.2, 0.9, 0.25, 1) both" : "none",
+          animation: sectionIn ? "titleSlam 0.7s cubic-bezier(0.16, 1, 0.3, 1) both" : "none",
         }}
       >
-        <p
+        <div
           style={{
-            margin: 0,
-            fontSize: "12px",
-            letterSpacing: "0.35em",
-            color: "#e8283c",
-            fontWeight: 700,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            background: "rgba(232,40,60,0.1)",
+            border: "1px solid rgba(232,40,60,0.3)",
+            padding: "4px 12px",
+            borderRadius: "20px",
+            marginBottom: "12px",
           }}
         >
-          ROUND TWO
-        </p>
+          <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#e8283c", boxShadow: "0 0 8px #e8283c" }} />
+          <p
+            style={{
+              margin: 0,
+              fontSize: "11px",
+              letterSpacing: "0.3em",
+              color: "#ff6b7a",
+              fontWeight: 700,
+            }}
+          >
+            ROUND TWO
+          </p>
+        </div>
         <h1
           style={{
-            margin: "4px 0 0",
+            margin: "0",
             fontFamily: "'Anton', sans-serif",
-            fontSize: "clamp(28px, 3.6vw, 44px)",
-            color: "#f2f2f2",
+            fontSize: "clamp(32px, 4.5vw, 56px)",
+            color: "#ffffff",
             textTransform: "uppercase",
-            letterSpacing: "0.02em",
+            letterSpacing: "0.04em",
             lineHeight: 1,
-            textShadow: "0 0 24px rgba(232,40,60,0.2)",
+            textShadow: "0 0 30px rgba(232,40,60,0.35)",
           }}
         >
-          Select your project
+          Select Your Project
         </h1>
       </div>
 
@@ -482,7 +505,7 @@ export default function Projects() {
           justifyItems: "center",
           width: "100%",
           maxWidth: "1280px",
-          gap: "24px",
+          gap: "32px",
         }}
       >
         {/* LEFT COLUMN: Cartridge Fan / Stack */}
@@ -493,11 +516,11 @@ export default function Projects() {
             flexDirection: "column",
             alignItems: "center",
             justifySelf: "center",
-            gap: "20px",
+            gap: "24px",
             zIndex: 6,
             opacity: sectionIn ? 1 : 0,
             animation: sectionIn
-              ? "rowSlotIn 0.6s cubic-bezier(0.2, 0.85, 0.25, 1) 0.22s both"
+              ? "rowSlotIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both"
               : "none",
           }}
         >
@@ -506,8 +529,8 @@ export default function Projects() {
             onMouseLeave={() => setCartsHovered(false)}
             style={{
               position: "relative",
-              width: "280px",
-              height: "160px",
+              width: "290px",
+              height: "170px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -516,11 +539,11 @@ export default function Projects() {
             <div
               style={{
                 position: "absolute",
-                inset: 0,
+                inset: "-20px",
                 background:
-                  "radial-gradient(circle at 50% 50%, rgba(232,40,60,0.25), transparent 70%)",
+                  "radial-gradient(circle at 50% 50%, rgba(232,40,60,0.22), transparent 70%)",
                 opacity: cartsHovered ? 1 : 0,
-                transition: "opacity 0.35s ease",
+                transition: "opacity 0.4s ease",
                 pointerEvents: "none",
               }}
             />
@@ -556,13 +579,23 @@ export default function Projects() {
             })}
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              background: "rgba(18, 19, 23, 0.8)",
+              padding: "6px 16px",
+              borderRadius: "20px",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
             <span
               style={{
                 fontSize: "12px",
-                color: "#ff6b7a",
+                color: "#e8283c",
                 fontWeight: 700,
-                letterSpacing: "0.1em",
+                letterSpacing: "0.15em",
               }}
             >
               {String(selectedIndex + 1).padStart(2, "0")}
@@ -571,7 +604,7 @@ export default function Projects() {
               style={{
                 fontSize: "12px",
                 color: "rgba(255,255,255,0.3)",
-                letterSpacing: "0.1em",
+                letterSpacing: "0.15em",
               }}
             >
               / {String(PROJECTS.length).padStart(2, "0")} CARTRIDGES
@@ -584,11 +617,11 @@ export default function Projects() {
           className="mk-console-wrap mk-fade"
           style={{
             position: "relative",
-            width: "360px",
+            width: "370px",
             flexShrink: 0,
             opacity: sectionIn ? 1 : 0,
             animation: sectionIn
-              ? "rowSlotIn 0.6s cubic-bezier(0.2, 0.85, 0.25, 1) 0.22s both, rowFlash 0.6s ease-out 0.22s both"
+              ? "rowSlotIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.22s both, rowFlash 0.6s ease-out 0.22s both"
               : "none",
           }}
         >
@@ -601,25 +634,26 @@ export default function Projects() {
                 aria-hidden="true"
                 style={{
                   position: "absolute",
-                  top: "-4px",
+                  top: "-6px",
                   left: "50%",
                   transform: "translateX(-50%)",
-                  width: "100px",
-                  height: "24px",
-                  background: "radial-gradient(ellipse, rgba(232,40,60,0.9), transparent 70%)",
+                  width: "120px",
+                  height: "30px",
+                  background: "radial-gradient(ellipse, rgba(232,40,60,1), transparent 70%)",
                   animation: "slotFlash 0.9s ease-out forwards",
                   pointerEvents: "none",
                   zIndex: 14,
+                  filter: "blur(2px)",
                 }}
               />
               <div
                 style={{
                   position: "absolute",
                   left: "50%",
-                  top: "-100px",
+                  top: "-110px",
                   transform: "translateX(-50%)",
                   width: "132px",
-                  height: "110px",
+                  height: "120px",
                   overflow: "hidden",
                   zIndex: 15,
                   pointerEvents: "none",
@@ -646,19 +680,26 @@ export default function Projects() {
               left: "10%",
               width: "80%",
               height: "40%",
-              background: "#0a0a0a",
+              background: "#08090c",
+              borderRadius: "4px",
               overflow: "hidden",
-              padding: "14px 16px",
+              padding: "16px 18px",
               boxSizing: "border-box",
+              boxShadow: "inset 0 0 18px rgba(0,0,0,0.9)",
+              border: "1px solid rgba(255,255,255,0.05)",
             }}
           >
+            {/* Scanlines Effect */}
             <div
               style={{
                 position: "absolute",
                 inset: 0,
                 backgroundImage:
-                  "repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px)",
+                  "linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%)",
+                backgroundSize: "100% 4px",
                 pointerEvents: "none",
+                zIndex: 3,
+                opacity: 0.6,
               }}
             />
 
@@ -668,10 +709,9 @@ export default function Projects() {
                 style={{
                   position: "absolute",
                   inset: 0,
-                  background: "rgba(232,40,60,0.3)",
                   animation: "wipeFlash 0.26s ease-out forwards",
                   pointerEvents: "none",
-                  zIndex: 2,
+                  zIndex: 4,
                 }}
               />
             )}
@@ -682,31 +722,39 @@ export default function Projects() {
                 className="mk-panel"
                 style={{
                   position: "relative",
-                  animation: "panelIn 0.3s ease-out both",
+                  animation: "panelIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both",
                   height: "100%",
                   overflowY: "auto",
+                  paddingRight: "4px",
                 }}
               >
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: "10.5px",
-                    letterSpacing: "0.2em",
-                    color: "#e8283c",
-                    fontWeight: 700,
-                  }}
-                >
-                  {selected.tagline.toUpperCase()}
-                </p>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: "10px",
+                      letterSpacing: "0.22em",
+                      color: "#e8283c",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {selected.tagline.toUpperCase()}
+                  </p>
+                  <span style={{ fontSize: "8px", color: "rgba(255,255,255,0.3)", letterSpacing: "0.1em" }}>
+                    SYS.READY
+                  </span>
+                </div>
+
                 <h2
                   style={{
-                    margin: "4px 0 10px",
+                    margin: "2px 0 10px",
                     fontFamily: "'Anton', sans-serif",
-                    fontSize: "22px",
-                    color: "#f2f2f2",
+                    fontSize: "24px",
+                    color: "#ffffff",
                     textTransform: "uppercase",
-                    letterSpacing: "0.02em",
+                    letterSpacing: "0.03em",
                     lineHeight: 1,
+                    textShadow: "0 0 12px rgba(232,40,60,0.3)",
                   }}
                 >
                   {selected.name}
@@ -714,10 +762,10 @@ export default function Projects() {
 
                 <p
                   style={{
-                    margin: "0 0 12px",
+                    margin: "0 0 14px",
                     fontSize: "11px",
-                    lineHeight: 1.55,
-                    color: "rgba(255,255,255,0.65)",
+                    lineHeight: 1.6,
+                    color: "rgba(255,255,255,0.75)",
                   }}
                 >
                   {selected.description}
@@ -728,7 +776,7 @@ export default function Projects() {
                     display: "flex",
                     gap: "6px",
                     flexWrap: "wrap",
-                    marginBottom: "10px",
+                    marginBottom: "12px",
                   }}
                 >
                   {selected.stack.map((tech) => (
@@ -736,10 +784,13 @@ export default function Projects() {
                       key={tech}
                       style={{
                         fontSize: "9px",
-                        padding: "4px 7px",
-                        border: "1px solid rgba(232,40,60,0.5)",
-                        color: "#ff6b7a",
-                        letterSpacing: "0.03em",
+                        padding: "3px 8px",
+                        background: "rgba(232,40,60,0.12)",
+                        border: "1px solid rgba(232,40,60,0.4)",
+                        borderRadius: "3px",
+                        color: "#ff8593",
+                        letterSpacing: "0.05em",
+                        fontWeight: 700,
                         textTransform: "uppercase",
                       }}
                     >
@@ -758,14 +809,14 @@ export default function Projects() {
         <div
           className="mk-stats-sidebar mk-fade"
           style={{
-            width: "220px",
+            width: "240px",
             justifySelf: "center",
             display: "flex",
             flexDirection: "column",
-            gap: "16px",
+            gap: "18px",
             opacity: sectionIn ? 1 : 0,
             animation: sectionIn
-              ? "panelSlideRight 0.6s cubic-bezier(0.2, 0.85, 0.25, 1) 0.32s both"
+              ? "panelSlideRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both"
               : "none",
           }}
         >
@@ -793,21 +844,32 @@ function NoSignalPlaceholder() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: "10px",
+        gap: "12px",
       }}
     >
+      <div
+        style={{
+          width: "28px",
+          height: "28px",
+          border: "2px solid rgba(232,40,60,0.3)",
+          borderTopColor: "#e8283c",
+          borderRadius: "50%",
+          animation: "spin 1s linear infinite",
+        }}
+      />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       <p
         style={{
           margin: 0,
-          fontSize: "11px",
+          fontSize: "10px",
           letterSpacing: "0.25em",
-          color: "rgba(255,255,255,0.3)",
+          color: "rgba(255,255,255,0.4)",
           fontFamily: "'Space Mono', monospace",
         }}
       >
         NO CARTRIDGE DETECTED
       </p>
-      <p className="mk-blink" style={{ margin: 0, fontSize: "10px", letterSpacing: "0.15em", color: "#e8283c" }}>
+      <p className="mk-blink" style={{ margin: 0, fontSize: "10px", letterSpacing: "0.15em", color: "#e8283c", fontWeight: 700 }}>
         ▸ INSERT TO CONTINUE
       </p>
     </div>
@@ -820,14 +882,18 @@ function PanelHeader({ label }: { label: string }) {
       style={{
         fontFamily: "'Press Start 2P', monospace",
         fontSize: "9px",
-        letterSpacing: "0.12em",
+        letterSpacing: "0.15em",
         color: "#e8283c",
         marginBottom: "16px",
         paddingBottom: "8px",
-        borderBottom: "2px solid rgba(232,40,60,0.4)",
+        borderBottom: "1px solid rgba(232,40,60,0.3)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
       }}
     >
-      {label}
+      <span>{label}</span>
+      <span style={{ width: "4px", height: "4px", background: "#e8283c", boxShadow: "0 0 6px #e8283c" }} />
     </div>
   );
 }
@@ -837,13 +903,15 @@ function RedactedNotice({ text, dim }: { text: string; dim?: boolean }) {
     <div
       style={{
         fontSize: "9px",
-        letterSpacing: "0.06em",
-        color: dim ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.35)",
+        letterSpacing: "0.08em",
+        color: dim ? "rgba(255,255,255,0.3)" : "#ff6b7a",
         fontFamily: "'Space Mono', monospace",
-        padding: "20px 12px",
+        padding: "22px 12px",
         textAlign: "center",
         lineHeight: 1.6,
-        border: dim ? "none" : "1px dashed rgba(255,255,255,0.15)",
+        background: dim ? "transparent" : "rgba(232,40,60,0.05)",
+        borderRadius: "6px",
+        border: dim ? "1px dashed rgba(255,255,255,0.12)" : "1px dashed rgba(232,40,60,0.3)",
       }}
     >
       {text}
@@ -852,7 +920,7 @@ function RedactedNotice({ text, dim }: { text: string; dim?: boolean }) {
 }
 
 function StatBar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
-  const pct = Math.max(value > 0 ? 6 : 0, Math.min(100, (value / max) * 100));
+  const pct = Math.max(value > 0 ? 8 : 0, Math.min(100, (value / max) * 100));
   return (
     <div style={{ marginBottom: "14px" }}>
       <div
@@ -860,15 +928,16 @@ function StatBar({ label, value, max, color }: { label: string; value: number; m
           display: "flex",
           justifyContent: "space-between",
           fontSize: "9px",
-          letterSpacing: "0.08em",
-          color: "rgba(255,255,255,0.5)",
-          marginBottom: "5px",
+          letterSpacing: "0.1em",
+          color: "rgba(255,255,255,0.6)",
+          marginBottom: "6px",
+          fontWeight: 700,
         }}
       >
         <span>{label}</span>
-        <span style={{ color: "#f2f2f2" }}>{value}</span>
+        <span style={{ color: "#ffffff" }}>{value}</span>
       </div>
-      <div style={{ height: "8px", background: "rgba(255,255,255,0.08)", position: "relative", overflow: "hidden" }}>
+      <div style={{ height: "6px", background: "rgba(255,255,255,0.08)", borderRadius: "3px", position: "relative", overflow: "hidden" }}>
         <div
           className="mk-stat-fill"
           style={{
@@ -876,8 +945,8 @@ function StatBar({ label, value, max, color }: { label: string; value: number; m
             inset: 0,
             width: `${pct}%`,
             background: color,
-            backgroundImage:
-              "repeating-linear-gradient(90deg, rgba(0,0,0,0.35) 0px, rgba(0,0,0,0.35) 1px, transparent 1px, transparent 7px)",
+            boxShadow: `0 0 10px ${color}`,
+            borderRadius: "3px",
           }}
         />
       </div>
@@ -888,14 +957,14 @@ function StatBar({ label, value, max, color }: { label: string; value: number; m
 function VitalsPanel({ stats }: { stats?: StatsState }) {
   const status = stats?.status ?? "loading";
   if (status === "private") return <RedactedNotice text="CLASSIFIED BUILD — VITALS SEALED" />;
-  if (status === "loading") return <RedactedNotice text="SCANNING..." dim />;
+  if (status === "loading") return <RedactedNotice text="SCANNING METRICS..." dim />;
   if (status === "error") return <RedactedNotice text="SIGNAL LOST" dim />;
   const data = (stats as { status: "ready"; data: GithubStats }).data;
   return (
     <div key={JSON.stringify(data)}>
       <StatBar label="STARS" value={data.stars} max={20} color="#e8283c" />
-      <StatBar label="FORKS" value={data.forks} max={20} color="#c41e30" />
-      <StatBar label="OPEN ISSUES" value={data.openIssues} max={20} color="#8a6d1f" />
+      <StatBar label="FORKS" value={data.forks} max={20} color="#ff4d61" />
+      <StatBar label="OPEN ISSUES" value={data.openIssues} max={20} color="#e5a93c" />
     </div>
   );
 }
@@ -906,18 +975,22 @@ function IntelRow({ label, value, highlight }: { label: string; value: string; h
       style={{
         display: "flex",
         justifyContent: "space-between",
-        alignItems: "baseline",
-        padding: "9px 0",
-        borderBottom: "1px solid rgba(255,255,255,0.08)",
+        alignItems: "center",
+        padding: "8px 0",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
       }}
     >
-      <span style={{ fontSize: "9px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.45)" }}>{label}</span>
+      <span style={{ fontSize: "9px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.5)" }}>{label}</span>
       <span
         style={{
           fontSize: highlight ? "11px" : "10px",
-          fontWeight: highlight ? 700 : 400,
-          color: highlight ? "#e8283c" : "#f2f2f2",
-          letterSpacing: "0.04em",
+          fontWeight: highlight ? 700 : 500,
+          color: highlight ? "#ff4d61" : "#ffffff",
+          letterSpacing: "0.05em",
+          background: highlight ? "rgba(232,40,60,0.15)" : "transparent",
+          padding: highlight ? "2px 6px" : "0",
+          borderRadius: "3px",
+          border: highlight ? "1px solid rgba(232,40,60,0.3)" : "none",
         }}
       >
         {value}

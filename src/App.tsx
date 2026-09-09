@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import AboutMe from "./sections/AboutMe/AboutMe";
 import Projects from "./sections/Projects/Projects";
-import Skills from "./sections/Skills/Skills";
+import Skills from './sections/Skills/Skills';
 import Contact from "./sections/Contact/Contact";
 import EmberBackground from "./sections/shared/Background";
 import BootGate from "./sections/shared/BootGate";
