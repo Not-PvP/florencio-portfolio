@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 export interface ProjectLink {
   label: string;
@@ -220,7 +220,6 @@ export function ConsoleShellSVG({
         <rect x="0" y="18" width="50" height="4" rx="2" fill="#0d0e10" />
         <rect x="0" y="27" width="50" height="4" rx="2" fill="#0d0e10" />
         <rect x="0" y="36" width="50" height="4" rx="2" fill="#0d0e10" />
-        <rect x="0" y="45" width="50" height="4" rx="2" fill="#0d0e10" />
       </g>
     </svg>
   );
