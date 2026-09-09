@@ -173,8 +173,8 @@ export default function Skills() {
            currently has focus — hover or open — so the "lock" reads as
            alive rather than a static state swap. */
         @keyframes bracketGlow {
-          0%, 100% { filter: drop-shadow(0 0 2px var(--accent, #e8283c)); }
-          50% { filter: drop-shadow(0 0 7px var(--accent, #e8283c)); }
+          0%, 100% { filter: drop-shadow(0 0 1px var(--accent, #e8283c)); }
+          50% { filter: drop-shadow(0 0 3.5px var(--accent, #e8283c)); }
         }
         /* Category label gives a small punch when its column becomes the
            hovered target, like a name-plate snapping into place. */

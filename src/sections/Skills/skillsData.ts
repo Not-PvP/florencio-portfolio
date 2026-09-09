@@ -61,6 +61,7 @@ export const CATEGORIES: SkillCategory[] = [
       { name: "Vite", tag: "VT", iconSlug: "vite" },
       { name: "Socket.io", tag: "IO", iconSlug: "socketio" },
       { name: "Zod", tag: "ZOD", iconSlug: "zod" },
+      { name: "Godot", tag: "GD", iconSlug: "godot" },
     ],
   },
   {
@@ -102,6 +103,7 @@ export const CATEGORIES: SkillCategory[] = [
       { name: "GitHub", tag: "GH", iconSlug: "github" },
       { name: "VS Code", tag: "VSC", iconSlug: "vscode" },
       { name: "Docker", tag: "DKR", iconSlug: "docker" },
+      { name: "AutoCAD", tag: "CAD", iconSlug: "autocad" },
     ],
   },
 ];
