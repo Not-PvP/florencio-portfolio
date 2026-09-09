@@ -72,6 +72,7 @@ export const CATEGORIES: SkillCategory[] = [
     accent: "#38bdf8",
     skills: [
       { name: "PostgreSQL", tag: "PG", iconSlug: "postgresql" },
+      { name: "Supabase", tag: "SB", iconSlug: "supabase" },
       { name: "Firebase", tag: "FB", iconSlug: "firebase" },
       { name: "Turso", tag: "TUR", iconSlug: "turso" },
       { name: "Railway", tag: "RWY", iconSlug: "railway" },

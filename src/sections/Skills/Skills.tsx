@@ -173,8 +173,8 @@ export default function Skills() {
            currently has focus — hover or open — so the "lock" reads as
            alive rather than a static state swap. */
         @keyframes bracketGlow {
-          0%, 100% { filter: drop-shadow(0 0 1px var(--accent, #e8283c)); }
-          50% { filter: drop-shadow(0 0 3.5px var(--accent, #e8283c)); }
+          0%, 100% { filter: drop-shadow(0 0 0.5px var(--accent, #e8283c)); }
+          50% { filter: drop-shadow(0 0 1.5px var(--accent, #e8283c)); }
         }
         /* Category label gives a small punch when its column becomes the
            hovered target, like a name-plate snapping into place. */
@@ -336,14 +336,14 @@ export default function Skills() {
         }
 
         .mk-rim {
-          box-shadow: inset -12px 0 20px -14px var(--accent, #e8283c), inset 12px 0 20px -16px var(--accent, #e8283c);
-          opacity: 0.7;
+          box-shadow: inset -8px 0 14px -16px var(--accent, #e8283c), inset 8px 0 14px -18px var(--accent, #e8283c);
+          opacity: 0.4;
           transition: box-shadow 0.3s ease, opacity 0.3s ease;
         }
         .mk-column.mk-hovered .mk-rim,
         .mk-column.open .mk-rim {
-          box-shadow: inset -22px 0 34px -12px var(--accent, #e8283c), inset 22px 0 34px -14px var(--accent, #e8283c);
-          opacity: 1;
+          box-shadow: inset -14px 0 22px -16px var(--accent, #e8283c), inset 14px 0 22px -18px var(--accent, #e8283c);
+          opacity: 0.55;
         }
 
         .mk-tile {
