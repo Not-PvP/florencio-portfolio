@@ -15,7 +15,7 @@ const LEARNING_TAGS = [
 
 // Fixed frame width — no more roster/photo toggle, so this is just "how
 // wide is the photo panel", not "one of two states it can be in".
-const DRAWER_WIDTH = 460;
+const DRAWER_WIDTH = 360;
 // Narrower starting width used only for the on-mount reveal animation, so
 // the frame still has a little "sliding open" character on load.
 const PEEK_WIDTH = 90;
@@ -96,17 +96,16 @@ export default function AboutMe() {
           animation: globeFadeIn 0.8s ease 0.4s forwards;
         }
         @media (max-width: 2200px) {
-          .mk-globe-slot { --globe-scale: 0.78; --globe-right: -1440px; }
+          .mk-globe-slot { --globe-scale: 0.78; --globe-right: -1700px; }
         }
-@media (max-width: 1900px) {
-  .mk-globe-slot { --globe-scale: 0.6; --globe-right: -1290px; }
-}
+        @media (max-width: 1900px) {
+          .mk-globe-slot { --globe-scale: 0.6; --globe-right: -1550px; }
         }
         @media (max-width: 1560px) {
-          .mk-globe-slot { --globe-scale: 0.45; --globe-right: -1020px; }
+          .mk-globe-slot { --globe-scale: 0.45; --globe-right: -1250px; }
         }
         @media (max-width: 1300px) {
-          .mk-globe-slot { --globe-scale: 0.32; --globe-right: -790px; }
+          .mk-globe-slot { --globe-scale: 0.32; --globe-right: -970px; }
         }
         @media (max-width: 1080px) {
           .mk-globe-slot { display: none !important; }
@@ -180,7 +179,9 @@ export default function AboutMe() {
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              objectPosition: "center top",
+              objectPosition: "center 12%",
+              transform: "scale(1.35)",
+              transformOrigin: "center 12%",
               filter:
                 "saturate(0.78) contrast(1.12) brightness(0.9) hue-rotate(-12deg)",
             }}
