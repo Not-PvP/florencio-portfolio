@@ -5,21 +5,6 @@ import heroPortrait from "../../assets/hero-portrait.jpg";
 // own — worth keeping out of AboutMe's initial bundle.
 const EarthGlobe = lazy(() => import("./EarthGlobe"));
 
-type Ally = { name: string; link: string };
-
-const ALLIES: Ally[] = [
-  { name: "Maya", link: "https://instagram.com" },
-  { name: "Jonas", link: "https://instagram.com" },
-  { name: "Aria", link: "https://instagram.com" },
-  { name: "Leo", link: "https://instagram.com" },
-  { name: "Nadia", link: "https://instagram.com" },
-  { name: "Ken", link: "https://instagram.com" },
-  { name: "Priya", link: "https://instagram.com" },
-  { name: "Rico", link: "https://instagram.com" },
-  { name: "Elin", link: "https://instagram.com" },
-  { name: "Tomas", link: "https://instagram.com" },
-];
-
 const LEARNING_TAGS = [
   "WEB DEVELOPMENT",
   "DATABASES / SQL",
@@ -76,20 +61,6 @@ export default function AboutMe() {
           .mk-drawer { transition: none !important; }
           .mk-fade { animation: none !important; opacity: 1 !important; transform: none !important; }
           .mk-globe-slot { animation: none !important; opacity: 1 !important; }
-        }
-
-        .mk-ally-chip {
-          transition: transform 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
-          filter: grayscale(0.55);
-        }
-        .mk-ally-chip:hover, .mk-ally-chip:focus-visible {
-          transform: scale(1.08);
-          border-color: #ff8a5b !important;
-          filter: grayscale(0);
-        }
-        .mk-ally-chip:focus-visible {
-          outline: 2px solid #ff8a5b;
-          outline-offset: 2px;
         }
 
         .mk-tag {
@@ -322,7 +293,6 @@ export default function AboutMe() {
                 flexWrap: "wrap",
                 gap: "8px",
                 maxWidth: "640px",
-                marginBottom: "40px",
               }}
             >
               {LEARNING_TAGS.map((tag) => (
@@ -341,55 +311,6 @@ export default function AboutMe() {
                 >
                   {tag}
                 </span>
-              ))}
-            </div>
-
-            <div
-              style={{
-                color: "#8a7f78",
-                fontFamily: "'Press Start 2P', monospace",
-                fontSize: "10px",
-                letterSpacing: "2px",
-                marginBottom: "16px",
-              }}
-            >
-              — ALLIES —
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "10px",
-                maxWidth: "640px",
-              }}
-            >
-              {ALLIES.map((ally, idx) => (
-                <a
-                  key={idx}
-                  href={ally.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mk-ally-chip"
-                  aria-label={ally.name}
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "50%",
-                    border: "1px solid rgba(196,30,30,0.55)",
-                    background: "rgba(30,15,15,0.8)",
-                    color: "#ff8a5b",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    textDecoration: "none",
-                    flexShrink: 0,
-                  }}
-                >
-                  {ally.name.substring(0, 2).toUpperCase()}
-                </a>
               ))}
             </div>
           </div>
