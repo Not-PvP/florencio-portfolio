@@ -90,9 +90,9 @@ export function ConsoleShellSVG({
         </linearGradient>
 
         <style>{`
-          .interactive-btn { cursor: pointer; transition: transform 0.08s ease, filter 0.15s ease; }
-          .interactive-btn:hover { filter: brightness(1.2) drop-shadow(0 0 8px rgba(232,40,60,0.6)); }
-          .interactive-btn:active { transform: scale(0.94); }
+          .interactive-btn { cursor: pointer; transition: opacity 0.15s ease, filter 0.15s ease; }
+          .interactive-btn:hover { filter: brightness(1.3) drop-shadow(0 0 6px rgba(255,255,255,0.4)); }
+          .interactive-btn:active { opacity: 0.7; }
           .dpad-btn { cursor: pointer; }
           .dpad-btn:hover { fill: #2a2b30; }
           .dpad-btn:active { fill: #e8283c; }
@@ -172,45 +172,42 @@ export function ConsoleShellSVG({
         </g>
       </g>
 
-      {/* Select & Start Buttons */}
+      {/* Select / Left Link (GITHUB) */}
       {leftLink ? (
         <a href={leftLink.url} target="_blank" rel="noopener noreferrer">
           <g transform="translate(144, 555) rotate(-20)" className="interactive-btn">
             <rect x="0" y="0" width="46" height="11" rx="5.5" fill="#2a2b2e" stroke="#17181a" />
+            <text x="23" y="24" textAnchor="middle" fontSize="7" fill="#a9abaf" fontFamily="monospace" letterSpacing="0.05em" fontWeight="bold">
+              {leftLink.label.toUpperCase()}
+            </text>
           </g>
-          <text x="162" y="584" textAnchor="middle" fontSize="8" fill="#a9abaf" fontFamily="monospace" letterSpacing="0.05em" fontWeight="bold">
-            {leftLink.label.toUpperCase()}
-          </text>
         </a>
       ) : (
-        <>
-          <g transform="translate(144, 555) rotate(-20)">
-            <rect x="0" y="0" width="46" height="11" rx="5.5" fill="#2a2b2e" stroke="#17181a" />
-          </g>
-          <text x="162" y="584" textAnchor="middle" fontSize="8" fill="#585a60" fontFamily="monospace" letterSpacing="0.05em" fontWeight="bold">
+        <g transform="translate(144, 555) rotate(-20)">
+          <rect x="0" y="0" width="46" height="11" rx="5.5" fill="#2a2b2e" stroke="#17181a" />
+          <text x="23" y="24" textAnchor="middle" fontSize="7" fill="#585a60" fontFamily="monospace" letterSpacing="0.05em" fontWeight="bold">
             SELECT
           </text>
-        </>
+        </g>
       )}
 
+      {/* Start / Right Link (LIVE DEMO) */}
       {rightLink ? (
         <a href={rightLink.url} target="_blank" rel="noopener noreferrer">
           <g transform="translate(206, 555) rotate(-20)" className="interactive-btn">
             <rect x="0" y="0" width="46" height="11" rx="5.5" fill="#2a2b2e" stroke="#17181a" />
+            <text x="23" y="24" textAnchor="middle" fontSize="7" fill="#a9abaf" fontFamily="monospace" letterSpacing="0.05em" fontWeight="bold">
+              {rightLink.label.toUpperCase()}
+            </text>
           </g>
-          <text x="224" y="584" textAnchor="middle" fontSize="8" fill="#a9abaf" fontFamily="monospace" letterSpacing="0.05em" fontWeight="bold">
-            {rightLink.label.toUpperCase()}
-          </text>
         </a>
       ) : (
-        <>
-          <g transform="translate(206, 555) rotate(-20)">
-            <rect x="0" y="0" width="46" height="11" rx="5.5" fill="#2a2b2e" stroke="#17181a" />
-          </g>
-          <text x="224" y="584" textAnchor="middle" fontSize="8" fill="#585a60" fontFamily="monospace" letterSpacing="0.05em" fontWeight="bold">
+        <g transform="translate(206, 555) rotate(-20)">
+          <rect x="0" y="0" width="46" height="11" rx="5.5" fill="#2a2b2e" stroke="#17181a" />
+          <text x="23" y="24" textAnchor="middle" fontSize="7" fill="#585a60" fontFamily="monospace" letterSpacing="0.05em" fontWeight="bold">
             START
           </text>
-        </>
+        </g>
       )}
 
       {/* Speaker Vents */}
