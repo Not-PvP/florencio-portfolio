@@ -271,8 +271,6 @@ export default function Projects() {
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Anton&family=Press+Start+2P&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
-
         @keyframes titleSlam {
           0% { opacity: 0; transform: translateY(-20px) scale(1.1); filter: blur(10px); }
           60% { opacity: 1; transform: translateY(2px) scale(0.98); filter: blur(0px); }
