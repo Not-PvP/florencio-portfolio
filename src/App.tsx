@@ -8,18 +8,34 @@ import BootGate from "./sections/shared/BootGate";
 import EasterEgg from "./sections/shared/EasterEgg";
 import SoundToggle from "./sections/shared/SoundToggle";
 import Separator from "./sections/shared/Separator";
+import Outro from "./sections/shared/Outro";
 
 const SECTIONS = [
-  { id: "about", label: "About", Component: AboutMe },
-  { id: "projects", label: "Projects", Component: Projects },
-  { id: "skills", label: "Skills", Component: Skills },
-  { id: "contact", label: "Contact", Component: Contact },
+  { id: "about", label: "About", round: "Round 1", Component: AboutMe },
+  { id: "projects", label: "Projects", round: "Round 2", Component: Projects },
+  { id: "skills", label: "Skills", round: "Round 3", Component: Skills },
+  { id: "contact", label: "Contact", round: "Round 4", Component: Contact },
 ] as const;
 
 export default function App() {
   const [activeId, setActiveId] = useState<string>(SECTIONS[0].id);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [booted, setBooted] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    function onScroll() {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollProgress(docHeight > 0 ? Math.min(100, Math.max(0, (window.scrollY / docHeight) * 100)) : 0);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -129,6 +145,28 @@ export default function App() {
 
       <SoundToggle active={booted} />
 
+      <div
+        aria-hidden="true"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "3px",
+          background: "rgba(255,255,255,0.06)",
+          zIndex: 30,
+        }}
+      >
+        <div
+          style={{
+            height: "100%",
+            width: `${scrollProgress}%`,
+            background: "linear-gradient(90deg, #e8283c, #ff8a5b)",
+            boxShadow: "0 0 8px rgba(232,40,60,0.6)",
+          }}
+        />
+      </div>
+
       <nav
         aria-label="Section navigation"
         className="mk-side-nav"
@@ -143,18 +181,18 @@ export default function App() {
           gap: "14px",
         }}
       >
-        {SECTIONS.map(({ id, label }) => {
+        {SECTIONS.map(({ id, label, round }) => {
           const isActive = activeId === id;
           return (
             <div key={id} className="mk-nav-item">
               <span className="mk-nav-label" aria-hidden="true">
-                {label}
+                {round} — {label}
               </span>
               <button
                 type="button"
                 className="mk-nav-dot"
                 onClick={() => scrollToSection(id)}
-                aria-label={`Go to ${label}`}
+                aria-label={`Go to ${label} (${round})`}
                 aria-current={isActive ? "true" : undefined}
                 style={{
                   width: isActive ? "10px" : "8px",
@@ -186,6 +224,8 @@ export default function App() {
           )}
         </div>
       ))}
+      <Separator next="GG" />
+      <Outro />
     </div>
   );
 }
