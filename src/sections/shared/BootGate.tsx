@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { unlockAudio } from "./audio";
 
 interface BootGateProps {
@@ -31,12 +31,12 @@ export default function BootGate({ onDismiss }: BootGateProps) {
     };
   }, []);
 
-  function dismiss() {
+  const dismiss = useCallback(() => {
     if (leaving) return;
     unlockAudio();
     setLeaving(true);
     setTimeout(onDismiss, 420);
-  }
+  }, [leaving, onDismiss]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -47,8 +47,7 @@ export default function BootGate({ onDismiss }: BootGateProps) {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leaving]);
+  }, [dismiss]);
 
   return (
     <div

@@ -127,7 +127,7 @@ export default function App() {
 
       <EmberBackground />
 
-      <SoundToggle />
+      <SoundToggle active={booted} />
 
       <nav
         aria-label="Section navigation"

@@ -124,7 +124,14 @@ export default function Projects() {
   const [flash, setFlash] = useState<boolean>(false);
   const [cartsHovered, setCartsHovered] = useState<boolean>(false);
   const [sectionIn, setSectionIn] = useState<boolean>(false);
-  const [statsByProject, setStatsByProject] = useState<Record<string, StatsState>>({});
+  const [statsByProject, setStatsByProject] = useState<Record<string, StatsState>>(() =>
+    Object.fromEntries(
+      PROJECTS.map((p) => {
+        const hasGithub = p.links.some((l) => l.label.toLowerCase() === "github");
+        return [p.id, { status: hasGithub ? "loading" : "private" } as StatsState];
+      })
+    )
+  );
   const rootRef = useRef<HTMLDivElement | null>(null);
 
   const [poweredOn, setPoweredOn] = useState<boolean>(false);
@@ -134,15 +141,6 @@ export default function Projects() {
 
   useEffect(() => {
     let cancelled = false;
-
-    setStatsByProject(
-      Object.fromEntries(
-        PROJECTS.map((p) => {
-          const hasGithub = p.links.some((l) => l.label.toLowerCase() === "github");
-          return [p.id, { status: hasGithub ? "loading" : "private" } as StatsState];
-        })
-      )
-    );
 
     (async () => {
       const entries = await Promise.all(
@@ -436,6 +434,27 @@ export default function Projects() {
           pointerEvents: "none",
         }}
       />
+
+      {[
+        { top: 22, left: 22, borderWidth: "3px 0 0 3px" },
+        { top: 22, right: 22, borderWidth: "3px 3px 0 0" },
+        { bottom: 22, left: 22, borderWidth: "0 0 3px 3px" },
+        { bottom: 22, right: 22, borderWidth: "0 3px 3px 0" },
+      ].map((pos, i) => (
+        <div
+          key={i}
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            width: "26px",
+            height: "26px",
+            borderColor: "rgba(232,40,60,0.6)",
+            borderStyle: "solid",
+            pointerEvents: "none",
+            ...pos,
+          }}
+        />
+      ))}
 
       <div
         className="mk-fade"

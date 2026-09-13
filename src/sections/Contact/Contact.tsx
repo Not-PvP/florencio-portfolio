@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { playHit } from "../shared/audio";
 
 type ArrowKey = "ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight";
@@ -83,6 +83,12 @@ function sequencesMatch(tail: ArrowKey[], seq: ArrowKey[]): boolean {
   return tail.every((k, i) => k === seq[i]);
 }
 
+function detectTouch(): boolean {
+  if (typeof window === "undefined") return false;
+  const hasTouchSupport = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+  return window.matchMedia("(hover: none)").matches || hasTouchSupport;
+}
+
 export default function Contact() {
   const [smash, setSmash] = useState<boolean>(false);
   const [smashDone, setSmashDone] = useState<boolean>(false);
@@ -96,7 +102,7 @@ export default function Contact() {
     null
   );
 
-  const [isTouch, setIsTouch] = useState<boolean>(false);
+  const [isTouch, setIsTouch] = useState<boolean>(() => detectTouch());
 
   const [padDir, setPadDir] = useState<ArrowKey | null>(null);
   const [padPulse, setPadPulse] = useState<number>(0);
@@ -113,18 +119,14 @@ export default function Contact() {
 
   const bufferRef = useRef<ArrowKey[]>([]);
 
-  function updateBuffer(next: ArrowKey[]) {
+  const updateBuffer = useCallback((next: ArrowKey[]) => {
     bufferRef.current = next;
     setBuffer(next);
-  }
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia("(hover: none)");
-
-    const hasTouchSupport =
-      typeof window !== "undefined" &&
-      ("ontouchstart" in window || navigator.maxTouchPoints > 0);
-    setIsTouch(mq.matches || hasTouchSupport);
+    const hasTouchSupport = "ontouchstart" in window || navigator.maxTouchPoints > 0;
     const onChange = (e: MediaQueryListEvent) =>
       setIsTouch(e.matches || hasTouchSupport);
     mq.addEventListener("change", onChange);
@@ -164,7 +166,7 @@ export default function Contact() {
     };
   }, []);
 
-  function executeMove(move: ComboMove) {
+  const executeMove = useCallback((move: ComboMove) => {
     if (burstActiveRef.current) return;
 
     if (typeof navigator !== "undefined" && navigator.vibrate) {
@@ -183,20 +185,20 @@ export default function Contact() {
     const clearTimer = setTimeout(() => setBurst(null), 900);
 
     pendingTimers.current.push(shakeTimer, clearTimer);
-  }
+  }, [updateBuffer]);
 
   function flashMiss() {
     setMiss(true);
     setTimeout(() => setMiss(false), 320);
   }
 
-  function armBufferTimeout() {
+  const armBufferTimeout = useCallback(() => {
     if (bufferTimerRef.current) clearTimeout(bufferTimerRef.current);
     bufferTimerRef.current = setTimeout(() => {
       updateBuffer([]);
       setLastTrigger(null);
     }, BUFFER_TIMEOUT_MS);
-  }
+  }, [updateBuffer]);
 
   useEffect(() => {
     const node = sectionRef.current;
@@ -213,7 +215,7 @@ export default function Contact() {
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, []);
+  }, [updateBuffer]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -244,7 +246,7 @@ export default function Contact() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [armBufferTimeout, executeMove, updateBuffer]);
 
   function handleKeyDown(e: React.KeyboardEvent, move: ComboMove) {
     if (e.key === "Enter" || e.key === " ") {
@@ -420,15 +422,56 @@ export default function Contact() {
           transform: translateX(2px) scale(0.99);
         }
 
+        @keyframes mk-contact-grid-pulse {
+          0%, 100% { opacity: 0.15; }
+          50% { opacity: 0.25; }
+        }
+        .mk-contact-grid {
+          background-size: 40px 40px;
+          background-image:
+            linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+          animation: mk-contact-grid-pulse 4s ease-in-out infinite;
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .mk-fade, .mk-title { animation: none !important; opacity: 1 !important; transform: none !important; text-shadow: 0 0 28px rgba(232,40,60,0.4) !important; }
           .mk-shake { animation: none !important; }
           .mk-move { transform: none !important; }
           .mk-finish-overlay { display: none !important; }
           .mk-pad-core, .mk-pad-glow, .mk-pad-nub, .mk-pad-trail { animation: none !important; }
+          .mk-contact-grid { animation: none !important; }
         }
 
       `}</style>
+
+      <div
+        aria-hidden="true"
+        className="mk-contact-grid"
+        style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none" }}
+      />
+
+      {[
+        { top: 22, left: 22, borderWidth: "3px 0 0 3px" },
+        { top: 22, right: 22, borderWidth: "3px 3px 0 0" },
+        { bottom: 22, left: 22, borderWidth: "0 0 3px 3px" },
+        { bottom: 22, right: 22, borderWidth: "0 3px 3px 0" },
+      ].map((pos, i) => (
+        <div
+          key={i}
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            width: "26px",
+            height: "26px",
+            borderColor: "rgba(232,40,60,0.6)",
+            borderStyle: "solid",
+            pointerEvents: "none",
+            zIndex: 1,
+            ...pos,
+          }}
+        />
+      ))}
 
       {smash && !smashDone && (
         <>

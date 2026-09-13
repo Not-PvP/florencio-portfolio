@@ -9,7 +9,9 @@ export default function Skills() {
   const [sectionIn, setSectionIn] = useState<boolean>(false);
 
   const [flashId, setFlashId] = useState<string>("");
-  const [reducedMotion, setReducedMotion] = useState<boolean>(false);
+  const [reducedMotion, setReducedMotion] = useState<boolean>(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
 
   const [hoveredId, setHoveredId] = useState<string>("");
 
@@ -20,7 +22,6 @@ export default function Skills() {
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(mq.matches);
     const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);

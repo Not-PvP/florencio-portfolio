@@ -1,21 +1,38 @@
 import { useEffect, useState } from "react";
 import { isMuted, subscribeMuted, toggleMuted } from "./audio";
 
-export default function SoundToggle() {
-  const [muted, setMutedState] = useState(true);
+interface SoundToggleProps {
+  active?: boolean;
+}
+
+export default function SoundToggle({ active = true }: SoundToggleProps) {
+  const [muted, setMutedState] = useState(() => isMuted());
+  const [pulse, setPulse] = useState(false);
+
+  useEffect(() => subscribeMuted(setMutedState), []);
 
   useEffect(() => {
-    setMutedState(isMuted());
-    return subscribeMuted(setMutedState);
-  }, []);
+    if (!active) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) return;
+    const start = window.setTimeout(() => setPulse(true), 700);
+    const stop = window.setTimeout(() => setPulse(false), 700 + 2600);
+    return () => {
+      window.clearTimeout(start);
+      window.clearTimeout(stop);
+    };
+  }, [active]);
 
   return (
     <button
       type="button"
-      onClick={() => toggleMuted()}
+      onClick={() => {
+        setPulse(false);
+        toggleMuted();
+      }}
       aria-label={muted ? "Unmute sound effects" : "Mute sound effects"}
       aria-pressed={!muted}
-      className="mk-sound-btn"
+      className={`mk-sound-btn${pulse ? " mk-sound-pulse" : ""}`}
       style={{
         position: "fixed",
         right: "18px",
@@ -34,9 +51,9 @@ export default function SoundToggle() {
     >
       <style>{`
         .mk-sound-btn {
-          background: linear-gradient(150deg, #1a1414 0%, #0a0a0a 100%);
-          border: 1px solid rgba(255,197,120,0.4);
-          box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5);
+          background: linear-gradient(150deg, #241a17 0%, #0a0a0a 100%);
+          border: 1px solid rgba(255,197,120,0.55);
+          box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 8px rgba(255,170,90,0.18);
           transition: box-shadow 0.2s ease, background 0.2s ease, transform 0.15s ease, border-color 0.2s ease;
         }
         .mk-sound-btn[aria-pressed="true"] {
@@ -50,10 +67,18 @@ export default function SoundToggle() {
           outline-offset: 3px;
         }
 
+        @keyframes mk-sound-pulse-ring {
+          0%, 100% { box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 8px rgba(255,170,90,0.18); transform: scale(1); }
+          50% { box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 22px rgba(255,170,90,0.65); transform: scale(1.1); }
+        }
+        .mk-sound-pulse {
+          animation: mk-sound-pulse-ring 1.3s ease-in-out 2;
+        }
+
         .mk-eq-bar {
           width: 3px;
           border-radius: 1px;
-          background: rgba(255,255,255,0.35);
+          background: rgba(255,255,255,0.55);
           height: 4px;
           transform-origin: center;
           transition: background 0.25s ease, height 0.25s ease;
@@ -85,6 +110,7 @@ export default function SoundToggle() {
           .mk-sound-btn[aria-pressed="true"] .mk-eq-bar:nth-child(3) { height: 6px; }
           .mk-sound-btn[aria-pressed="true"] .mk-eq-bar:nth-child(4) { height: 17px; }
           .mk-sound-btn[aria-pressed="true"] .mk-eq-bar:nth-child(5) { height: 11px; }
+          .mk-sound-pulse { animation: none !important; }
         }
       `}</style>
       <span className="mk-eq-bar" />

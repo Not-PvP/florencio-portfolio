@@ -1,10 +1,10 @@
-import { isMuted } from "../shared/audio";
+import { isMuted, type WindowWithWebkitAudio } from "../shared/audio";
 
 let sharedAudioCtx: AudioContext | null = null;
 export function playSelectBlip(rising: boolean) {
   if (isMuted()) return;
   try {
-    const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+    const Ctx = window.AudioContext || (window as unknown as WindowWithWebkitAudio).webkitAudioContext;
     if (!Ctx) return;
     if (!sharedAudioCtx) sharedAudioCtx = new Ctx();
     const ctx = sharedAudioCtx;

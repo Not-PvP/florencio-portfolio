@@ -3,9 +3,13 @@ let ctx: AudioContext | null = null;
 let muted = true;
 const listeners = new Set<(muted: boolean) => void>();
 
+export interface WindowWithWebkitAudio {
+  webkitAudioContext?: typeof AudioContext;
+}
+
 function getCtx(): AudioContext | null {
   if (typeof window === "undefined") return null;
-  const AC = window.AudioContext || (window as any).webkitAudioContext;
+  const AC = window.AudioContext || (window as unknown as WindowWithWebkitAudio).webkitAudioContext;
   if (!AC) return null;
   if (!ctx) ctx = new AC();
   if (ctx.state === "suspended") ctx.resume();
