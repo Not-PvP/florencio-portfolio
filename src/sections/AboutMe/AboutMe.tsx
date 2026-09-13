@@ -40,11 +40,16 @@ export default function AboutMe() {
       className="mk-about-root"
       style={{
         width: "100%",
-        height: "100vh",
+        // minHeight, not a fixed height: on Windows display-scaling (125%/
+        // 150%, common on laptops) or any monitor shorter/lower-DPI than
+        // what this was designed against, a hard 100vh + overflow hidden
+        // clips or overlaps the copy/tags at the bottom instead of just
+        // letting the section grow a little taller.
+        minHeight: "100vh",
         background: "transparent",
         fontFamily: "'Space Mono', 'JetBrains Mono', monospace",
         position: "relative",
-        overflow: "hidden",
+        overflow: "visible",
         isolation: "isolate",
       }}
     >
@@ -151,7 +156,12 @@ export default function AboutMe() {
           position: "relative",
           zIndex: 2,
           width: "100%",
-          height: "100%",
+          // Was height: "100%", which only worked because the parent had a
+          // hard 100vh height. Now that the parent is minHeight-only (auto
+          // height otherwise), this is left unset so the row sizes to its
+          // own content — flex's default align-items: stretch still makes
+          // the photo drawer match whatever height that ends up being.
+          minHeight: "100vh",
           display: "flex",
           overflow: "hidden",
         }}
