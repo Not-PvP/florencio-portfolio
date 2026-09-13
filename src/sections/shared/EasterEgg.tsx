@@ -1,11 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { playUnlock } from "./audio";
 
-// ── Hidden global combo ──────────────────────────────────────────────
-// Classic Konami shape (↑↑↓↓←→←→) plus a trigger letter, reusing the
-// exact same buffer/trigger pattern Contact.tsx uses for its visible
-// moves — this one just listens site-wide instead of only while a
-// section is in view, since it's meant to be found, not advertised.
 type Key = "ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight";
 const SECRET_SEQUENCE: Key[] = [
   "ArrowUp",
@@ -35,7 +30,7 @@ export default function EasterEgg() {
       timerRef.current = setTimeout(reset, BUFFER_TIMEOUT_MS);
     }
     function onKeyDown(e: KeyboardEvent) {
-      // Don't hijack input fields — only listen when nothing is being typed into.
+
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") return;
 
@@ -141,9 +136,7 @@ export default function EasterEgg() {
             color: "rgba(255,255,255,0.65)",
           }}
         >
-          {/* Swap this for whatever's actually fun to reveal — a hidden
-              project, a GitHub contribution graph embed, a blooper reel,
-              a real Easter egg link. Placeholder for now. */}
+
           You found the hidden input. This is the spot for something only
           the people who actually dig around get to see.
         </p>

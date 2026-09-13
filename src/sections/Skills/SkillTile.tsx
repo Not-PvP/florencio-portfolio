@@ -2,9 +2,6 @@ import { useState } from "react";
 import { BRAND_SVGS, MONO_BRAND_ICONS } from "./brandSvgs";
 import type { Skill } from "./skillsData";
 
-// A single skill tile. Renders the real inlined brand SVG when one exists
-// in BRAND_SVGS; otherwise falls back to the plain letter tag, so the
-// layout never shows a broken image or a wrong-looking recolor.
 export function SkillTile({
   skill,
   accent,
@@ -18,8 +15,7 @@ export function SkillTile({
 }) {
   const svg = skill.iconSlug ? BRAND_SVGS[skill.iconSlug] : undefined;
   const isMono = !!skill.iconSlug && MONO_BRAND_ICONS.has(skill.iconSlug);
-  // Cursor-driven 3D tilt, like the tile is a little card angling toward
-  // your hand. {rx, ry} in degrees; {0,0} is flat/at-rest.
+
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
   const [isHovering, setIsHovering] = useState(false);
 

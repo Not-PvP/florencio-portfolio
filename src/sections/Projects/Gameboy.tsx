@@ -22,7 +22,7 @@ export function ConsoleShellSVG({
   onActionA,
   onActionB,
 }: ConsoleShellSVGProps) {
-  // Keyboard Navigation Support
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowUp" || e.key === "ArrowLeft") onPrev?.();
@@ -99,11 +99,9 @@ export function ConsoleShellSVG({
         `}</style>
       </defs>
 
-      {/* Cartridge Slot Recess */}
       <rect x="140" y="2" width="140" height="16" rx="4" fill="#08080a" />
       <rect x="146" y="6" width="128" height="12" rx="2" fill="#000000" />
 
-      {/* Main Body Shell */}
       <path
         d="M 28 14 L 392 14 Q 416 14 416 38 L 416 600 Q 416 676 336 676 L 84 676 Q 4 676 4 600 L 4 38 Q 4 14 28 14 Z"
         fill="url(#shellGrad)"
@@ -117,15 +115,12 @@ export function ConsoleShellSVG({
         strokeWidth="1"
       />
 
-      {/* Screen Frame Bezel */}
       <rect x="24" y="44" width="372" height="308" rx="16" fill="url(#screenFrameGrad)" stroke="#0a0a0c" strokeWidth="2" />
       <rect x="25" y="45" width="370" height="306" rx="15" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
 
-      {/* Display Glass Recess */}
       <rect x="42" y="60" width="336" height="272" rx="6" fill="url(#screenGlassGrad)" stroke="#000000" strokeWidth="2" />
       <path d="M 42 60 L 220 60 L 42 238 Z" fill="url(#screenGlare)" pointerEvents="none" />
 
-      {/* Interactive D-Pad */}
       <g transform="translate(105, 450)" filter="drop-shadow(0 6px 10px rgba(0,0,0,0.65))">
         <circle cx="0" cy="0" r="46" fill="#121315" />
         <path
@@ -136,24 +131,20 @@ export function ConsoleShellSVG({
         />
         <circle cx="0" cy="0" r="13" fill="#1c1d20" stroke="#121315" strokeWidth="1" />
 
-        {/* Clickable D-Pad Direction Zones */}
         <path d="M -15 -42 L 15 -42 L 15 -15 L -15 -15 Z" className="dpad-btn" fill="transparent" onClick={onPrev} />
         <path d="M -15 15 L 15 15 L 15 42 L -15 42 Z" className="dpad-btn" fill="transparent" onClick={onNext} />
         <path d="M -42 -15 L -15 -15 L -15 15 L -42 15 Z" className="dpad-btn" fill="transparent" onClick={onPrev} />
         <path d="M 15 -15 L 42 -15 L 42 15 L 15 15 Z" className="dpad-btn" fill="transparent" onClick={onNext} />
 
-        {/* Directional Arrows */}
         <path d="M 0 -34 L -5 -26 L 5 -26 Z" fill="#151618" pointerEvents="none" />
         <path d="M 0 34 L -5 26 L 5 26 Z" fill="#151618" pointerEvents="none" />
         <path d="M -34 0 L -26 -5 L -26 5 Z" fill="#151618" pointerEvents="none" />
         <path d="M 34 0 L 26 -5 L 26 5 Z" fill="#151618" pointerEvents="none" />
       </g>
 
-      {/* Action Buttons */}
       <g transform="translate(305, 450)" filter="drop-shadow(0 8px 12px rgba(0,0,0,0.7))">
         <rect x="-62" y="-32" width="124" height="64" rx="32" fill="#121315" stroke="#2a2b2f" strokeWidth="1.5" transform="rotate(-25)" />
 
-        {/* B Button */}
         <g transform="translate(-24, 12)" className="interactive-btn" onClick={onActionB}>
           <circle cx="0" cy="0" r="21" fill="url(#btnBGrad)" stroke="#40040b" strokeWidth="1.5" />
           <circle cx="0" cy="0" r="19" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
@@ -162,7 +153,6 @@ export function ConsoleShellSVG({
           </text>
         </g>
 
-        {/* A Button */}
         <g transform="translate(24, -12)" className="interactive-btn" onClick={onActionA}>
           <circle cx="0" cy="0" r="21" fill="url(#btnAGrad)" stroke="#520510" strokeWidth="1.5" />
           <circle cx="0" cy="0" r="19" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
@@ -172,7 +162,6 @@ export function ConsoleShellSVG({
         </g>
       </g>
 
-      {/* Select / Left Link (GITHUB) */}
       {leftLink ? (
         <a href={leftLink.url} target="_blank" rel="noopener noreferrer">
           <g transform="translate(144, 555) rotate(-20)" className="interactive-btn">
@@ -191,7 +180,6 @@ export function ConsoleShellSVG({
         </g>
       )}
 
-      {/* Start / Right Link (LIVE DEMO) */}
       {rightLink ? (
         <a href={rightLink.url} target="_blank" rel="noopener noreferrer">
           <g transform="translate(206, 555) rotate(-20)" className="interactive-btn">
@@ -210,7 +198,6 @@ export function ConsoleShellSVG({
         </g>
       )}
 
-      {/* Speaker Vents */}
       <g transform="translate(320, 560) rotate(-28)" opacity="0.6">
         <rect x="0" y="0" width="50" height="4" rx="2" fill="#0d0e10" />
         <rect x="0" y="9" width="50" height="4" rx="2" fill="#0d0e10" />

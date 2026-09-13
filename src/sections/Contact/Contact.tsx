@@ -1,16 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { playHit } from "../shared/audio";
 
-// ── Data ─────────────────────────────────────────────────────────────
-// Each move is a real input sequence: press the arrow keys in `keys`
-// order, then the `triggerKey` letter, to fire it. Clicking/tapping the
-// row fires it directly too, so keyboard input is never the only path.
 type ArrowKey = "ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight";
 
 interface ComboMove {
   id: string;
   keys: ArrowKey[];
-  triggerKey: string; // lowercase single letter
+  triggerKey: string;
   accent: string;
   moveName: string;
   target: string;
@@ -58,17 +54,14 @@ const ARROW_GLYPH: Record<ArrowKey, string> = {
   ArrowRight: "→",
 };
 const ARROW_KEYS = Object.keys(ARROW_GLYPH) as ArrowKey[];
-// Rotation applied to the nub/trail group so a single "kicks upward"
-// animation can be reused for every swipe direction — see the pad JSX.
+
 const DIR_ANGLE: Record<ArrowKey, number> = {
   ArrowUp: 0,
   ArrowRight: 90,
   ArrowDown: 180,
   ArrowLeft: 270,
 };
-// Regular flat-topped octagon (radius 64, center 80,80) used for the
-// fight-stick gate — vertices land so the N/E/S/W faces are flat, like
-// a real arcade restrictor plate.
+
 const OCTAGON_VERTS: [number, number][] = [
   [104.49, 20.87],
   [139.13, 55.51],
@@ -82,21 +75,14 @@ const OCTAGON_VERTS: [number, number][] = [
 const MAX_BUFFER = Math.max(...MOVES.map((m) => m.keys.length));
 const BUFFER_TIMEOUT_MS = 1600;
 
-// Swipe gestures feed the exact same ArrowKey buffer as the keyboard does —
-// a swipe up is indistinguishable from pressing ArrowUp once it lands in
-// `buffer`. That's what lets touch and keyboard share every bit of combo-
-// matching logic below instead of needing a parallel implementation.
-const SWIPE_MIN_DISTANCE = 28; // px — below this it reads as a tap, not a swipe
-const SWIPE_MAX_DURATION = 650; // ms — slower drags don't count as a swipe
-
-// ── Background: shared ambient + cursor-reactive ember system ──────────
+const SWIPE_MIN_DISTANCE = 28;
+const SWIPE_MAX_DURATION = 650;
 
 function sequencesMatch(tail: ArrowKey[], seq: ArrowKey[]): boolean {
   if (tail.length !== seq.length) return false;
   return tail.every((k, i) => k === seq[i]);
 }
 
-// ── Main ─────────────────────────────────────────────────────────────
 export default function Contact() {
   const [smash, setSmash] = useState<boolean>(false);
   const [smashDone, setSmashDone] = useState<boolean>(false);
@@ -111,11 +97,7 @@ export default function Contact() {
   );
 
   const [isTouch, setIsTouch] = useState<boolean>(false);
-  // Transient — set on every valid swipe, cleared ~450ms later. Drives
-  // the momentary nub-kick/trail-streak flash and the brightest face
-  // highlight on the gate. `padPulse` is bumped alongside it purely to
-  // force the nub/trail elements to remount and replay their keyframe
-  // even when the same direction swipes twice in a row.
+
   const [padDir, setPadDir] = useState<ArrowKey | null>(null);
   const [padPulse, setPadPulse] = useState<number>(0);
 
@@ -128,12 +110,7 @@ export default function Contact() {
   const swipeStartRef = useRef<{ x: number; y: number; time: number } | null>(
     null
   );
-  // Mirrors `buffer` but is readable/writable synchronously, in the same
-  // tick as the triggering key/touch event. executeMove's window.open only
-  // survives the browser's popup blocker when called synchronously inside
-  // the original user gesture — reading the buffer out of a setState
-  // updater (which React can defer past that gesture) silently breaks
-  // that, so combo/swipe completion checks read this ref instead.
+
   const bufferRef = useRef<ArrowKey[]>([]);
 
   function updateBuffer(next: ArrowKey[]) {
@@ -141,16 +118,9 @@ export default function Contact() {
     setBuffer(next);
   }
 
-  // Detect no-hover devices once on mount so we can swap "PRESS THE COMBO"
-  // copy and the trigger-key badge for a dedicated swipe pad — matches the
-  // same (hover: none) signal Background.tsx already uses to hide its
-  // cursor glow on touch.
   useEffect(() => {
     const mq = window.matchMedia("(hover: none)");
-    // hover:none alone misses some real touch devices (certain Android
-    // browsers, foldables, anything with a paired mouse/stylus), so we
-    // OR it with a hard capability check rather than relying on the
-    // media query in isolation.
+
     const hasTouchSupport =
       typeof window !== "undefined" &&
       ("ontouchstart" in window || navigator.maxTouchPoints > 0);
@@ -165,16 +135,6 @@ export default function Contact() {
     burstActiveRef.current = burst !== null;
   }, [burst]);
 
-  // Fire the entrance animation the first time this section scrolls into
-  // view, instead of on page mount — otherwise Contact (mounted along
-  // with every other section up front) finishes fading in before the
-  // user has scrolled anywhere near it.
-  //
-  // Sequence: a full-screen "FINISH HIM" slams in huge (like the game's
-  // announcer callout), holds a beat, then the whole overlay shrinks and
-  // flies into the real inline title's position. The instant it arrives,
-  // we swap to the normal in-flow heading and reveal the rest of the UI —
-  // one continuous zoom rather than two elements trading off.
   useEffect(() => {
     const node = sectionRef.current;
     if (!node) return;
@@ -207,10 +167,6 @@ export default function Contact() {
   function executeMove(move: ComboMove) {
     if (burstActiveRef.current) return;
 
-    // Short double-pulse on landing a move — silently does nothing on
-    // desktop browsers/devices without the Vibration API rather than
-    // throwing, so this is safe to call unconditionally. playHit() is
-    // similarly a no-op while muted.
     if (typeof navigator !== "undefined" && navigator.vibrate) {
       navigator.vibrate([18, 40, 30]);
     }
@@ -221,11 +177,6 @@ export default function Contact() {
     setShaking(true);
     setBurst({ text: move.resultText, color: move.accent });
 
-    // window.open must fire synchronously inside the user gesture (this
-    // click/keydown handler) or browsers treat it as an unrequested popup
-    // and silently block it. Opening it here — instead of inside the
-    // setTimeout below — is what makes the links actually work; the burst
-    // animation still plays out on its own timers afterward.
     window.open(move.url, "_blank", "noopener,noreferrer");
 
     const shakeTimer = setTimeout(() => setShaking(false), 380);
@@ -247,9 +198,6 @@ export default function Contact() {
     }, BUFFER_TIMEOUT_MS);
   }
 
-  // Only capture arrow keys while this section is actually on screen —
-  // otherwise scrolling past it on a combined page would still hijack
-  // every arrow-key press site-wide.
   useEffect(() => {
     const node = sectionRef.current;
     if (!node) return;
@@ -267,8 +215,6 @@ export default function Contact() {
     return () => observer.disconnect();
   }, []);
 
-  // Real keyboard combo detection: arrow keys accumulate into a buffer,
-  // then a trigger letter checks that buffer's tail against every move.
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (burstActiveRef.current || !inViewRef.current) return;
@@ -307,13 +253,6 @@ export default function Contact() {
     }
   }
 
-  // ── Swipe pad: touch equivalent of the keyboard combo input ─────────
-  // Scoped to a small dedicated pad rather than the whole section, so a
-  // visitor can still scroll the page normally everywhere else in
-  // Contact — only gestures that start inside the pad are read as combo
-  // input. There's no separate "trigger key" on touch, so completing a
-  // full sequence fires the move immediately instead of arming and
-  // waiting for a letter press.
   function handlePadTouchStart(e: React.TouchEvent) {
     const t = e.touches[0];
     swipeStartRef.current = { x: t.clientX, y: t.clientY, time: Date.now() };
@@ -353,9 +292,7 @@ export default function Contact() {
       executeMove(completed);
       return;
     }
-    // Wrong direction anywhere in a sequence-in-progress reads as a
-    // miss rather than silently building toward nothing — same feedback
-    // language as a mistimed keyboard combo.
+
     const couldStillMatch = MOVES.some((m) =>
       m.keys.slice(0, next.length).every((k, i) => k === next[i])
     );
@@ -393,9 +330,7 @@ export default function Contact() {
           from { opacity: 0; transform: translateY(14px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        /* The giant announcer-style "FINISH HIM" slam: punches onto the
-           full screen oversized, holds a beat, then collapses down into
-           the spot where the real inline title sits. */
+
         @keyframes finishHimSlam {
           0% { opacity: 0; transform: translate(-50%, -50%) scale(2.6); filter: blur(10px); }
           18% { opacity: 1; transform: translate(-50%, -50%) scale(1.32); filter: blur(0px); }
@@ -495,10 +430,6 @@ export default function Contact() {
 
       `}</style>
 
-      {/* Giant announcer-callout overlay: fires once on scroll-in, slams
-          FINISH HIM onto the full screen, then collapses toward the real
-          title's position before handing off to it. Fixed + centered so
-          it works the same regardless of scroll position. */}
       {smash && !smashDone && (
         <>
           <div
@@ -537,7 +468,6 @@ export default function Contact() {
           </div>
         </>
       )}
-
 
       <div
         className={shaking ? "mk-shake" : undefined}
@@ -597,7 +527,6 @@ export default function Contact() {
           </p>
         </div>
 
-        {/* ── Live input buffer HUD: 3 arrow slots + 1 trigger-key slot ── */}
         <div
           className="mk-fade"
           style={{
@@ -667,7 +596,7 @@ export default function Contact() {
                 touchAction: "none",
               }}
             >
-              {/* Ambient glow ring behind the gate — idle breathing pulse */}
+
               <div
                 className="mk-pad-glow"
                 aria-hidden="true"
@@ -696,9 +625,6 @@ export default function Contact() {
                   </radialGradient>
                 </defs>
 
-                {/* 8 gate faces — cardinal faces (N/E/S/W) light up from
-                    dim -> armed (mid-combo) -> flash (just swiped/miss);
-                    diagonal faces stay a fixed dim tone as pure structure. */}
                 {OCTAGON_VERTS.map(([x1, y1], i) => {
                   const [x2, y2] = OCTAGON_VERTS[(i + 1) % OCTAGON_VERTS.length];
                   const cardinal: ArrowKey | null =
@@ -744,9 +670,6 @@ export default function Contact() {
                   fill="url(#mkPadCore)"
                 />
 
-                {/* Nub + trail live in one rotated group so a single
-                    "kick upward" animation reads correctly for every
-                    swipe direction — see DIR_ANGLE. */}
                 <g style={{ transform: `rotate(${DIR_ANGLE[padDir ?? "ArrowUp"]}deg)`, transformOrigin: "80px 80px" }}>
                   {padDir && (
                     <rect

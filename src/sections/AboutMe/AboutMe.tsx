@@ -1,8 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import heroPortrait from "../../assets/hero-portrait.jpg";
 
-// Lazy-loaded: the globe's land-mask bitmaps make it a heavy chunk on their
-// own — worth keeping out of AboutMe's initial bundle.
 const EarthGlobe = lazy(() => import("./EarthGlobe"));
 
 const LEARNING_TAGS = [
@@ -13,11 +11,8 @@ const LEARNING_TAGS = [
   "REACT",
 ];
 
-// Fixed frame width — no more roster/photo toggle, so this is just "how
-// wide is the photo panel", not "one of two states it can be in".
 const DRAWER_WIDTH = 360;
-// Narrower starting width used only for the on-mount reveal animation, so
-// the frame still has a little "sliding open" character on load.
+
 const PEEK_WIDTH = 90;
 
 export default function AboutMe() {
@@ -40,11 +35,7 @@ export default function AboutMe() {
       className="mk-about-root"
       style={{
         width: "100%",
-        // minHeight, not a fixed height: on Windows display-scaling (125%/
-        // 150%, common on laptops) or any monitor shorter/lower-DPI than
-        // what this was designed against, a hard 100vh + overflow hidden
-        // clips or overlaps the copy/tags at the bottom instead of just
-        // letting the section grow a little taller.
+
         minHeight: "100vh",
         background: "transparent",
         fontFamily: "'Space Mono', 'JetBrains Mono', monospace",
@@ -87,10 +78,6 @@ export default function AboutMe() {
             radial-gradient(ellipse 38% 50% at 100% 100%, rgba(196, 30, 30, 0.38), transparent 70%);
         }
 
-        /* Globe — anchored to the right edge of the copy column, mostly
-           cropped off-screen. Scales down at narrower viewports so it
-           never crowds the text; hidden below 1080px where there isn't
-           room for it at all. */
         .mk-globe-slot {
           position: absolute;
           top: 50%;
@@ -156,11 +143,7 @@ export default function AboutMe() {
           position: "relative",
           zIndex: 2,
           width: "100%",
-          // Was height: "100%", which only worked because the parent had a
-          // hard 100vh height. Now that the parent is minHeight-only (auto
-          // height otherwise), this is left unset so the row sizes to its
-          // own content — flex's default align-items: stretch still makes
-          // the photo drawer match whatever height that ends up being.
+
           minHeight: "100vh",
           display: "flex",
           overflow: "hidden",
@@ -196,8 +179,7 @@ export default function AboutMe() {
                 "saturate(0.78) contrast(1.12) brightness(0.9) hue-rotate(-12deg)",
             }}
           />
-          {/* Color-grade overlay: nudges the warm cast toward the site's
-              cool crimson/black palette without touching the source file. */}
+
           <div
             aria-hidden="true"
             style={{
@@ -225,8 +207,7 @@ export default function AboutMe() {
             transition: "opacity 0.6s ease, transform 0.6s ease",
           }}
         >
-          {/* Globe — fills the dead space to the right of the copy column.
-              Click Manila on it to drop the "PHILIPPINES" pin. */}
+
           <div className="mk-globe-slot">
             <Suspense fallback={null}>
               <EarthGlobe size={2500} />

@@ -1,15 +1,5 @@
 import { useEffect, useRef } from "react";
 
-// ── Single global background layer ──────────────────────────────────
-// Mount this ONCE, at the top of App.tsx — not per-section. It's
-// position: fixed to the viewport, so it persists continuously as the
-// page scrolls instead of restarting per section, and there's exactly
-// one instance of the ambient effect instead of four separate ones
-// drifting out of sync with each other.
-//
-// For this to actually show through, each section's own root div needs
-// a transparent (or removed) background — the shared dark color now
-// lives once on <body> in index.css.
 const RED = "232,40,60";
 const ORANGE = "255,154,92";
 const YELLOW = "255,207,61";
@@ -22,7 +12,7 @@ interface EmberParticle {
   size: number;
   life: number;
   maxLife: number;
-  colorRoll: number; // 0..1 — picks which of the three ember colors this particle uses
+  colorRoll: number;
 }
 
 export default function EmberBackground() {
@@ -30,15 +20,12 @@ export default function EmberBackground() {
   const particlesRef = useRef<EmberParticle[]>([]);
   const rafRef = useRef<number | null>(null);
 
-  // Size the canvas to the viewport, and re-size on resize.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     function resize() {
-      // Capped at 2 — phones commonly report a DPR of 3, which would
-      // otherwise make the backing canvas 9x the pixel count for no
-      // visible sharpness gain, and burns battery on every ember frame.
+
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas!.width = window.innerWidth * dpr;
       canvas!.height = window.innerHeight * dpr;
@@ -53,9 +40,6 @@ export default function EmberBackground() {
     return () => window.removeEventListener("resize", resize);
   }, []);
 
-  // Ambient embers: spawn from the bottom of the viewport on their own,
-  // always running, independent of the mouse. Since the canvas is
-  // fixed, this reads as one continuous field the whole time you scroll.
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
@@ -117,10 +101,7 @@ export default function EmberBackground() {
   return (
     <>
       <style>{`
-        /* Faint grid, fixed under the whole page. Masked with a radial
-           fade so it reads as texture near the center of the viewport
-           and dissolves toward the edges, rather than a hard-edged tile
-           that competes with the globe glow and heat field on top of it. */
+
 .mk-grid-bg {
   position: fixed;
   inset: 0;
@@ -137,10 +118,7 @@ export default function EmberBackground() {
           inset: 0;
           pointer-events: none;
         }
-        /* Slow ambient heat pulse rising from the bottom of the viewport —
-           an independent breathing layer behind the embers so the whole
-           page feels like it's radiating warmth, not just the spot under
-           the cursor. */
+
         .mk-heat-field {
           position: fixed;
           inset: 0;

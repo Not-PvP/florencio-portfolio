@@ -9,8 +9,6 @@ import EasterEgg from "./sections/shared/EasterEgg";
 import SoundToggle from "./sections/shared/SoundToggle";
 import Separator from "./sections/shared/Separator";
 
-// ── Section registry ─────────────────────────────────────────────────
-// Order here controls both the scroll order and the nav dots below.
 const SECTIONS = [
   { id: "about", label: "About", Component: AboutMe },
   { id: "projects", label: "Projects", Component: Projects },
@@ -23,10 +21,6 @@ export default function App() {
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [booted, setBooted] = useState(false);
 
-  // Load the two site-wide fonts exactly once, here, instead of every
-  // section importing the same Google Fonts URL in its own <style>
-  // block. Each of those was a separate render-blocking request for
-  // content the browser already had.
   useEffect(() => {
     const id = "mk-fonts-link";
     if (document.getElementById(id)) return;
@@ -38,8 +32,6 @@ export default function App() {
     document.head.appendChild(link);
   }, []);
 
-  // Track which section is most in-view so the nav dots stay in sync
-  // with scroll position without forcing scroll-snap on the page.
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -70,11 +62,11 @@ export default function App() {
       <style>{`
         html {
           scroll-behavior: smooth;
-          scrollbar-width: none; /* Firefox */
-          -ms-overflow-style: none; /* old Edge/IE */
+          scrollbar-width: none;
+          -ms-overflow-style: none;
         }
         html::-webkit-scrollbar {
-          display: none; /* Chrome, Safari, new Edge */
+          display: none;
         }
         @media (prefers-reduced-motion: reduce) {
           html { scroll-behavior: auto; }
@@ -90,10 +82,7 @@ export default function App() {
           outline: 2px solid #ff8a5b;
           outline-offset: 3px;
         }
-        /* Label flyout — reuses the same dark-plate/orange-accent language
-           as the About Me drawer tab, so it reads as one HUD system
-           rather than a new UI pattern. Positioned absolutely so it never
-           shifts the dot's own position when it appears. */
+
         .mk-nav-item {
           position: relative;
         }
@@ -117,10 +106,7 @@ export default function App() {
           pointer-events: none;
           transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        /* Scoped to the whole nav rather than each item — hovering or
-           focusing anywhere in the dot column reveals every label at
-           once, so it reads as "here's the menu" instead of labels
-           trickling in one at a time as you happen to cross each dot. */
+
         .mk-side-nav:hover .mk-nav-label,
         .mk-side-nav:focus-within .mk-nav-label {
           opacity: 1;
@@ -131,16 +117,13 @@ export default function App() {
         .mk-nav-item:nth-child(3) .mk-nav-label { transition-delay: 0.08s; }
         .mk-nav-item:nth-child(4) .mk-nav-label { transition-delay: 0.12s; }
         @media (hover: none) {
-          /* No hover on touch devices, so a hover-only label never has a
-             way to appear — drop it rather than leave dead CSS. */
+
           .mk-nav-label { display: none; }
         }
         @media (prefers-reduced-motion: reduce) {
           .mk-nav-label { transition: opacity 0.15s ease; transition-delay: 0s !important; }
         }
-        /* Nav dots sit far enough off the edge on desktop; pull them in
-           on narrow viewports so they don't hang half off-screen and so
-           they're easier to hit with a thumb. */
+
         @media (max-width: 640px) {
           .mk-side-nav {
             right: 10px !important;
@@ -148,20 +131,15 @@ export default function App() {
           }
         }
       `}</style>
-      {/* Boot gate — held until the visitor's first tap/click/keypress,
-          which also unlocks the Web Audio context for everything below. */}
+
       {!booted && <BootGate onDismiss={() => setBooted(true)} />}
-      {/* Global hidden combo — listens everywhere, not just in Contact. */}
+
       <EasterEgg />
-      {/* Single global ember/cursor background layer — fixed, mounted once
-          here so it persists continuously under every section instead of
-          restarting or duplicating per-section. */}
+
       <EmberBackground />
-      {/* Sound toggle — sits opposite the side nav dots. Starts muted; the
-          boot gate's tap already satisfied the browser's audio-gesture
-          requirement, so unmuting here plays sound immediately. */}
+
       <SoundToggle />
-      {/* Side nav dots — jump between rounds without hunting for a scrollbar */}
+
       <nav
         aria-label="Section navigation"
         className="mk-side-nav"

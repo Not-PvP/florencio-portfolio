@@ -1,12 +1,6 @@
 import { useEffect, useRef } from 'react';
 import './EarthGlobe.css';
 
-// ---------------------------------------------------------------------------
-// Land mask data (1-bit-per-pixel bitmaps, base64-encoded, decoded at module
-// load). MASK covers the whole globe at MASK_RES px/degree; PH is a tight
-// crop over the Philippines used for the precise "is this land highlighted"
-// check once the forgiving screen-space radius already got us close.
-// ---------------------------------------------------------------------------
 const MASK_W = 1440;
 const MASK_H = 720;
 const MASK_ROW_BYTES = 180;
@@ -64,22 +58,14 @@ function isPhilippines(lonDeg: number, latDeg: number): boolean {
   return !!((phBytes[byteIndex] >> bit) & 1);
 }
 
-// ---------------------------------------------------------------------------
-// Sphere geometry (all pure functions of the canvas' internal resolution, so
-// they live at module scope rather than being rebuilt on every mount).
-// ---------------------------------------------------------------------------
 const CW = 640;
 const CH = 640;
 const cx = CW / 2;
 const cy = CH / 2;
 const R = 240;
 
-// Forgiving hit-test radius (in canvas px) around the PH pin's projected
-// screen position. Anything within this radius counts as "on Philippines"
-// without needing to land on the exact (thin, foreshortened) mask pixels.
 const PH_HIT_RADIUS = 34;
-// Larger radius used once already hovered/selected, so a rotating globe or
-// small cursor jitter doesn't flicker the target off right at the edge.
+
 const PH_HIT_RADIUS_STICKY = 46;
 
 interface ProjectedPoint {
@@ -110,13 +96,9 @@ function pixelToLatLon(px: number, py: number, rotDeg: number): { lat: number; l
   return { lat, lon };
 }
 
-// Robust hit-test: true if (px,py) should count as "on the Philippines".
-// Combines a generous screen-space radius around the pin (primary, forgiving)
-// with the exact mask lookup as a fallback (covers cases where the visible
-// landmass extends further than the radius, e.g. northern Luzon).
 function hitTestPhilippines(px: number, py: number, rotDeg: number, sticky: boolean): boolean {
   const proj = forwardProject(PH_PIN_LAT, PH_PIN_LON, rotDeg);
-  // Only valid if the pin is actually facing the viewer right now.
+
   if (proj.depth > 0.15) {
     const ddx = px - proj.sx;
     const ddy = py - proj.sy;
@@ -128,10 +110,6 @@ function hitTestPhilippines(px: number, py: number, rotDeg: number, sticky: bool
   return false;
 }
 
-// Precomputed per-pixel sphere sample points (lon/lat/depth for every canvas
-// pixel that falls inside the globe's silhouette). Pure function of CW/CH/R,
-// so — like the mask bytes above — this is built once at module load rather
-// than once per mount.
 const pixIndex: number[] = [];
 const pixBaseLon: number[] = [];
 const pixLat: number[] = [];
@@ -161,11 +139,11 @@ for (let py = 0; py < CH; py++) {
 const N = pixIndex.length;
 
 export interface EarthGlobeProps {
-  /** Rendered size in CSS pixels (canvas is always 640x640 internally). */
+
   size?: number;
-  /** Label shown on the pin once it's pinned. */
+
   label?: string;
-  /** Small subtitle line under the label. */
+
   tag?: string;
   className?: string;
 }
@@ -190,16 +168,13 @@ export default function EarthGlobe({
     const imgData = ctx.createImageData(CW, CH);
     const buf = imgData.data;
 
-    // Canvas internally always renders at CW x CH (640x640); it's scaled
-    // down via CSS to `size` for display. The pin div lives outside the
-    // canvas, so its coordinates need this same scale factor applied.
     const displayScaleX = size / CW;
     const displayScaleY = size / CH;
 
     let theta = 0;
     let lastMouse: { px: number; py: number } | null = null;
-    let selected = false; // click-locked state — independent of continuous hover
-    let wasHovered = false; // hysteresis state for hover flicker
+    let selected = false;
+    let wasHovered = false;
     let rafId = 0;
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -225,9 +200,9 @@ export default function EarthGlobe({
       const rotDeg = (theta * 180) / Math.PI;
 
       if (hitTestPhilippines(px, py, rotDeg, selected)) {
-        selected = !selected; // clicking it again dismisses it
+        selected = !selected;
       } else {
-        selected = false; // clicking elsewhere dismisses it
+        selected = false;
       }
     };
 
@@ -252,10 +227,6 @@ export default function EarthGlobe({
 
       const rotDeg = (theta * 180) / Math.PI;
 
-      // live hover check purely for the highlight-on-hover feedback.
-      // Uses a forgiving radius (see hitTestPhilippines) plus hysteresis
-      // (wasHovered) so the highlight doesn't flicker on/off as the globe
-      // rotates under a stationary cursor near the mask boundary.
       let hoveredPH = false;
       if (lastMouse) {
         hoveredPH = hitTestPhilippines(lastMouse.px, lastMouse.py, rotDeg, wasHovered);
@@ -298,13 +269,6 @@ export default function EarthGlobe({
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // Pin only shows when *selected* (click-locked), not on plain hover —
-      // stays anchored to Manila and tracks rotation smoothly on its own.
-      // proj.sx/sy are in the canvas' internal 640-unit coordinate space,
-      // but the pin is a plain DOM element positioned inside a wrap div
-      // sized to `size` (the canvas is CSS-scaled down to match) — so its
-      // coordinates need the same scale factor applied, or it drifts off
-      // toward the bottom-right at any size other than 640.
       if (selected) {
         const proj = forwardProject(PH_PIN_LAT, PH_PIN_LON, rotDeg);
         pinEl.style.left = `${proj.sx * displayScaleX}px`;

@@ -3,26 +3,18 @@ import { CATEGORIES } from "./skillsData";
 import { SkillTile } from "./SkillTile";
 import { playSelectBlip } from "./skillSound";
 
-// ── Component ────────────────────────────────────────────────────────
 export default function Skills() {
-  // Empty = no column expanded yet, matching the resting state.
+
   const [openId, setOpenId] = useState<string>("");
   const [sectionIn, setSectionIn] = useState<boolean>(false);
-  // Tracks the column that just got selected so it can play a one-shot
-  // flash/snap moment, then clears itself once the animation finishes.
+
   const [flashId, setFlashId] = useState<string>("");
   const [reducedMotion, setReducedMotion] = useState<boolean>(false);
-  // Tracks which column the pointer is over so the rest of the row can
-  // dim and desaturate — a spotlight/target-lock effect, like narrowing
-  // focus onto a fighter at a select screen.
+
   const [hoveredId, setHoveredId] = useState<string>("");
-  // Once the one-shot entrance animation has had time to finish, we stop
-  // setting `animation` inline so the hover/open glow keyframes (driven by
-  // CSS classes) aren't silently overridden by the inline style.
+
   const [entranceDone, setEntranceDone] = useState<boolean>(false);
-  // The column mid wind-up: briefly true between a click/Enter and the
-  // actual open/close committing, so a short "hit-stop" beat can play —
-  // fighting games pause a frame right before an impact actually lands.
+
   const [pendingId, setPendingId] = useState<string>("");
   const rootRef = useRef<HTMLDivElement | null>(null);
   const columnRefs = useRef<Array<HTMLDivElement | null>>([]);
@@ -46,7 +38,7 @@ export default function Skills() {
   }
 
   function handleColumnClick(id: string) {
-    if (pendingId) return; // debounce: a wind-up is already in flight
+    if (pendingId) return;
     if (reducedMotion) {
       commitColumnSelect(id);
       return;
@@ -58,8 +50,6 @@ export default function Skills() {
     }, 65);
   }
 
-  // Left/Right moves focus between columns like a real character-select
-  // screen; Enter/Space (handled per-column) locks the focused one in.
   function handleRowKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
     const refs = columnRefs.current;
@@ -71,9 +61,6 @@ export default function Skills() {
     refs[nextIndex]?.focus();
   }
 
-  // Fade in the first time this section scrolls into view, matching the
-  // hero's entrance instead of just appearing at full opacity whenever
-  // the user happens to scroll past.
   useEffect(() => {
     const node = rootRef.current;
     if (!node) return;
@@ -90,8 +77,6 @@ export default function Skills() {
     return () => observer.disconnect();
   }, []);
 
-  // Longest entrance delay is ~0.28s + 4*0.09s plus its own 0.5s duration;
-  // give it a little headroom before handing "animation" back to CSS.
   useEffect(() => {
     if (!sectionIn) return;
     const t = window.setTimeout(() => setEntranceDone(true), 1200);
@@ -118,15 +103,13 @@ export default function Skills() {
       }}
     >
       <style>{`
-        /* Eyebrow + card frame drop in from above like a UI panel powering
-           on, instead of a plain fade. */
+
         @keyframes frameDropIn {
           0% { opacity: 0; transform: translateY(-40px) scale(0.97); }
           60% { opacity: 1; transform: translateY(6px) scale(1.005); }
           100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-        /* Each fighter-select column steps in from alternating sides,
-           like they're walking onto the select screen one by one. */
+
         @keyframes columnStepInLeft {
           0% { opacity: 0; transform: translateX(-46px); }
           100% { opacity: 1; transform: translateX(0); }
@@ -136,9 +119,6 @@ export default function Skills() {
           100% { opacity: 1; transform: translateX(0); }
         }
 
-        /* The one signature "fight's on" moment: a hard white flash and a
-           snap-zoom overshoot, fired once when a column is selected. Every
-           other interaction in this section stays calm on purpose. */
         @keyframes selectFlash {
           0% { opacity: 0.85; }
           100% { opacity: 0; }
@@ -148,20 +128,17 @@ export default function Skills() {
           55% { transform: scale(1.012); }
           100% { transform: scale(1); }
         }
-        /* One-time diagonal light sweep across the header rule on entrance. */
+
         @keyframes headerSweep {
           0% { transform: translateX(-120%) skewX(-18deg); }
           100% { transform: translateX(220%) skewX(-18deg); }
         }
-        /* Sparks kick off the four bracket corners the instant a column
-           is locked in, timed with the flash. */
+
         @keyframes sparkBurst {
           0% { opacity: 1; transform: scale(0.3); }
           100% { opacity: 0; transform: scale(2.4); }
         }
-        /* Hit-stop: a tiny compress-and-hold right as a selection is made,
-           before the flash/snap lands — the beat of stillness a fighting
-           game freezes on right before impact registers. */
+
         @keyframes windUp {
           0% { transform: scale(1); }
           100% { transform: scale(0.965); }
@@ -169,15 +146,12 @@ export default function Skills() {
         .mk-column.mk-windup {
           animation: windUp 0.065s ease-out forwards !important;
         }
-        /* A slow glow breathing on the bracket corners of whichever column
-           currently has focus — hover or open — so the "lock" reads as
-           alive rather than a static state swap. */
+
         @keyframes bracketGlow {
           0%, 100% { filter: drop-shadow(0 0 0.5px var(--accent, #e8283c)); }
           50% { filter: drop-shadow(0 0 1.5px var(--accent, #e8283c)); }
         }
-        /* Category label gives a small punch when its column becomes the
-           hovered target, like a name-plate snapping into place. */
+
         @keyframes labelPunch {
           0% { transform: scale(0.85); }
           60% { transform: scale(1.08); }
@@ -195,8 +169,7 @@ export default function Skills() {
           background-color: rgba(255,255,255,0.015);
           transform: scale(1);
           transform-origin: center;
-          /* Corner-bracket frame instead of a flat border: four small L
-             marks in the category accent, HUD target-lock style. */
+
           --bracket: 16px;
           --bracket-w: 2px;
           background-image:
@@ -250,9 +223,7 @@ export default function Skills() {
             linear-gradient(var(--accent, #e8283c), var(--accent, #e8283c)),
             linear-gradient(var(--accent, #e8283c), var(--accent, #e8283c));
         }
-        /* Spotlight: once anything in the row is hovered, the columns that
-           are neither hovered nor open sink back — like the rest of the
-           roster fading out of focus at a select screen. */
+
         .mk-columns-row.mk-has-hover .mk-column:not(.mk-hovered):not(.open) {
           opacity: 0.55;
           filter: saturate(0.35) brightness(0.8);
@@ -278,8 +249,6 @@ export default function Skills() {
           z-index: 6;
         }
 
-        /* Health-bar style underline for closed columns: a thin track that
-           fills from the center outward on hover. */
         .mk-column-bar {
           position: absolute;
           left: 10%;
@@ -376,12 +345,7 @@ export default function Skills() {
           height: 100%;
           display: block;
         }
-        /* Single-color brand marks (Turso, Railway, Render, Vercel, Anthropic,
-           Express, Zod, Gemini) ship with NO fill attribute at all, which per
-           the SVG spec defaults to solid black — not currentColor. Force
-           their un-filled shapes to pick up the tile's accent color instead,
-           without touching any icon that already sets its own real brand
-           color (e.g. Python's blue/yellow, JavaScript's yellow). */
+
         .mk-brand-svg.mk-brand-mono svg,
         .mk-brand-svg.mk-brand-mono svg path,
         .mk-brand-svg.mk-brand-mono svg g {
@@ -419,7 +383,7 @@ export default function Skills() {
           animation: sectionIn ? "frameDropIn 0.65s cubic-bezier(0.2, 0.85, 0.25, 1) both" : "none",
         }}
       >
-        {/* Eyebrow, echoing the other sections */}
+
         <p
           style={{
             margin: "0 0 10px",
@@ -433,22 +397,19 @@ export default function Skills() {
           LOADOUT
         </p>
 
-        {/* One bordered card holding the header strip + the column row */}
         <div
           style={{
             position: "relative",
             border: "2px solid rgba(232,40,60,0.45)",
             borderRadius: "36px",
             overflow: "hidden",
-            // A restrained diagonal wash — a hint of the VS-screen split
-            // without turning into a hard two-tone panel.
+
             background:
               "linear-gradient(122deg, #150708 0%, #0d0d0d 38%, #0d0d0d 62%, #120a0d 100%)",
             boxShadow: "0 0 60px rgba(232,40,60,0.1)",
           }}
         >
-          {/* HUD-style corner brackets on the outer panel, echoing the
-              per-column bracket treatment below. */}
+
           {[
             { top: 14, left: 14, borderWidth: "3px 0 0 3px" },
             { top: 14, right: 14, borderWidth: "3px 3px 0 0" },
@@ -469,8 +430,6 @@ export default function Skills() {
               }}
             />
           ))}
-
-          {/* Sound toggle removed — handled by the site-wide sound control */}
 
           <div
             style={{
@@ -605,7 +564,6 @@ export default function Skills() {
                         </div>
                       )}
 
-                      {/* bottom gradient so the name reads over either the image or the placeholder */}
                       <div
                         style={{
                           position: "absolute",
@@ -616,9 +574,6 @@ export default function Skills() {
                         }}
                       />
 
-                      {/* Hard rim-light in the category's own accent, like a
-                          fighter lit from the side on a VS screen — and it
-                          flares brighter once this column has focus. */}
                       <div className="mk-rim" style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
 
                       <div

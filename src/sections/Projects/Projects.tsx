@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { CartridgeSVG } from "./Cartridge";
 import { ConsoleShellSVG } from "./Gameboy";
 
-// ── Data ─────────────────────────────────────────────────────────────
 interface ProjectLink {
   label: string;
   url: string;
@@ -54,7 +53,6 @@ const PROJECTS: Project[] = [
   },
 ];
 
-// ── GitHub stats ────────────────────────────────────────────────────
 interface GithubStats {
   stars: number;
   forks: number;
@@ -121,7 +119,6 @@ function fanTransform(offset: number, isSelected: boolean, hovered: boolean): st
   return `translate(${translateX}px, ${translateY}px) rotate(${rotate}deg) scale(${scale})`;
 }
 
-// ── Main Component ───────────────────────────────────────────────────
 export default function Projects() {
   const [selectedId, setSelectedId] = useState<string>(PROJECTS[0].id);
   const [flash, setFlash] = useState<boolean>(false);
@@ -130,7 +127,6 @@ export default function Projects() {
   const [statsByProject, setStatsByProject] = useState<Record<string, StatsState>>({});
   const rootRef = useRef<HTMLDivElement | null>(null);
 
-  // Insertion & Screen Power State
   const [poweredOn, setPoweredOn] = useState<boolean>(false);
   const [inserting, setInserting] = useState<boolean>(false);
   const [insertingProject, setInsertingProject] = useState<Project | null>(null);
@@ -170,7 +166,6 @@ export default function Projects() {
                 if (Array.isArray(contribJson)) contributors = contribJson.length;
               }
             } catch {
-              // fallback
             }
 
             return [
@@ -239,12 +234,12 @@ export default function Projects() {
       ([entry]) => {
         if (entry.isIntersecting) {
           setSectionIn(true);
-          
+
           if (!hasAutoInserted.current) {
             hasAutoInserted.current = true;
             triggerCartridgeInsertion(PROJECTS[0]);
           }
-          
+
           observer.disconnect();
         }
       },
@@ -385,7 +380,7 @@ export default function Projects() {
         }
         .mk-bg-grid {
           background-size: 40px 40px;
-          background-image: 
+          background-image:
             linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
             linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
           animation: gridPulse 4s ease-in-out infinite;
@@ -429,10 +424,8 @@ export default function Projects() {
         }
       `}</style>
 
-      {/* Cyber Grid Background */}
       <div className="mk-bg-grid" style={{ position: "absolute", inset: 0, zIndex: -2, pointerEvents: "none" }} />
 
-      {/* Ambient Radial Glow */}
       <div
         style={{
           position: "absolute",
@@ -444,7 +437,6 @@ export default function Projects() {
         }}
       />
 
-      {/* Section Header */}
       <div
         className="mk-fade"
         style={{
@@ -495,7 +487,6 @@ export default function Projects() {
         </h1>
       </div>
 
-      {/* 3-Column Arena Layout */}
       <div
         className="mk-arena-row"
         style={{
@@ -508,7 +499,7 @@ export default function Projects() {
           gap: "32px",
         }}
       >
-        {/* LEFT COLUMN: Cartridge Fan / Stack */}
+
         <div
           className="mk-cart-cluster mk-fade"
           style={{
@@ -612,7 +603,6 @@ export default function Projects() {
           </div>
         </div>
 
-        {/* CENTER COLUMN: Console Shell */}
         <div
           className="mk-console-wrap mk-fade"
           style={{
@@ -627,7 +617,6 @@ export default function Projects() {
         >
           <ConsoleShellSVG leftLink={selected.links[0]} rightLink={selected.links[1]} />
 
-          {/* Top-down Insertion Overlay & Slot Flash Glow */}
           {inserting && insertingProject && (
             <>
               <div
@@ -672,7 +661,6 @@ export default function Projects() {
             </>
           )}
 
-          {/* Screen Content Overlay */}
           <div
             style={{
               position: "absolute",
@@ -689,7 +677,7 @@ export default function Projects() {
               border: "1px solid rgba(255,255,255,0.05)",
             }}
           >
-            {/* Scanlines Effect */}
+
             <div
               style={{
                 position: "absolute",
@@ -805,7 +793,6 @@ export default function Projects() {
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Stats Sidebar */}
         <div
           className="mk-stats-sidebar mk-fade"
           style={{
@@ -834,7 +821,6 @@ export default function Projects() {
   );
 }
 
-// ── Sub-components & Helpers ─────────────────────────────────────────
 function NoSignalPlaceholder() {
   return (
     <div

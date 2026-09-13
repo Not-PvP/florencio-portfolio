@@ -7,7 +7,7 @@ interface SeparatorProps {
 
 export default function Separator({ next, name = "FLORENCIO" }: SeparatorProps) {
   const token = `${name} // ${next.toUpperCase()} //`;
-  // Repeated enough times that even ultra-wide screens never see a gap.
+
   const half = useMemo(() => Array.from({ length: 8 }, () => token), [token]);
 
   return (

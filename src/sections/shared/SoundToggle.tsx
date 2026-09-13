@@ -1,13 +1,6 @@
 import { useEffect, useState } from "react";
 import { isMuted, subscribeMuted, toggleMuted } from "./audio";
 
-// ── Sound toggle ──────────────────────────────────────────────────────
-// A speaker glyph is a fine icon but it's static and forgettable next to
-// the rest of the HUD. This instead reads as a tiny live waveform: five
-// bars bouncing at staggered speeds when sound is on, and — playing off
-// the health bar sitting right above it — flatlining dead level when
-// muted, like a monitor with no pulse. Same gold-bevel HUD chrome as
-// the health bar plate so the two widgets read as one system.
 export default function SoundToggle() {
   const [muted, setMutedState] = useState(true);
 

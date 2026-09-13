@@ -1,15 +1,5 @@
 import { Code2, Layers, Cpu, Wrench, Database, type LucideIcon } from "lucide-react";
 
-// ── Data ─────────────────────────────────────────────────────────────
-// Swap these arrays out with your real stack whenever you're ready.
-// `iconSlug` keys into BRAND_SVGS below (official devicon/simple-icons/
-// bootstrap-icons artwork, inlined at build time so colors are always
-// correct and there's no CDN round-trip). No iconSlug, or a slug not
-// present in the map, falls back to the plain 2-4 letter tag badge
-// automatically. Claude's mark below is the real starburst icon (from
-// Bootstrap Icons, MIT-licensed) on its actual brand terracotta, #D97757.
-// ChatGPT/OpenAI has no plain-mark SVG in any of these sets, so it's left
-// without a logo rather than guessing at one.
 export interface Skill {
   name: string;
   tag: string;
@@ -27,9 +17,7 @@ export interface SkillCategory {
 }
 
 export const CATEGORIES: SkillCategory[] = [
-  // Each category can optionally take a portraitUrl (e.g. "/images/arsenal.png").
-  // Until real art is ready, leave it unset — the column falls back to a
-  // silhouette placeholder so the agent-select layout is fully visible now.
+
   {
     id: "languages",
     fighterName: "Arsenal",

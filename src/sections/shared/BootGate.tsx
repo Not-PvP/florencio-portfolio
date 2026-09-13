@@ -5,29 +5,15 @@ interface BootGateProps {
   onDismiss: () => void;
 }
 
-// ── Boot gate ────────────────────────────────────────────────────────
-// Sits on top of everything until the visitor taps/clicks/presses a key.
-// Two jobs at once: sets the arcade tone before they've seen anything
-// else, and gives us the user gesture the browser requires before audio
-// is allowed to play — so the very first interaction with the site both
-// dismisses this screen and unlocks sound in one motion.
 export default function BootGate({ onDismiss }: BootGateProps) {
   const [leaving, setLeaving] = useState(false);
   const [flicker, setFlicker] = useState(false);
 
-  // Power-on flicker a beat after mount, then settle — mimics an old
-  // console/CRT stabilizing rather than snapping straight to full brightness.
   useEffect(() => {
     const t = setTimeout(() => setFlicker(true), 260);
     return () => clearTimeout(t);
   }, []);
 
-  // Lock page scroll while the gate is up so an impatient scroll attempt
-  // doesn't reveal content sliding underneath it. Also force scroll to the
-  // very top — main.tsx already does this before mount, but some browsers
-  // restore the previous scroll position asynchronously after load, which
-  // would otherwise leave the page scrolled away from About Me underneath
-  // the gate, only surfacing once it's dismissed.
   useEffect(() => {
     window.scrollTo(0, 0);
     const prevOverflow = document.body.style.overflow;
@@ -115,7 +101,6 @@ export default function BootGate({ onDismiss }: BootGateProps) {
         }
       `}</style>
 
-      {/* faint scanline sweep for CRT flavor, purely decorative */}
       <div
         aria-hidden="true"
         className="mk-scanline-sweep"

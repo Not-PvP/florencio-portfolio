@@ -5,6 +5,18 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0a0a0a" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+        script-src 'self';
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data:;
+        connect-src 'self' https://api.github.com;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';"
+    />
     <title>Mark Angelo Florencio — Portfolio</title>
     <meta
       name="description"

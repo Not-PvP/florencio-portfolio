@@ -1,11 +1,8 @@
 import { isMuted } from "../shared/audio";
 
-// Short synthesized "select" blip — two quick square-wave tones, no
-// external audio asset needed. Reused for both open and close so the
-// column switch always has a bit of arcade feedback.
 let sharedAudioCtx: AudioContext | null = null;
 export function playSelectBlip(rising: boolean) {
-  if (isMuted()) return; // respect the site-wide sound toggle
+  if (isMuted()) return;
   try {
     const Ctx = window.AudioContext || (window as any).webkitAudioContext;
     if (!Ctx) return;
@@ -28,6 +25,5 @@ export function playSelectBlip(rising: boolean) {
     osc.start(now);
     osc.stop(now + 0.12);
   } catch {
-    // Audio is a nice-to-have; never let it break the UI.
   }
 }
