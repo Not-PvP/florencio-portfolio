@@ -23,8 +23,13 @@ export default function BootGate({ onDismiss }: BootGateProps) {
   }, []);
 
   // Lock page scroll while the gate is up so an impatient scroll attempt
-  // doesn't reveal content sliding underneath it.
+  // doesn't reveal content sliding underneath it. Also force scroll to the
+  // very top — main.tsx already does this before mount, but some browsers
+  // restore the previous scroll position asynchronously after load, which
+  // would otherwise leave the page scrolled away from About Me underneath
+  // the gate, only surfacing once it's dismissed.
   useEffect(() => {
+    window.scrollTo(0, 0);
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
