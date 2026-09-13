@@ -10,8 +10,16 @@ export default function BootGate({ onDismiss }: BootGateProps) {
   const [flicker, setFlicker] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setFlicker(true), 260);
-    return () => clearTimeout(t);
+    let cancelled = false;
+    const minBeat = new Promise<void>((resolve) => setTimeout(resolve, 260));
+    const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
+    const capped = new Promise<void>((resolve) => setTimeout(resolve, 1500));
+    Promise.race([Promise.all([minBeat, fontsReady]).then(() => {}), capped]).then(() => {
+      if (!cancelled) setFlicker(true);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -94,12 +102,51 @@ export default function BootGate({ onDismiss }: BootGateProps) {
         .mk-scanline-sweep {
           animation: mk-scanline 3.2s linear infinite;
         }
+        @keyframes mk-boot-grid-pulse {
+          0%, 100% { opacity: 0.15; }
+          50% { opacity: 0.25; }
+        }
+        .mk-boot-grid {
+          background-size: 40px 40px;
+          background-image:
+            linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+          animation: mk-boot-grid-pulse 4s ease-in-out infinite;
+        }
         @media (prefers-reduced-motion: reduce) {
           .mk-boot-content { animation: none !important; opacity: 1 !important; }
           .mk-press-text { animation: none !important; }
           .mk-scanline-sweep { display: none !important; }
+          .mk-boot-grid { animation: none !important; }
         }
       `}</style>
+
+      <div
+        aria-hidden="true"
+        className="mk-boot-grid"
+        style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
+      />
+
+      {[
+        { top: 22, left: 22, borderWidth: "3px 0 0 3px" },
+        { top: 22, right: 22, borderWidth: "3px 3px 0 0" },
+        { bottom: 22, left: 22, borderWidth: "0 0 3px 3px" },
+        { bottom: 22, right: 22, borderWidth: "0 3px 3px 0" },
+      ].map((pos, i) => (
+        <div
+          key={i}
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            width: "26px",
+            height: "26px",
+            borderColor: "rgba(232,40,60,0.6)",
+            borderStyle: "solid",
+            pointerEvents: "none",
+            ...pos,
+          }}
+        />
+      ))}
 
       <div
         aria-hidden="true"

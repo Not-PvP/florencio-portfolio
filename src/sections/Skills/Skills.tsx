@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { CATEGORIES } from "./skillsData";
 import { SkillTile } from "./SkillTile";
 import { playSelectBlip } from "./skillSound";
@@ -17,7 +17,6 @@ export default function Skills() {
 
   const [pendingId, setPendingId] = useState<string>("");
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const columnRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -48,17 +47,6 @@ export default function Skills() {
       setPendingId("");
       commitColumnSelect(id);
     }, 65);
-  }
-
-  function handleRowKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
-    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-    const refs = columnRefs.current;
-    const currentIndex = refs.findIndex((el) => el === document.activeElement);
-    if (currentIndex === -1) return;
-    e.preventDefault();
-    const dir = e.key === "ArrowLeft" ? -1 : 1;
-    const nextIndex = (currentIndex + dir + refs.length) % refs.length;
-    refs[nextIndex]?.focus();
   }
 
   useEffect(() => {
@@ -264,13 +252,16 @@ export default function Skills() {
           top: 0;
           bottom: 0;
           left: 50%;
-          width: 0%;
+          width: 30%;
+          opacity: 0.4;
           background: var(--accent, #e8283c);
           transform: translateX(-50%);
-          transition: width 0.3s ease;
+          transition: width 0.3s ease, opacity 0.3s ease;
         }
-        .mk-column:hover .mk-column-bar::after {
+        .mk-column:hover .mk-column-bar::after,
+        .mk-column.mk-hovered .mk-column-bar::after {
           width: 100%;
+          opacity: 1;
         }
 
         .mk-select-flash {
@@ -458,7 +449,6 @@ export default function Skills() {
 
           <div
             className={`mk-columns-row${hoveredId ? " mk-has-hover" : ""}`}
-            onKeyDown={handleRowKeyDown}
             style={{
               display: "flex",
               height: "520px",
@@ -477,12 +467,11 @@ export default function Skills() {
               return (
                 <div
                   key={category.id}
-                  ref={(el) => { columnRefs.current[ci] = el; }}
                   className={`mk-column mk-column-step ${isOpen ? "open" : ""} ${justSelected ? "mk-snap" : ""} ${isHovered ? "mk-hovered" : ""} ${isPending ? "mk-windup" : ""}`}
                   role="button"
                   tabIndex={0}
                   aria-expanded={isOpen}
-                  aria-label={`${category.label} category`}
+                  aria-label={`${category.label} category, ${category.skills.length} skills`}
                   onClick={() => handleColumnClick(category.id)}
                   onMouseEnter={() => setHoveredId(category.id)}
                   onMouseLeave={() => setHoveredId((current) => (current === category.id ? "" : current))}
@@ -523,6 +512,33 @@ export default function Skills() {
                   )}
                   {!isOpen && <div className="mk-column-bar" />}
                   {!isOpen && (
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute",
+                        top: "12px",
+                        right: "12px",
+                        zIndex: 2,
+                        minWidth: "20px",
+                        height: "20px",
+                        padding: "0 5px",
+                        borderRadius: "10px",
+                        background: "rgba(10,10,10,0.65)",
+                        border: `1px solid ${category.accent}88`,
+                        color: category.accent,
+                        fontFamily: "'Space Mono', monospace",
+                        fontSize: "10px",
+                        fontWeight: 700,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        lineHeight: 1,
+                      }}
+                    >
+                      {category.skills.length}
+                    </span>
+                  )}
+                  {!isOpen && (
                     <div
                       style={{
                         position: "relative",
@@ -554,13 +570,13 @@ export default function Skills() {
                           style={{
                             position: "absolute",
                             inset: 0,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            background: `linear-gradient(180deg, ${category.accent}10 0%, #0a0a0a 85%)`,
+                            background: `linear-gradient(180deg, ${category.accent}14 0%, #0a0a0a 85%)`,
                           }}
                         >
-                          <Icon size={56} strokeWidth={1} color={`${category.accent}55`} />
+                          <FighterSilhouette
+                            color={category.accent}
+                            style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+                          />
                         </div>
                       )}
 
@@ -712,5 +728,29 @@ export default function Skills() {
         </p>
       </div>
     </div>
+  );
+}
+
+function FighterSilhouette({ color, style }: { color: string; style?: React.CSSProperties }) {
+  const gradId = useId();
+  return (
+    <svg
+      viewBox="0 0 200 260"
+      preserveAspectRatio="xMidYMin slice"
+      aria-hidden="true"
+      style={style}
+    >
+      <defs>
+        <radialGradient id={gradId} cx="50%" cy="30%" r="70%">
+          <stop offset="0%" stopColor={color} stopOpacity="0.2" />
+          <stop offset="100%" stopColor={color} stopOpacity="0.04" />
+        </radialGradient>
+      </defs>
+      <circle cx="100" cy="72" r="40" fill={`url(#${gradId})`} />
+      <path
+        d="M100 118 C60 118 24 150 18 260 L182 260 C176 150 140 118 100 118 Z"
+        fill={`url(#${gradId})`}
+      />
+    </svg>
   );
 }

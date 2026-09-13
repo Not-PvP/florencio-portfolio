@@ -22,17 +22,6 @@ export default function App() {
   const [booted, setBooted] = useState(false);
 
   useEffect(() => {
-    const id = "mk-fonts-link";
-    if (document.getElementById(id)) return;
-    const link = document.createElement("link");
-    link.id = id;
-    link.rel = "stylesheet";
-    link.href =
-      "https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&display=swap";
-    document.head.appendChild(link);
-  }, []);
-
-  useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
