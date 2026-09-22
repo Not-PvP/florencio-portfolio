@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import AboutMe from "./sections/AboutMe/AboutMe";
+import Education from "./sections/Education/Education";
 import Projects from "./sections/Projects/Projects";
 import Skills from './sections/Skills/Skills';
 import Contact from "./sections/Contact/Contact";
@@ -12,9 +13,10 @@ import Outro from "./sections/shared/Outro";
 
 const SECTIONS = [
   { id: "about", label: "About", round: "Round 1", Component: AboutMe },
-  { id: "projects", label: "Projects", round: "Round 2", Component: Projects },
-  { id: "skills", label: "Skills", round: "Round 3", Component: Skills },
-  { id: "contact", label: "Contact", round: "Round 4", Component: Contact },
+  { id: "school", label: "School", round: "Round 2", Component: Education },
+  { id: "projects", label: "Projects", round: "Round 3", Component: Projects },
+  { id: "skills", label: "Skills", round: "Round 4", Component: Skills },
+  { id: "contact", label: "Contact", round: "Round 5", Component: Contact },
 ] as const;
 
 export default function App() {

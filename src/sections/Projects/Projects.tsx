@@ -485,7 +485,7 @@ export default function Projects() {
               fontWeight: 700,
             }}
           >
-            ROUND TWO
+            ROUND THREE
           </p>
         </div>
         <h1

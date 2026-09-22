@@ -344,6 +344,21 @@ export default function Skills() {
           fill: currentColor;
         }
 
+        .mk-skills-grid {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(232,40,60,0.6) transparent;
+        }
+        .mk-skills-grid::-webkit-scrollbar {
+          width: 4px;
+        }
+        .mk-skills-grid::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .mk-skills-grid::-webkit-scrollbar-thumb {
+          background: rgba(232,40,60,0.6);
+          border-radius: 4px;
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .mk-column { transition: none; }
           .mk-tile { animation: none; opacity: 1; }
@@ -686,12 +701,15 @@ export default function Skills() {
                         </div>
                       </div>
                       <div
+                        className="mk-skills-grid"
                         style={{
                           display: "flex",
                           flexWrap: "wrap",
                           gap: "14px",
                           justifyContent: "center",
                           alignContent: "flex-start",
+                          flex: "1 1 auto",
+                          minHeight: 0,
                           overflowY: "auto",
                           overflowX: "hidden",
                           width: "100%",
