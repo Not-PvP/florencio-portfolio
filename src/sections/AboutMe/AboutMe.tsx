@@ -113,19 +113,25 @@ export default function AboutMe() {
             flex-direction: column !important;
             height: auto !important;
             min-height: 100vh !important;
+            padding: 32px 20px 0 !important;
+            box-sizing: border-box !important;
+            gap: 8px !important;
           }
           .mk-drawer {
             width: 100% !important;
             min-width: 100% !important;
-            height: 42vh !important;
-            min-height: 280px !important;
+            height: auto !important;
+            aspect-ratio: 4 / 5 !important;
+            min-height: 0 !important;
+            border-radius: 18px !important;
+            flex-shrink: 0 !important;
           }
           .mk-hero-photo {
-            object-position: center 0% !important;
+            object-position: center 8% !important;
             transform: none !important;
           }
           .mk-hero-copy {
-            padding: 32px 22px 56px !important;
+            padding: 32px 0 56px !important;
             flex: none !important;
           }
           .mk-hero-copy h1 {
