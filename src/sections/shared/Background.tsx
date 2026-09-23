@@ -62,7 +62,7 @@ export default function EmberBackground() {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       ctx!.clearRect(0, 0, canvas!.width / dpr, canvas!.height / dpr);
 
-      if (particlesRef.current.length < 110 && Math.random() > 0.42) {
+      if (particlesRef.current.length < 45 && Math.random() > 0.75) {
         spawnAmbient();
       }
 
@@ -82,9 +82,9 @@ export default function EmberBackground() {
         const alpha = Math.max(1 - t, 0);
         const color =
           p.colorRoll < 0.4 ? RED : p.colorRoll < 0.75 ? ORANGE : YELLOW;
-        ctx!.fillStyle = `rgba(${color},${alpha * 0.85})`;
+        ctx!.fillStyle = `rgba(${color},${alpha * 0.6})`;
         ctx!.shadowColor = `rgba(${color},${alpha})`;
-        ctx!.shadowBlur = 7;
+        ctx!.shadowBlur = 3;
         ctx!.beginPath();
         ctx!.arc(p.x, p.y, p.size * (1 - t * 0.3), 0, Math.PI * 2);
         ctx!.fill();
@@ -124,20 +124,20 @@ export default function EmberBackground() {
           inset: 0;
           background: radial-gradient(
             ellipse 70% 55% at 50% 100%,
-            rgba(232,40,60,0.16) 0%,
-            rgba(255,138,61,0.09) 35%,
-            rgba(255,207,61,0.035) 55%,
+            rgba(232,40,60,0.09) 0%,
+            rgba(255,138,61,0.05) 35%,
+            rgba(255,207,61,0.02) 55%,
             transparent 75%
           );
-          animation: mk-heat-pulse 6s ease-in-out infinite;
+          animation: mk-heat-pulse 8s ease-in-out infinite;
           pointer-events: none;
         }
         @keyframes mk-heat-pulse {
-          0%, 100% { opacity: 0.7; }
-          50% { opacity: 1; }
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 0.85; }
         }
         @media (prefers-reduced-motion: reduce) {
-          .mk-heat-field { animation: none; opacity: 0.85; }
+          .mk-heat-field { animation: none; opacity: 0.7; }
         }
       `}</style>
       <div className="mk-grid-bg" />

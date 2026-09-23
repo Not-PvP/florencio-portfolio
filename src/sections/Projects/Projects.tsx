@@ -280,11 +280,6 @@ export default function Projects() {
           0% { opacity: 0; transform: translateY(40px); }
           100% { opacity: 1; transform: translateY(0); }
         }
-        @keyframes rowFlash {
-          0%, 60% { box-shadow: 0 0 0 rgba(232,40,60,0); }
-          68% { box-shadow: 0 0 100px rgba(232,40,60,0.4); }
-          100% { box-shadow: 0 0 0 rgba(232,40,60,0); }
-        }
         @keyframes wipeFlash {
           from { opacity: 1; background: #ffffff; }
           to { opacity: 0; background: rgba(232,40,60,0); }
@@ -308,18 +303,9 @@ export default function Projects() {
         .mk-cart-insert-anim {
           animation: cartInsertSlide 0.9s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
-        @keyframes slotFlash {
-          0%, 65% { opacity: 0; transform: translateX(-50%) scaleX(0.5); }
-          75% { opacity: 1; transform: translateX(-50%) scaleX(1.3); }
-          100% { opacity: 0; transform: translateX(-50%) scaleX(1); }
-        }
         @keyframes blinkText {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.15; }
-        }
-        @keyframes gridPulse {
-          0%, 100% { opacity: 0.15; }
-          50% { opacity: 0.25; }
         }
         .mk-blink {
           animation: blinkText 0.9s infinite ease-in-out;
@@ -328,17 +314,14 @@ export default function Projects() {
           transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .mk-stat-box {
-          background: rgba(18, 19, 23, 0.75);
-          backdrop-filter: blur(12px);
-          border: 1px solid rgba(232,40,60,0.3);
+          background: rgba(18, 19, 23, 0.85);
+          border: 1px solid rgba(232,40,60,0.25);
           border-radius: 10px;
           padding: 18px 20px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
-          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+          transition: border-color 0.3s ease;
         }
         .mk-stat-box:hover {
-          border-color: rgba(232,40,60,0.6);
-          box-shadow: 0 12px 35px rgba(232,40,60,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+          border-color: rgba(232,40,60,0.5);
         }
         .mk-cart {
           transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease;
@@ -377,9 +360,8 @@ export default function Projects() {
         .mk-bg-grid {
           background-size: 40px 40px;
           background-image:
-            linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-          animation: gridPulse 4s ease-in-out infinite;
+            linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
         }
         @media (prefers-reduced-motion: reduce) {
           .mk-panel { animation: none !important; }
@@ -428,7 +410,7 @@ export default function Projects() {
           inset: 0,
           zIndex: -1,
           background:
-            "radial-gradient(ellipse 65% 45% at 50% 60%, rgba(232,40,60,0.18), transparent 70%), radial-gradient(ellipse 40% 30% at 50% 20%, rgba(232,40,60,0.08), transparent 60%)",
+            "radial-gradient(ellipse 65% 45% at 50% 60%, rgba(232,40,60,0.09), transparent 70%)",
           pointerEvents: "none",
         }}
       />
@@ -628,7 +610,7 @@ export default function Projects() {
             flexShrink: 0,
             opacity: sectionIn ? 1 : 0,
             animation: sectionIn
-              ? "rowSlotIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.22s both, rowFlash 0.6s ease-out 0.22s both"
+              ? "rowSlotIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.22s both"
               : "none",
           }}
         >
@@ -636,22 +618,6 @@ export default function Projects() {
 
           {inserting && insertingProject && (
             <>
-              <div
-                aria-hidden="true"
-                style={{
-                  position: "absolute",
-                  top: "-6px",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: "120px",
-                  height: "30px",
-                  background: "radial-gradient(ellipse, rgba(232,40,60,1), transparent 70%)",
-                  animation: "slotFlash 0.9s ease-out forwards",
-                  pointerEvents: "none",
-                  zIndex: 14,
-                  filter: "blur(2px)",
-                }}
-              />
               <div
                 style={{
                   position: "absolute",

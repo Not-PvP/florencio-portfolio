@@ -334,15 +334,15 @@ export default function Contact() {
         }
 
         @keyframes finishHimSlam {
-          0% { opacity: 0; transform: translate(-50%, -50%) scale(2.6); filter: blur(10px); }
-          18% { opacity: 1; transform: translate(-50%, -50%) scale(1.32); filter: blur(0px); }
-          26% { transform: translate(-50%, -50%) scale(1.22); }
-          70% { opacity: 1; transform: translate(-50%, -50%) scale(1.22); }
+          0% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); filter: blur(6px); }
+          18% { opacity: 1; transform: translate(-50%, -50%) scale(1.18); filter: blur(0px); }
+          26% { transform: translate(-50%, -50%) scale(1.12); }
+          70% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
           100% { opacity: 0; transform: translate(-50%, -50%) scale(0.34); }
         }
         @keyframes finishHimFlash {
           0%, 14% { opacity: 0; }
-          17% { opacity: 0.9; }
+          17% { opacity: 0.5; }
           32% { opacity: 0; }
         }
         @keyframes flicker {
@@ -355,10 +355,10 @@ export default function Contact() {
         }
         @keyframes screenShake {
           0% { transform: translate(0, 0); }
-          20% { transform: translate(-6px, 3px); }
-          40% { transform: translate(5px, -4px); }
-          60% { transform: translate(-4px, -2px); }
-          80% { transform: translate(3px, 3px); }
+          20% { transform: translate(-3px, 1.5px); }
+          40% { transform: translate(2.5px, -2px); }
+          60% { transform: translate(-2px, -1px); }
+          80% { transform: translate(1.5px, 1.5px); }
           100% { transform: translate(0, 0); }
         }
         @keyframes burstIn {
@@ -369,7 +369,7 @@ export default function Contact() {
           100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
         }
         @keyframes flashOut {
-          from { opacity: 0.85; }
+          from { opacity: 0.45; }
           to { opacity: 0; }
         }
         @keyframes slotPop {
@@ -894,7 +894,7 @@ export default function Contact() {
               inset: 0,
               zIndex: 5,
               background: burst.color,
-              opacity: 0.85,
+              opacity: 0.45,
               animation: "flashOut 0.5s ease-out forwards",
               pointerEvents: "none",
               mixBlendMode: "screen",

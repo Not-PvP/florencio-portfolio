@@ -74,8 +74,8 @@ export default function AboutMe() {
           z-index: -1;
           pointer-events: none;
           background:
-            radial-gradient(ellipse 38% 50% at 100% 0%, rgba(196, 30, 30, 0.38), transparent 70%),
-            radial-gradient(ellipse 38% 50% at 100% 100%, rgba(196, 30, 30, 0.38), transparent 70%);
+            radial-gradient(ellipse 38% 50% at 100% 0%, rgba(196, 30, 30, 0.18), transparent 70%),
+            radial-gradient(ellipse 38% 50% at 100% 100%, rgba(196, 30, 30, 0.18), transparent 70%);
         }
 
         .mk-globe-slot {
@@ -117,11 +117,12 @@ export default function AboutMe() {
           .mk-drawer {
             width: 100% !important;
             min-width: 100% !important;
-            height: 38vh !important;
-            min-height: 260px !important;
+            height: 42vh !important;
+            min-height: 280px !important;
           }
           .mk-hero-photo {
-            object-position: center 12% !important;
+            object-position: center 0% !important;
+            transform: none !important;
           }
           .mk-hero-copy {
             padding: 32px 22px 56px !important;
@@ -160,6 +161,9 @@ export default function AboutMe() {
             background:
               "linear-gradient(160deg, #1a1010 0%, #0a0a0a 60%, #150a0a 100%)",
             overflow: "hidden",
+            border: "1px solid rgba(232,40,60,0.5)",
+            boxShadow: "0 0 24px rgba(232,40,60,0.18), inset 0 0 30px rgba(0,0,0,0.4)",
+            boxSizing: "border-box",
             transition:
               "width 0.65s cubic-bezier(0.16, 0.9, 0.2, 1), min-width 0.65s cubic-bezier(0.16, 0.9, 0.2, 1)",
           }}
@@ -187,7 +191,7 @@ export default function AboutMe() {
               inset: 0,
               pointerEvents: "none",
               background:
-                "linear-gradient(160deg, rgba(20,4,8,0.35) 0%, rgba(10,6,10,0.15) 45%, rgba(120,20,20,0.22) 100%)",
+                "linear-gradient(160deg, rgba(20,4,8,0.2) 0%, rgba(10,6,10,0.08) 45%, rgba(120,20,20,0.12) 100%)",
               mixBlendMode: "multiply",
             }}
           />
@@ -197,7 +201,7 @@ export default function AboutMe() {
           className="mk-hero-copy"
           style={{
             flex: 1,
-            padding: "60px 40px",
+            padding: "72px 56px",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",

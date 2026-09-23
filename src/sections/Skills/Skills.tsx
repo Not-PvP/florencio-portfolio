@@ -123,11 +123,6 @@ export default function Skills() {
           100% { transform: translateX(220%) skewX(-18deg); }
         }
 
-        @keyframes sparkBurst {
-          0% { opacity: 1; transform: scale(0.3); }
-          100% { opacity: 0; transform: scale(2.4); }
-        }
-
         @keyframes windUp {
           0% { transform: scale(1); }
           100% { transform: scale(0.965); }
@@ -227,17 +222,6 @@ export default function Skills() {
         .mk-column.mk-hovered .mk-column-label {
           animation: labelPunch 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
         }
-        .mk-spark {
-          position: absolute;
-          width: 26px;
-          height: 26px;
-          border-radius: 50%;
-          background: radial-gradient(circle, #fff 0%, var(--accent, #e8283c) 55%, transparent 75%);
-          pointer-events: none;
-          animation: sparkBurst 0.4s ease-out forwards;
-          z-index: 6;
-        }
-
         .mk-column-bar {
           position: absolute;
           left: 10%;
@@ -369,7 +353,7 @@ export default function Skills() {
           .mk-column.mk-windup { animation: none !important; transform: none !important; }
           .mk-column.mk-hovered, .mk-column.open { animation: none !important; transform: none !important; }
           .mk-column-label { animation: none !important; }
-          .mk-select-flash, .mk-header-sweep, .mk-spark { display: none !important; }
+          .mk-select-flash, .mk-header-sweep { display: none !important; }
           .mk-column-bar::after { transition: none; }
         }
 
@@ -468,8 +452,8 @@ export default function Skills() {
             style={{
               display: "flex",
               height: "520px",
-              gap: "3px",
-              padding: "14px",
+              gap: "8px",
+              padding: "20px",
               boxSizing: "border-box",
             }}
           >
@@ -518,14 +502,7 @@ export default function Skills() {
                     } as React.CSSProperties
                   }
                 >
-                  {justSelected && (
-                    <div className="mk-select-flash">
-                      <span className="mk-spark" style={{ top: "10px", left: "10px" }} />
-                      <span className="mk-spark" style={{ top: "10px", right: "10px" }} />
-                      <span className="mk-spark" style={{ bottom: "10px", left: "10px" }} />
-                      <span className="mk-spark" style={{ bottom: "10px", right: "10px" }} />
-                    </div>
-                  )}
+                  {justSelected && <div className="mk-select-flash" />}
                   {!isOpen && <div className="mk-column-bar" />}
                   {!isOpen && (
                     <span
