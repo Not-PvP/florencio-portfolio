@@ -3,9 +3,10 @@ import { isMuted, subscribeMuted, toggleMuted } from "./audio";
 
 interface SoundToggleProps {
   active?: boolean;
+  variant?: "fixed" | "inline";
 }
 
-export default function SoundToggle({ active = true }: SoundToggleProps) {
+export default function SoundToggle({ active = true, variant = "fixed" }: SoundToggleProps) {
   const [muted, setMutedState] = useState(() => isMuted());
   const [pulse, setPulse] = useState(false);
 
@@ -33,21 +34,37 @@ export default function SoundToggle({ active = true }: SoundToggleProps) {
       aria-label={muted ? "Unmute sound effects" : "Mute sound effects"}
       aria-pressed={!muted}
       className={`mk-sound-btn${pulse ? " mk-sound-pulse" : ""}`}
-      style={{
-        position: "fixed",
-        right: "18px",
-        bottom: "18px",
-        zIndex: 20,
-        width: "44px",
-        height: "44px",
-        border: "none",
-        cursor: "pointer",
-        padding: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "3px",
-      }}
+      style={
+        variant === "fixed"
+          ? {
+              position: "fixed",
+              right: "18px",
+              bottom: "18px",
+              zIndex: 20,
+              width: "44px",
+              height: "44px",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "3px",
+            }
+          : {
+              width: "36px",
+              height: "36px",
+              flexShrink: 0,
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "2.5px",
+              borderRadius: "8px",
+            }
+      }
     >
       <style>{`
         .mk-sound-btn {

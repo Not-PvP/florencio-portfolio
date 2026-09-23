@@ -113,7 +113,7 @@ export default function AboutMe() {
             flex-direction: column !important;
             height: auto !important;
             min-height: 100vh !important;
-            padding: 32px 20px 0 !important;
+            padding: 95px 20px 0 !important;
             box-sizing: border-box !important;
             gap: 8px !important;
           }
@@ -150,7 +150,7 @@ export default function AboutMe() {
           position: "relative",
           zIndex: 2,
           width: "100%",
-
+          paddingTop: "63px",
           minHeight: "100vh",
           display: "flex",
           overflow: "hidden",
@@ -167,8 +167,7 @@ export default function AboutMe() {
             background:
               "linear-gradient(160deg, #1a1010 0%, #0a0a0a 60%, #150a0a 100%)",
             overflow: "hidden",
-            border: "1px solid rgba(232,40,60,0.5)",
-            boxShadow: "0 0 24px rgba(232,40,60,0.18), inset 0 0 30px rgba(0,0,0,0.4)",
+            boxShadow: "inset 0 0 30px rgba(0,0,0,0.4)",
             boxSizing: "border-box",
             transition:
               "width 0.65s cubic-bezier(0.16, 0.9, 0.2, 1), min-width 0.65s cubic-bezier(0.16, 0.9, 0.2, 1)",

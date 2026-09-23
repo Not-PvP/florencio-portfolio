@@ -12,11 +12,11 @@ import Separator from "./sections/shared/Separator";
 import Outro from "./sections/shared/Outro";
 
 const SECTIONS = [
-  { id: "about", label: "About", round: "Round 1", Component: AboutMe },
-  { id: "school", label: "School", round: "Round 2", Component: Education },
-  { id: "projects", label: "Projects", round: "Round 3", Component: Projects },
-  { id: "skills", label: "Skills", round: "Round 4", Component: Skills },
-  { id: "contact", label: "Contact", round: "Round 5", Component: Contact },
+  { id: "about", label: "About", Component: AboutMe },
+  { id: "school", label: "School", Component: Education },
+  { id: "projects", label: "Projects", Component: Projects },
+  { id: "skills", label: "Skills", Component: Skills },
+  { id: "contact", label: "Contact", Component: Contact },
 ] as const;
 
 export default function App() {
@@ -78,64 +78,58 @@ export default function App() {
         @media (prefers-reduced-motion: reduce) {
           html { scroll-behavior: auto; }
         }
-        .mk-nav-dot {
-          transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
-        }
-        .mk-nav-dot:hover {
-          transform: scale(1.25);
-          border-color: rgba(255,138,91,0.8);
-        }
-        .mk-nav-dot:focus-visible {
-          outline: 2px solid #ff8a5b;
-          outline-offset: 3px;
+
+        .mk-section-anchor {
+          scroll-margin-top: 64px;
         }
 
-        .mk-nav-item {
+        .mk-navbar-link {
           position: relative;
-        }
-        .mk-nav-label {
-          position: absolute;
-          top: 50%;
-          right: calc(100% + 14px);
-          transform: translate(8px, -50%);
-          white-space: nowrap;
-          background: rgba(20,10,10,0.9);
-          border: 1px solid rgba(196,30,30,0.55);
-          border-radius: 6px 0 6px 6px;
-          padding: 5px 10px;
+          background: none;
+          border: none;
+          cursor: pointer;
           font-family: 'Space Mono', 'JetBrains Mono', monospace;
-          font-size: 10px;
+          font-size: 11px;
           font-weight: 700;
-          letter-spacing: 0.15em;
+          letter-spacing: 0.12em;
           text-transform: uppercase;
+          color: rgba(255,255,255,0.5);
+          padding: 6px 2px;
+          transition: color 0.2s ease;
+        }
+        .mk-navbar-link:hover {
           color: #ff8a5b;
-          opacity: 0;
-          pointer-events: none;
-          transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .mk-navbar-link:focus-visible {
+          outline: 2px solid #ff8a5b;
+          outline-offset: 2px;
+        }
+        .mk-navbar-link[aria-current="true"] {
+          color: #e8283c;
+        }
+        .mk-navbar-link[aria-current="true"]::after {
+          content: "";
+          position: absolute;
+          left: 2px;
+          right: 2px;
+          bottom: -2px;
+          height: 2px;
+          background: #e8283c;
+          box-shadow: 0 0 6px rgba(232,40,60,0.7);
         }
 
-        .mk-side-nav:hover .mk-nav-label,
-        .mk-side-nav:focus-within .mk-nav-label {
-          opacity: 1;
-          transform: translate(0, -50%);
-        }
-        .mk-nav-item:nth-child(1) .mk-nav-label { transition-delay: 0s; }
-        .mk-nav-item:nth-child(2) .mk-nav-label { transition-delay: 0.04s; }
-        .mk-nav-item:nth-child(3) .mk-nav-label { transition-delay: 0.08s; }
-        .mk-nav-item:nth-child(4) .mk-nav-label { transition-delay: 0.12s; }
-        @media (hover: none) {
-
-          .mk-nav-label { display: none; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .mk-nav-label { transition: opacity 0.15s ease; transition-delay: 0s !important; }
+        .mk-navbar-name {
+          font-family: 'Anton', sans-serif;
+          font-size: 14px;
+          letter-spacing: 0.04em;
+          color: #f2f2f2;
+          white-space: nowrap;
         }
 
-        @media (max-width: 640px) {
-          .mk-side-nav {
-            right: 10px !important;
-            gap: 10px !important;
-          }
+        @media (max-width: 720px) {
+          .mk-navbar-name { display: none; }
+          .mk-navbar-links { gap: 12px !important; }
+          .mk-navbar-link { font-size: 9.5px !important; letter-spacing: 0.06em !important; }
         }
       `}</style>
 
@@ -145,75 +139,81 @@ export default function App() {
 
       <EmberBackground />
 
-      <SoundToggle active={booted} />
-
-      <div
-        aria-hidden="true"
+      <nav
+        aria-label="Section navigation"
         style={{
           position: "fixed",
           top: 0,
           left: 0,
           width: "100%",
-          height: "3px",
-          background: "rgba(255,255,255,0.06)",
           zIndex: 30,
+          background: "rgba(8,8,10,0.85)",
+          backdropFilter: "blur(10px)",
+          borderBottom: "1px solid rgba(232,40,60,0.25)",
+          boxSizing: "border-box",
         }}
       >
         <div
           style={{
-            height: "100%",
-            width: `${scrollProgress}%`,
-            background: "linear-gradient(90deg, #e8283c, #ff8a5b)",
-            boxShadow: "0 0 8px rgba(232,40,60,0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "16px",
+            padding: "12px 20px",
+            maxWidth: "1400px",
+            margin: "0 auto",
           }}
-        />
-      </div>
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <img src="/favicon.svg" alt="" width={35} height={35} style={{ display: "block", borderRadius: "6px" }} />
+            <span className="mk-navbar-name">MARK ANGELO FLORENCIO</span>
+          </div>
 
-      <nav
-        aria-label="Section navigation"
-        className="mk-side-nav"
-        style={{
-          position: "fixed",
-          right: "22px",
-          top: "50%",
-          transform: "translateY(-50%)",
-          zIndex: 20,
-          display: "flex",
-          flexDirection: "column",
-          gap: "14px",
-        }}
-      >
-        {SECTIONS.map(({ id, label, round }) => {
-          const isActive = activeId === id;
-          return (
-            <div key={id} className="mk-nav-item">
-              <span className="mk-nav-label" aria-hidden="true">
-                {round} — {label}
-              </span>
-              <button
-                type="button"
-                className="mk-nav-dot"
-                onClick={() => scrollToSection(id)}
-                aria-label={`Go to ${label} (${round})`}
-                aria-current={isActive ? "true" : undefined}
-                style={{
-                  width: isActive ? "10px" : "8px",
-                  height: isActive ? "10px" : "8px",
-                  borderRadius: "50%",
-                  border: "1px solid rgba(255,255,255,0.3)",
-                  background: isActive ? "#e8283c" : "rgba(255,255,255,0.15)",
-                  boxShadow: isActive ? "0 0 10px rgba(232,40,60,0.7)" : "none",
-                  cursor: "pointer",
-                  padding: 0,
-                }}
-              />
-            </div>
-          );
-        })}
+          <div
+            className="mk-navbar-links"
+            style={{ display: "flex", alignItems: "center", gap: "22px" }}
+          >
+            {SECTIONS.map(({ id, label }) => {
+              const isActive = activeId === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  className="mk-navbar-link"
+                  onClick={() => scrollToSection(id)}
+                  aria-label={`Go to ${label}`}
+                  aria-current={isActive ? "true" : undefined}
+                >
+                  {label}
+                </button>
+              );
+            })}
+            <SoundToggle active={booted} variant="inline" />
+          </div>
+        </div>
+
+        <div
+          aria-hidden="true"
+          style={{
+            width: "100%",
+            height: "2px",
+            background: "rgba(255,255,255,0.06)",
+          }}
+        >
+          <div
+            style={{
+              height: "100%",
+              width: `${scrollProgress}%`,
+              background: "linear-gradient(90deg, #e8283c, #ff8a5b)",
+              boxShadow: "0 0 8px rgba(232,40,60,0.6)",
+            }}
+          />
+        </div>
       </nav>
       {SECTIONS.map(({ id, Component }, i) => (
         <div key={id}>
           <div
+            className="mk-section-anchor"
             data-section-id={id}
             ref={(node) => {
               sectionRefs.current[id] = node;
