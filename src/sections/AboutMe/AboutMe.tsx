@@ -270,7 +270,7 @@ export default function AboutMe() {
                 margin: "0 0 40px 0",
               }}
             >
-              Hello, I'm a junior (2nd year) student pursuing my Bachelor of
+              Hello, I'm a 2nd-year student pursuing my Bachelor of
               Science in Software Engineering. I love writing code, picking up
               new skills, and gaming in my free time. This portfolio follows a
               fighter-theme style, keep scrolling to continue your journey.

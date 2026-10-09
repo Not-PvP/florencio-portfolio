@@ -38,8 +38,8 @@ export function ConsoleShellSVG({
     <svg
       viewBox="0 0 420 680"
       width="100%"
-      height="auto"
       style={{
+        height: "auto",
         display: "block",
         filter: "drop-shadow(0 25px 35px rgba(0,0,0,0.85))",
       }}

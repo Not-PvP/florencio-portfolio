@@ -1,11 +1,13 @@
 # Mark Angelo Florencio — Portfolio
 
+**Live:** https://florencio-portfolio.vercel.app
+
 A fighter-game-themed personal portfolio. Built with React, TypeScript, and Vite.
 
 - **About Me** — intro, with an interactive globe pinned to Philippines
 - **Education** — coming soon..
 - **Projects** — a cartridge-select screen; pick a project to "insert" it into a console shell, complete with live GitHub stats
-- **Skills** — a VS-style character-select grid grouped by category (placeholders)
+- **Skills** — a VS-style character-select grid grouped by category
 - **Contact** — a hidden fighting-game combo (arrow keys + a letter, or swipe on touch) triggers email/GitHub/LinkedIn
 
 ## Stack
