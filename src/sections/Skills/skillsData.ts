@@ -81,6 +81,7 @@ export const CATEGORIES: SkillCategory[] = [
       { name: "Claude", tag: "CL", iconSlug: "claude" },
       { name: "Gemini", tag: "GM", iconSlug: "googlegemini" },
       { name: "ChatGPT", tag: "GPT" },
+      { name: "GitHub Copilot", tag: "CP", iconSlug: "githubcopilot" },
       { name: "AutoCAD", tag: "CAD", iconSlug: "autocad" },
     ],
   },

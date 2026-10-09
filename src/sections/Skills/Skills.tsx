@@ -3,6 +3,7 @@ import { CATEGORIES, type Skill, type SkillCategory } from "./skillsData";
 import { BRAND_SVGS, MONO_BRAND_ICONS } from "./brandSvgs";
 import { playSelectBlip } from "./skillSound";
 import { PROJECTS, PORTFOLIO_STACK } from "../../data/projects";
+import RoundTag from "../shared/RoundTag";
 
 interface RosterEntry {
   skill: Skill;
@@ -336,6 +337,7 @@ export default function Skills() {
         className={`mk-sk-frame${sectionIn ? " in" : ""}`}
         style={{ "--accent": accent } as React.CSSProperties}
       >
+        <RoundTag label="Round three" />
         <h2 className="mk-sk-title">Choose your skill</h2>
         <p className="mk-sk-sub">Hover or tap a tile to see where I've used it.</p>
 

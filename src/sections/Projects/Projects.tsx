@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { CartridgeSVG } from "./Cartridge";
+import { Trophy } from "lucide-react";
+import { Cartridge, CARTRIDGE_CSS } from "./Cartridge";
 import { ConsoleShellSVG } from "./Gameboy";
 import { PROJECTS, type Project } from "../../data/projects";
 
@@ -33,19 +34,6 @@ function parseGithubRepo(url: string): { owner: string; repo: string } | null {
   }
 }
 
-function tierFromStars(stars: number): string {
-  if (stars >= 10) return "S-TIER";
-  if (stars >= 5) return "A-TIER";
-  if (stars >= 1) return "B-TIER";
-  return "C-TIER";
-}
-
-function formatSize(kb: number | undefined): string {
-  if (kb == null || Number.isNaN(kb)) return "UNKNOWN";
-  if (kb >= 1024) return `${(kb / 1024).toFixed(1)} MB`;
-  return `${kb} KB`;
-}
-
 function timeAgo(iso: string): string {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
   if (days <= 0) return "TODAY";
@@ -56,23 +44,9 @@ function timeAgo(iso: string): string {
   return `${Math.floor(months / 12)} YR AGO`;
 }
 
-function fanTransform(offset: number, isSelected: boolean, hovered: boolean): string {
-  if (isSelected && !hovered) {
-    return "translate(0px, 0px) rotate(0deg) scale(1.08)";
-  }
-  const spread = hovered ? 46 : 34;
-  const lift = hovered ? -12 : 0;
-  const rotate = offset * (hovered ? 7 : 9);
-  const translateX = offset * spread;
-  const translateY = Math.abs(offset) * (hovered ? 6 : 10) + (isSelected ? lift : lift);
-  const scale = isSelected ? (hovered ? 1.04 : 1.08) : hovered ? 0.96 : 0.85;
-  return `translate(${translateX}px, ${translateY}px) rotate(${rotate}deg) scale(${scale})`;
-}
-
 export default function Projects() {
   const [selectedId, setSelectedId] = useState<string>(PROJECTS[0].id);
   const [flash, setFlash] = useState<boolean>(false);
-  const [cartsHovered, setCartsHovered] = useState<boolean>(false);
   const [sectionIn, setSectionIn] = useState<boolean>(false);
   const [statsByProject, setStatsByProject] = useState<Record<string, StatsState>>(() =>
     Object.fromEntries(
@@ -199,7 +173,6 @@ export default function Projects() {
   }, []);
 
   const selected = PROJECTS.find((p) => p.id === selectedId) ?? PROJECTS[0];
-  const selectedIndex = PROJECTS.findIndex((p) => p.id === selectedId);
 
   return (
     <div
@@ -314,71 +287,122 @@ export default function Projects() {
             linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
             linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
         }
-        .mk-overview {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 16px;
-          width: 100%;
-          max-width: 1100px;
-          margin: 0 0 56px 0;
+        ${CARTRIDGE_CSS}
+        .mk-shelf {
+          display: flex;
+          justify-content: center;
+          align-items: flex-end;
+          gap: 26px;
+          margin: 0 0 18px;
+          padding: 0 0 18px;
+          list-style: none;
+          position: relative;
         }
-        .mk-ov-card {
+        /* the shelf ledge the cartridges stand on */
+        .mk-shelf::after {
+          content: "";
+          position: absolute;
+          left: -24px;
+          right: -24px;
+          bottom: 0;
+          height: 6px;
+          border-radius: 3px;
+          background: linear-gradient(180deg, #2a2b31, #16171b);
+          box-shadow: 0 6px 14px rgba(0,0,0,0.55);
+        }
+        .mk-slot {
           display: flex;
           flex-direction: column;
-          text-align: left;
-          background: rgba(18, 19, 23, 0.85);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 10px;
-          overflow: hidden;
-          transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
-        }
-        .mk-ov-card:hover, .mk-ov-card:focus-within {
-          border-color: rgba(232,40,60,0.55);
-          box-shadow: 0 10px 30px rgba(232,40,60,0.15);
-          transform: translateY(-3px);
-        }
-        .mk-ov-card[data-selected="true"] {
-          border-color: rgba(232,40,60,0.8);
-        }
-        .mk-ov-thumb {
-          position: relative;
-          aspect-ratio: 16 / 9;
-          display: flex;
-          align-items: flex-end;
-          padding: 12px 14px;
-          box-sizing: border-box;
+          align-items: center;
+          gap: 10px;
+          padding: 0;
           border: none;
-          width: 100%;
+          background: none;
           cursor: pointer;
-          font: inherit;
           color: inherit;
-          overflow: hidden;
+          font: inherit;
         }
-        .mk-ov-thumb img {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
+        .mk-slot .mk-gbc {
+          transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease;
+          filter: drop-shadow(0 10px 14px rgba(0,0,0,0.55));
         }
-        .mk-ov-thumb:focus-visible { outline: 2px solid #ff8a5b; outline-offset: -2px; }
-        .mk-ov-link {
-          font-size: 10px;
+        .mk-slot:hover .mk-gbc, .mk-slot:focus-visible .mk-gbc {
+          transform: translateY(-8px) rotate(-1.5deg);
+          filter: drop-shadow(0 16px 18px rgba(0,0,0,0.6)) drop-shadow(0 0 14px rgba(232,40,60,0.35));
+        }
+        .mk-slot:focus-visible { outline: none; }
+        .mk-slot:focus-visible .mk-slot-cap { color: #ff8a5b; }
+        .mk-slot-cap { font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap; }
+        .mk-slot-empty {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+        }
+        .mk-slot-ghost {
+          width: 150px;
+          aspect-ratio: 57 / 65;
+          box-sizing: border-box;
+          border: 2px dashed rgba(232,40,60,0.45);
+          border-radius: 6px 6px 14px 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          padding: 10px;
+          font-size: 11px;
+          line-height: 1.5;
+          color: #ff6b7a;
+          background: rgba(232,40,60,0.05);
+        }
+        .mk-console-links {
+          display: flex;
+          justify-content: center;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin-top: 18px;
+        }
+        .mk-console-link {
+          font-size: 12px;
           font-weight: 700;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
           text-decoration: none;
-          color: #ff8a5b;
-          border: 1px solid rgba(255,138,91,0.35);
-          padding: 6px 10px;
+          color: #f5f0e6;
+          border: 1px solid rgba(255,255,255,0.2);
           border-radius: 4px;
+          padding: 8px 14px;
         }
-        .mk-ov-link:hover { background: #e8283c; border-color: #e8283c; color: #fff; }
-        @media (max-width: 900px) {
-          .mk-overview { grid-template-columns: 1fr; max-width: 520px; margin-bottom: 40px; }
+        .mk-console-link:hover, .mk-console-link:focus-visible { border-color: #ff8a5b; color: #ff8a5b; outline: none; }
+        .mk-console-private { font-size: 12px; color: rgba(255,255,255,0.45); padding: 8px 0; }
+
+        @media (min-width: 1101px) {
+          .mk-arena-row { grid-template-columns: 370px 300px !important; gap: 56px !important; }
+        }
+        .mk-info-award {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+          padding: 12px;
+          margin-bottom: 18px;
+          border-radius: 8px;
+          background: rgba(201,162,39,0.1);
+          border: 1px solid rgba(201,162,39,0.35);
+          color: #e9c75a;
+        }
+        .mk-info-award small { display: block; font-size: 10px; color: rgba(233,199,90,0.75); margin-bottom: 2px; }
+        .mk-info-award strong { font-size: 13px; color: #f5f0e6; }
+        .mk-info-label { margin: 0 0 8px; font-size: 11px; color: rgba(255,255,255,0.5); }
+        .mk-info-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+        .mk-info-chip { font-size: 11px; color: #f5f0e6; border: 1px solid rgba(255,255,255,0.14); border-radius: 4px; padding: 4px 8px; }
+        .mk-info-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+        @media (max-width: 600px) {
+          .mk-shelf { gap: 12px; padding-bottom: 14px; }
+          .mk-shelf::after { left: -8px; right: -8px; }
+          .mk-slot .mk-gbc { --w: 96px !important; }
+          .mk-slot-ghost { width: 96px; font-size: 10px; padding: 6px; }
+          .mk-slot-cap { font-size: 10px; }
         }
         @media (prefers-reduced-motion: reduce) {
-          .mk-ov-card, .mk-ov-card:hover { transition: none; transform: none; }
+          .mk-slot .mk-gbc, .mk-slot:hover .mk-gbc { transition: none; transform: none; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -504,98 +528,47 @@ export default function Projects() {
         </h1>
       </div>
 
-      <div className="mk-overview" role="list" aria-label="Project overview">
+      <ul className="mk-shelf" aria-label="Project cartridges">
         {PROJECTS.map((project) => {
-          const isSelected = project.id === selectedId;
+          const loaded = project.id === selectedId && (poweredOn || inserting);
           return (
-            <article
-              key={project.id}
-              role="listitem"
-              className="mk-ov-card"
-              data-selected={isSelected}
-            >
-              <button
-                type="button"
-                className="mk-ov-thumb"
-                onClick={() => {
-                  selectProject(project.id);
-                  arenaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-                }}
-                aria-label={`Open ${project.name} in the console`}
-                style={{
-                  background: `linear-gradient(135deg, ${project.cartColor} 0%, #120a0a 85%)`,
-                }}
-              >
-                {project.image ? (
-                  <img src={project.image} alt={`${project.name} screenshot`} loading="lazy" />
-                ) : (
-                  <span
-                    style={{
-                      position: "relative",
-                      fontFamily: "'Anton', sans-serif",
-                      fontSize: "34px",
-                      letterSpacing: "0.03em",
-                      color: "rgba(255,255,255,0.92)",
-                      textTransform: "uppercase",
-                      lineHeight: 1,
-                    }}
-                  >
-                    {project.name}
-                  </span>
-                )}
-              </button>
-              <div style={{ padding: "14px 16px 16px", display: "flex", flexDirection: "column", gap: "10px", flex: 1 }}>
-                <div>
-                  <h3
-                    style={{
-                      margin: "0 0 4px",
-                      fontFamily: "'Anton', sans-serif",
-                      fontSize: "20px",
-                      letterSpacing: "0.03em",
-                      color: "#f2f2f2",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {project.name}
-                  </h3>
-                  <p style={{ margin: 0, fontSize: "12px", color: "#ff6b7a", letterSpacing: "0.04em" }}>
-                    {project.tagline}
-                  </p>
+            <li key={project.id}>
+              {loaded ? (
+                <div className="mk-slot-empty">
+                  <div className="mk-slot-ghost">{project.name} is in the console</div>
+                  <span className="mk-slot-cap">Now playing</span>
                 </div>
-                <p style={{ margin: 0, fontSize: "11px", lineHeight: 1.6, color: "rgba(255,255,255,0.55)" }}>
-                  {project.stack.join(" · ")}
-                </p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "auto" }}>
-                  {project.links.length > 0 ? (
-                    project.links.map((link) => (
-                      <a
-                        key={link.url}
-                        className="mk-ov-link"
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {link.label} ↗
-                      </a>
-                    ))
-                  ) : (
-                    <span style={{ fontSize: "10px", letterSpacing: "0.12em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase" }}>
-                      Private repo
-                    </span>
-                  )}
-                </div>
-              </div>
-            </article>
+              ) : (
+                <button
+                  type="button"
+                  className="mk-slot"
+                  aria-label={`Load ${project.name}: ${project.tagline}`}
+                  onClick={() => {
+                    selectProject(project.id);
+                    arenaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }}
+                >
+                  <Cartridge
+                    name={project.name}
+                    tagline={project.tagline}
+                    color={project.cartColor}
+                    image={project.image}
+                  />
+                  <span className="mk-slot-cap">Load {project.name}</span>
+                </button>
+              )}
+            </li>
           );
         })}
-      </div>
+      </ul>
 
       <div
         ref={arenaRef}
         className="mk-arena-row"
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr auto 1fr",
+          gridTemplateColumns: "auto",
+          justifyContent: "center",
           alignItems: "center",
           justifyItems: "center",
           width: "100%",
@@ -603,109 +576,6 @@ export default function Projects() {
           gap: "32px",
         }}
       >
-
-        <div
-          className="mk-cart-cluster mk-fade"
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifySelf: "center",
-            gap: "24px",
-            zIndex: 6,
-            opacity: sectionIn ? 1 : 0,
-            animation: sectionIn
-              ? "rowSlotIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both"
-              : "none",
-          }}
-        >
-          <div
-            onMouseEnter={() => setCartsHovered(true)}
-            onMouseLeave={() => setCartsHovered(false)}
-            style={{
-              position: "relative",
-              width: "290px",
-              height: "170px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                inset: "-20px",
-                background:
-                  "radial-gradient(circle at 50% 50%, rgba(232,40,60,0.22), transparent 70%)",
-                opacity: cartsHovered ? 1 : 0,
-                transition: "opacity 0.4s ease",
-                pointerEvents: "none",
-              }}
-            />
-            {PROJECTS.map((project, i) => {
-              const isSelected = project.id === selectedId;
-              const offset = i - selectedIndex;
-              return (
-                <button
-                  key={project.id}
-                  type="button"
-                  className="mk-cart"
-                  onClick={() => selectProject(project.id)}
-                  aria-pressed={isSelected}
-                  aria-label={`Select ${project.name}`}
-                  style={{
-                    position: "absolute",
-                    border: "none",
-                    background: "none",
-                    padding: 0,
-                    transform: fanTransform(offset, isSelected, cartsHovered),
-                    zIndex: isSelected ? 10 : 5 - Math.abs(offset),
-                  }}
-                >
-                  <CartridgeSVG
-                    color={project.cartColor}
-                    highlighted={isSelected}
-                    id={project.id}
-                    name={project.name}
-                    tagline={project.tagline}
-                  />
-                </button>
-              );
-            })}
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              background: "rgba(18, 19, 23, 0.8)",
-              padding: "6px 16px",
-              borderRadius: "20px",
-              border: "1px solid rgba(255,255,255,0.08)",
-            }}
-          >
-            <span
-              style={{
-                fontSize: "12px",
-                color: "#e8283c",
-                fontWeight: 700,
-                letterSpacing: "0.15em",
-              }}
-            >
-              {String(selectedIndex + 1).padStart(2, "0")}
-            </span>
-            <span
-              style={{
-                fontSize: "12px",
-                color: "rgba(255,255,255,0.3)",
-                letterSpacing: "0.15em",
-              }}
-            >
-              / {String(PROJECTS.length).padStart(2, "0")} CARTRIDGES
-            </span>
-          </div>
-        </div>
 
         <div
           className="mk-console-wrap mk-fade"
@@ -737,12 +607,12 @@ export default function Projects() {
                 }}
               >
                 <div className="mk-cart-insert-anim" style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-                  <CartridgeSVG
-                    color={insertingProject.cartColor}
-                    highlighted
-                    id={insertingProject.id}
+                  <Cartridge
                     name={insertingProject.name}
                     tagline={insertingProject.tagline}
+                    color={insertingProject.cartColor}
+                    image={insertingProject.image}
+                    width={116}
                   />
                 </div>
               </div>
@@ -855,7 +725,7 @@ export default function Projects() {
                     marginBottom: "12px",
                   }}
                 >
-                  {selected.stack.map((tech) => (
+                  {selected.stack.slice(0, 3).map((tech) => (
                     <span
                       key={tech}
                       style={{
@@ -884,7 +754,7 @@ export default function Projects() {
         <div
           className="mk-stats-sidebar mk-fade"
           style={{
-            width: "240px",
+            width: "300px",
             justifySelf: "center",
             display: "flex",
             flexDirection: "column",
@@ -895,14 +765,7 @@ export default function Projects() {
               : "none",
           }}
         >
-          <div className="mk-stat-box">
-            <PanelHeader label="P1 VITALS" />
-            <VitalsPanel stats={statsByProject[selectedId]} />
-          </div>
-          <div className="mk-stat-box">
-            <PanelHeader label="COMBAT LOG" />
-            <IntelPanel stats={statsByProject[selectedId]} />
-          </div>
+          <InfoPanel project={selected} stats={statsByProject[selectedId]} />
         </div>
       </div>
     </div>
@@ -972,77 +835,6 @@ function PanelHeader({ label }: { label: string }) {
   );
 }
 
-function RedactedNotice({ text, dim }: { text: string; dim?: boolean }) {
-  return (
-    <div
-      style={{
-        fontSize: "9px",
-        letterSpacing: "0.08em",
-        color: dim ? "rgba(255,255,255,0.3)" : "#ff6b7a",
-        fontFamily: "'Space Mono', monospace",
-        padding: "22px 12px",
-        textAlign: "center",
-        lineHeight: 1.6,
-        background: dim ? "transparent" : "rgba(232,40,60,0.05)",
-        borderRadius: "6px",
-        border: dim ? "1px dashed rgba(255,255,255,0.12)" : "1px dashed rgba(232,40,60,0.3)",
-      }}
-    >
-      {text}
-    </div>
-  );
-}
-
-function StatBar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
-  const pct = Math.max(value > 0 ? 8 : 0, Math.min(100, (value / max) * 100));
-  return (
-    <div style={{ marginBottom: "14px" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          fontSize: "9px",
-          letterSpacing: "0.1em",
-          color: "rgba(255,255,255,0.6)",
-          marginBottom: "6px",
-          fontWeight: 700,
-        }}
-      >
-        <span>{label}</span>
-        <span style={{ color: "#ffffff" }}>{value}</span>
-      </div>
-      <div style={{ height: "6px", background: "rgba(255,255,255,0.08)", borderRadius: "3px", position: "relative", overflow: "hidden" }}>
-        <div
-          className="mk-stat-fill"
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: `${pct}%`,
-            background: color,
-            boxShadow: `0 0 10px ${color}`,
-            borderRadius: "3px",
-          }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function VitalsPanel({ stats }: { stats?: StatsState }) {
-  const status = stats?.status ?? "loading";
-  if (status === "private") return <RedactedNotice text="CLASSIFIED BUILD — VITALS SEALED" />;
-  if (status === "loading") return <RedactedNotice text="SCANNING METRICS..." dim />;
-  if (status === "error") return <RedactedNotice text="SIGNAL LOST" dim />;
-  const data = (stats as { status: "ready"; data: GithubStats }).data;
-  return (
-    <div key={JSON.stringify(data)}>
-      <StatBar label="STARS" value={data.stars} max={20} color="#e8283c" />
-      <StatBar label="FORKS" value={data.forks} max={20} color="#ff4d61" />
-      <StatBar label="OPEN ISSUES" value={data.openIssues} max={20} color="#e5a93c" />
-    </div>
-  );
-}
-
 function IntelRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div
@@ -1073,20 +865,46 @@ function IntelRow({ label, value, highlight }: { label: string; value: string; h
   );
 }
 
-function IntelPanel({ stats }: { stats?: StatsState }) {
+function InfoPanel({ project, stats }: { project: Project; stats?: StatsState }) {
   const status = stats?.status ?? "loading";
-  if (status === "private") return <RedactedNotice text="INTEL REDACTED" />;
-  if (status === "loading") return <RedactedNotice text="DECRYPTING..." dim />;
-  if (status === "error") return <RedactedNotice text="SIGNAL LOST" dim />;
-  const data = (stats as { status: "ready"; data: GithubStats }).data;
+  const data = status === "ready" ? (stats as { status: "ready"; data: GithubStats }).data : null;
   return (
-    <div key={JSON.stringify(data)}>
-      <IntelRow label="TIER" value={tierFromStars(data.stars)} highlight />
-      <IntelRow label="LANGUAGE" value={(data.language ?? "MIXED").toUpperCase()} />
-      <IntelRow label="LAST COMMIT" value={timeAgo(data.pushedAt)} />
-      <IntelRow label="REPO SIZE" value={formatSize(data.sizeKb)} />
-      <IntelRow label="LICENSE" value={data.license ?? "NONE"} />
-      <IntelRow label="CONTRIBUTORS" value={data.contributors != null ? String(data.contributors) : "UNKNOWN"} />
+    <div className="mk-stat-box" aria-live="polite">
+      <PanelHeader label="CARTRIDGE INFO" />
+      {project.award && (
+        <div className="mk-info-award">
+          <Trophy size={18} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
+          <div>
+            <small>Award</small>
+            <strong>{project.award}</strong>
+          </div>
+        </div>
+      )}
+      <p className="mk-info-label">Built with</p>
+      <div className="mk-info-chips">
+        {project.stack.map((tech) => (
+          <span key={tech} className="mk-info-chip">{tech}</span>
+        ))}
+      </div>
+      <p className="mk-info-label">Repository</p>
+      {status === "private" && <IntelRow label="ACCESS" value="PRIVATE" />}
+      {status === "loading" && <IntelRow label="STATUS" value="LOADING…" />}
+      {status === "error" && <IntelRow label="STATUS" value="UNAVAILABLE" />}
+      {data && (
+        <>
+          <IntelRow label="LANGUAGE" value={(data.language ?? "Mixed").toUpperCase()} />
+          <IntelRow label="LAST COMMIT" value={timeAgo(data.pushedAt)} />
+          <IntelRow label="STARTED" value={new Date(data.createdAt).getFullYear().toString()} />
+          {data.contributors > 0 && <IntelRow label="CONTRIBUTORS" value={String(data.contributors)} />}
+        </>
+      )}
+      <div className="mk-info-links">
+        {project.links.map((link) => (
+          <a key={link.url} className="mk-console-link" href={link.url} target="_blank" rel="noopener noreferrer">
+            {link.label}
+          </a>
+        ))}
+      </div>
     </div>
   );
 }

@@ -13,6 +13,8 @@ export interface Project {
   cartColor: string;
   /** Optional screenshot or GIF path (e.g. "/projects/kramkard.png" in public/). */
   image?: string;
+  /** Optional award or recognition for the project. */
+  award?: string;
 }
 
 export const PROJECTS: Project[] = [
@@ -25,6 +27,7 @@ export const PROJECTS: Project[] = [
     stack: ["Python", "TensorFlow", "TypeScript", "Next.js", "Tailwind CSS", "Vercel"],
     links: [],
     cartColor: "#8a0303",
+    award: "2nd Place, IED Competition",
   },
   {
     id: "kramkard",

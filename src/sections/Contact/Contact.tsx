@@ -9,6 +9,8 @@ interface ComboMove {
   triggerKey: string;
   accent: string;
   moveName: string;
+  channel: string;
+  action: string;
   target: string;
   url: string;
   resultText: string;
@@ -21,6 +23,8 @@ const MOVES: ComboMove[] = [
     triggerKey: "j",
     accent: "#e8283c",
     moveName: "SIGNAL FLARE",
+    channel: "Email",
+    action: "Send email",
     target: "contactmarkflorencio@gmail.com",
     url: "mailto:contactmarkflorencio@gmail.com",
     resultText: "TRANSMISSION SENT",
@@ -31,6 +35,8 @@ const MOVES: ComboMove[] = [
     triggerKey: "k",
     accent: "#ff8a5b",
     moveName: "ARCHIVE DIVE",
+    channel: "GitHub",
+    action: "Open GitHub",
     target: "github.com/Not-PvP",
     url: "https://github.com/Not-PvP",
     resultText: "VAULT UNLOCKED",
@@ -41,6 +47,8 @@ const MOVES: ComboMove[] = [
     triggerKey: "l",
     accent: "#c9a227",
     moveName: "NETWORK LINK",
+    channel: "LinkedIn",
+    action: "Connect",
     target: "linkedin.com/in/mark-angelo-florencio",
     url: "https://www.linkedin.com/in/mark-angelo-florencio-597765423/",
     resultText: "CONNECTION FORGED",
@@ -98,6 +106,16 @@ export default function Contact() {
   const [miss, setMiss] = useState<boolean>(false);
   const [buffer, setBuffer] = useState<ArrowKey[]>([]);
   const [lastTrigger, setLastTrigger] = useState<string | null>(null);
+  const [copied, setCopied] = useState<"" | "ok" | "fail">("");
+  async function copyEmail() {
+    try {
+      await navigator.clipboard.writeText("contactmarkflorencio@gmail.com");
+      setCopied("ok");
+    } catch {
+      setCopied("fail");
+    }
+    window.setTimeout(() => setCopied(""), 2500);
+  }
   const [burst, setBurst] = useState<{ text: string; color: string } | null>(
     null
   );
@@ -327,6 +345,35 @@ export default function Contact() {
       }}
     >
       <style>{`
+        .mk-copy-row {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: center;
+          gap: 10px 14px;
+          margin-top: 22px;
+          font-size: 12px;
+        }
+        .mk-copy-addr { color: rgba(255,255,255,0.6); user-select: all; }
+        .mk-copy-btn {
+          font: inherit;
+          font-size: 12px;
+          font-weight: 700;
+          color: #f5f0e6;
+          background: transparent;
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 4px;
+          padding: 7px 12px;
+          cursor: pointer;
+        }
+        .mk-copy-btn:hover, .mk-copy-btn:focus-visible { border-color: #ff8a5b; color: #ff8a5b; outline: none; }
+        .mk-copy-status { flex-basis: 100%; text-align: center; color: #ff6b7a; min-height: 0; }
+        .mk-copy-status:empty { display: none; }
+
+        @media (max-width: 600px) {
+          .mk-move-alias, .mk-move-action { display: none !important; }
+        }
+
 
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(14px); }
@@ -534,7 +581,7 @@ export default function Contact() {
               animation: titleIn ? "fadeUp 0.5s ease-out both" : "none",
             }}
           >
-            NO MERCY
+            FINAL ROUND
           </p>
           <h1
             className={titleIn ? "mk-title mk-fade" : "mk-fade"}
@@ -566,7 +613,7 @@ export default function Contact() {
                 : "none",
             }}
           >
-            {isTouch ? "SWIPE THE COMBO BELOW" : "PRESS THE COMBO"}
+            {isTouch ? "Swipe the combo, or tap a move" : "Press the combo, or click a move"}
           </p>
         </div>
 
@@ -847,19 +894,22 @@ export default function Contact() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div
                   style={{
-                    fontSize: "13px",
+                    fontSize: "16px",
                     fontWeight: 700,
-                    letterSpacing: "0.04em",
+                    letterSpacing: "0.02em",
                     color: "#f2f2f2",
-                    marginBottom: "2px",
+                    marginBottom: "4px",
                   }}
                 >
-                  {move.moveName}
+                  {move.channel}
+                  <span className="mk-move-alias" style={{ marginLeft: "10px", fontSize: "10px", fontWeight: 400, color: move.accent, letterSpacing: "0.08em" }}>
+                    {move.moveName}
+                  </span>
                 </div>
                 <div
                   style={{
-                    fontSize: "10.5px",
-                    color: "rgba(255,255,255,0.4)",
+                    fontSize: "12px",
+                    color: "rgba(255,255,255,0.55)",
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -870,19 +920,31 @@ export default function Contact() {
               </div>
 
               <span
+                className="mk-move-action"
                 style={{
                   flexShrink: 0,
-                  fontSize: "9.5px",
-                  letterSpacing: "0.08em",
+                  fontSize: "11px",
+                  letterSpacing: "0.04em",
                   color: move.accent,
                   border: `1px solid ${move.accent}`,
-                  padding: "5px 10px",
+                  padding: "7px 12px",
+                  whiteSpace: "nowrap",
                 }}
               >
-                EXECUTE
+                {move.action}
               </span>
             </button>
           ))}
+        </div>
+
+        <div className="mk-copy-row">
+          <span className="mk-copy-addr">contactmarkflorencio@gmail.com</span>
+          <button type="button" className="mk-copy-btn" onClick={copyEmail}>
+            {copied === "ok" ? "Copied" : "Copy email"}
+          </button>
+          <span className="mk-copy-status" role="status">
+            {copied === "fail" ? "Copy didn't work here. Select the address instead." : ""}
+          </span>
         </div>
       </div>
 

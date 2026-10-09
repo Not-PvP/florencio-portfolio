@@ -1,63 +1,119 @@
-export interface CartridgeSVGProps {
-  color: string;
-  highlighted: boolean;
-  id: string;
+/**
+ * A Game Boy–style cartridge, drawn in HTML/CSS so the label text stays crisp
+ * at any size. Proportions follow a real cartridge (57 × 65 mm) with the cut
+ * top-right corner, grip ridges and the embossed insert arrow.
+ */
+export interface CartridgeProps {
   name: string;
   tagline: string;
+  color: string;
+  image?: string;
+  /** Rendered width in px; everything else scales from it. */
+  width?: number;
 }
 
-export function CartridgeSVG({ color, highlighted, id, name, tagline }: CartridgeSVGProps) {
-  const safeId = id.replace(/[^a-zA-Z0-9_-]/g, "");
-
+export function Cartridge({ name, tagline, color, image, width = 150 }: CartridgeProps) {
   return (
-    <svg
-      width="200"
-      height="130"
-      viewBox="0 0 200 130"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      style={{
-        filter: highlighted
-          ? "drop-shadow(0 12px 20px rgba(0,0,0,0.6)) drop-shadow(0 0 12px rgba(232,40,60,0.4))"
-          : "drop-shadow(0 6px 10px rgba(0,0,0,0.5))",
-        transition: "filter 0.2s ease",
-      }}
+    <span
+      className="mk-gbc"
+      style={{ "--w": `${width}px`, "--cart": color } as React.CSSProperties}
     >
-      <defs>
-        <linearGradient id={`cartGrad-${safeId}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={color} />
-          <stop offset="100%" stopColor="#101114" />
-        </linearGradient>
-      </defs>
-
-      <path
-        d="M 10 0 L 190 0 C 195 0 200 5 200 10 L 200 115 C 200 122 195 128 188 128 L 12 128 C 5 128 0 122 0 115 L 0 10 C 0 5 5 0 10 0 Z"
-        fill={`url(#cartGrad-${safeId})`}
-        stroke={highlighted ? "#e8283c" : "#3a3b3f"}
-        strokeWidth={highlighted ? "2" : "1"}
-      />
-
-      <rect x="20" y="8" width="160" height="3" rx="1.5" fill="rgba(255,255,255,0.15)" />
-      <rect x="20" y="15" width="160" height="3" rx="1.5" fill="rgba(0,0,0,0.3)" />
-
-      <rect x="16" y="28" width="168" height="84" rx="4" fill="#0d0e10" stroke="#25262a" strokeWidth="1" />
-
-      <rect x="22" y="34" width="156" height="72" rx="2" fill="#17181c" />
-      <rect x="22" y="34" width="156" height="18" fill="#e8283c" />
-
-      <text x="30" y="46" fontSize="8" fill="#ffffff" fontWeight="bold" fontFamily="monospace" letterSpacing="0.05em">
-        {tagline.toUpperCase().slice(0, 22)}
-      </text>
-
-      <text x="30" y="72" fontSize="15" fill="#f2f2f2" fontWeight="bold" fontFamily="'Anton', sans-serif" letterSpacing="0.02em">
-        {name.toUpperCase()}
-      </text>
-
-      <text x="30" y="94" fontSize="7" fill="#8a8c92" fontFamily="monospace">
-        GAME CARTRIDGE
-      </text>
-
-      <path d="M 160 85 L 168 90 L 160 95 Z" fill="#e8283c" opacity="0.8" />
-    </svg>
+      <span className="mk-gbc-ridges" aria-hidden="true" />
+      <span className="mk-gbc-label">
+        <span className="mk-gbc-band">{tagline}</span>
+        <span className="mk-gbc-art">
+          {image && <img src={image} alt="" loading="lazy" />}
+          <span className="mk-gbc-name">{name}</span>
+        </span>
+      </span>
+      <span className="mk-gbc-arrow" aria-hidden="true" />
+    </span>
   );
 }
+
+export const CARTRIDGE_CSS = `
+  .mk-gbc {
+    --w: 150px;
+    position: relative;
+    display: block;
+    width: var(--w);
+    aspect-ratio: 57 / 65;
+    font-size: calc(var(--w) / 15);
+    border-radius: 0.35em 0 0.9em 0.9em;
+    clip-path: polygon(0 0, 86% 0, 100% 10%, 100% 100%, 0 100%);
+    background:
+      linear-gradient(90deg, rgba(255,255,255,0.08), transparent 18%, transparent 82%, rgba(0,0,0,0.25)),
+      linear-gradient(180deg, #45464d 0%, #34353b 55%, #2a2b30 100%);
+    box-shadow: inset 0 0.12em 0 rgba(255,255,255,0.18), inset 0 -0.3em 0.6em rgba(0,0,0,0.35);
+  }
+  .mk-gbc-ridges {
+    position: absolute;
+    top: 3.5%;
+    left: 12%;
+    right: 22%;
+    height: 9%;
+    background: repeating-linear-gradient(180deg, rgba(0,0,0,0.38) 0 0.12em, rgba(255,255,255,0.1) 0.12em 0.22em, transparent 0.22em 0.5em);
+  }
+  .mk-gbc-label {
+    position: absolute;
+    top: 17%;
+    left: 9%;
+    right: 9%;
+    bottom: 17%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 0.3em;
+    overflow: hidden;
+    background: #111216;
+    box-shadow: 0 0 0 0.18em #1d1e22, inset 0 0 0 0.06em rgba(255,255,255,0.08);
+  }
+  .mk-gbc-band {
+    flex: none;
+    padding: 0.35em 0.5em;
+    background: var(--cart);
+    color: #fff;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72em;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mk-gbc-art {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    padding: 0.5em;
+    background:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 3px),
+      radial-gradient(circle at 72% 28%, color-mix(in srgb, var(--cart) 75%, transparent), transparent 72%),
+      #0c0d10;
+    overflow: hidden;
+  }
+  .mk-gbc-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .mk-gbc-name {
+    position: relative;
+    font-family: 'Anton', sans-serif;
+    font-size: 1.55em;
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #f5f0e6;
+    text-shadow: 0 0.1em 0.5em rgba(0,0,0,0.85);
+    overflow-wrap: anywhere;
+  }
+  .mk-gbc-arrow {
+    position: absolute;
+    left: 50%;
+    bottom: 5.5%;
+    transform: translateX(-50%);
+    border-left: 0.5em solid transparent;
+    border-right: 0.5em solid transparent;
+    border-top: 0.55em solid rgba(0,0,0,0.42);
+    filter: drop-shadow(0 0.06em 0 rgba(255,255,255,0.12));
+  }
+`;

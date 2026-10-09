@@ -3,14 +3,12 @@ import heroPortrait from "../../assets/hero-portrait.jpg";
 
 const EarthGlobe = lazy(() => import("./EarthGlobe"));
 
-const LEARNING_TAGS = [
-  "WEB DEVELOPMENT",
-  "DATABASES / SQL",
-  "T3 STACK",
-  "FLUTTER / DART",
-  "REACT",
+const PLAYER_STATS: [string, string][] = [
+  ["Based in", "Iloilo, Philippines"],
+  ["Class", "Software Engineering, year 2"],
+  ["Main", "TypeScript and React"],
+  ["Training", "T3 stack, SQL, Flutter"],
 ];
-
 const DRAWER_WIDTH = 360;
 
 const PEEK_WIDTH = 90;
@@ -59,13 +57,27 @@ export default function AboutMe() {
           .mk-globe-slot { animation: none !important; opacity: 1 !important; }
         }
 
-        .mk-tag {
-          transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+        .mk-stats {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0;
+          margin: 0;
+          max-width: 560px;
+          border-top: 1px solid rgba(255,255,255,0.1);
         }
-        .mk-tag:hover {
-          border-color: #ff8a5b;
-          color: #ff8a5b;
-          background: rgba(232,40,60,0.08);
+        .mk-stat {
+          padding: 12px 16px 12px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .mk-stat dt {
+          font-size: 11px;
+          color: #e8283c;
+          margin: 0 0 4px;
+        }
+        .mk-stat dd {
+          margin: 0;
+          font-size: 14px;
+          color: #f5f0e6;
         }
 
         .mk-corner-glow {
@@ -118,10 +130,11 @@ export default function AboutMe() {
             gap: 8px !important;
           }
           .mk-drawer {
+            order: 2;
             width: 100% !important;
             min-width: 100% !important;
             height: auto !important;
-            aspect-ratio: 4 / 5 !important;
+            aspect-ratio: 4 / 3 !important;
             min-height: 0 !important;
             border-radius: 18px !important;
             flex-shrink: 0 !important;
@@ -131,12 +144,15 @@ export default function AboutMe() {
             transform: none !important;
           }
           .mk-hero-copy {
-            padding: 32px 0 56px !important;
+            padding: 8px 0 32px !important;
             flex: none !important;
           }
           .mk-hero-copy h1 {
-            font-size: clamp(34px, 11vw, 56px) !important;
+            font-size: clamp(44px, 14vw, 64px) !important;
           }
+          .mk-stat dd { font-size: 13px; }
+          .mk-cta-primary { width: 100%; justify-content: center; }
+          .mk-cta-ghost { flex: 1; justify-content: center; }
           .mk-hero-copy p {
             font-size: 15px !important;
             line-height: 1.6 !important;
@@ -175,7 +191,7 @@ export default function AboutMe() {
         >
           <img
             src={heroPortrait}
-            alt="Hero Portrait"
+            alt="Mark Angelo Florencio"
             className="mk-hero-photo"
             style={{
               width: "100%",
@@ -241,25 +257,17 @@ export default function AboutMe() {
                 fontFamily: "'Anton', sans-serif",
                 fontSize: "clamp(48px, 6.5vw, 96px)",
                 color: "#f5f0e6",
-                lineHeight: 0.95,
-                margin: "0 0 32px 0",
+                lineHeight: 0.92,
+                margin: "0 0 28px 0",
+                textTransform: "uppercase",
                 textShadow: "0 0 24px rgba(232,40,60,0.35)",
               }}
             >
-              ABOUT ME
+              Mark Angelo
+              <br />
+              Florencio
             </h1>
 
-            <div
-              style={{
-                color: "#8a7f78",
-                fontFamily: "'Press Start 2P', monospace",
-                fontSize: "10px",
-                letterSpacing: "2px",
-                marginBottom: "14px",
-              }}
-            >
-              — INFORMATION —
-            </div>
 
             <p
               style={{
@@ -345,44 +353,14 @@ export default function AboutMe() {
               </a>
             </div>
 
-            <div
-              style={{
-                color: "#8a7f78",
-                fontFamily: "'Press Start 2P', monospace",
-                fontSize: "10px",
-                letterSpacing: "2px",
-                marginBottom: "16px",
-              }}
-            >
-              — CURRENTLY LEARNING —
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "8px",
-                maxWidth: "640px",
-              }}
-            >
-              {LEARNING_TAGS.map((tag) => (
-                <span
-                  key={tag}
-                  className="mk-tag"
-                  style={{
-                    border: "1px solid rgba(196,30,30,0.55)",
-                    color: "#d8d0c8",
-                    fontFamily: "'Press Start 2P', monospace",
-                    fontSize: "8px",
-                    letterSpacing: "0.5px",
-                    padding: "6px 10px",
-                    borderRadius: "2px",
-                  }}
-                >
-                  {tag}
-                </span>
+            <dl className="mk-stats">
+              {PLAYER_STATS.map(([label, value]) => (
+                <div key={label} className="mk-stat">
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
               ))}
-            </div>
+            </dl>
           </div>
         </div>
       </div>
