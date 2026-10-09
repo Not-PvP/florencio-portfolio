@@ -267,14 +267,83 @@ export default function AboutMe() {
                 fontSize: "17px",
                 lineHeight: 1.7,
                 maxWidth: "640px",
+                margin: "0 0 24px 0",
+              }}
+            >
+              I'm a 2nd-year Software Engineering student at Central
+              Philippine University who builds real-time web apps with React and
+              TypeScript. Off the clock, I'm usually gaming.
+            </p>
+
+            <style>{`
+              .mk-cta {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                font-family: 'Press Start 2P', monospace;
+                font-size: 9px;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                text-decoration: none;
+                padding: 12px 16px;
+                border-radius: 2px;
+                cursor: pointer;
+                transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+              }
+              .mk-cta:focus-visible { outline: 2px solid #ff8a5b; outline-offset: 3px; }
+              .mk-cta-primary {
+                background: #e8283c;
+                color: #0a0a0a;
+                border: 1px solid #e8283c;
+                box-shadow: 0 0 18px rgba(232,40,60,0.45);
+              }
+              .mk-cta-primary:hover { background: #ff3b4f; transform: translateY(-1px); }
+              .mk-cta-ghost {
+                background: transparent;
+                color: #d8d0c8;
+                border: 1px solid rgba(255,255,255,0.18);
+              }
+              .mk-cta-ghost:hover { color: #ff8a5b; border-color: #ff8a5b; }
+              @media (prefers-reduced-motion: reduce) {
+                .mk-cta { transition: none; }
+                .mk-cta-primary:hover { transform: none; }
+              }
+            `}</style>
+
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "10px",
                 margin: "0 0 40px 0",
               }}
             >
-              Hello, I'm a 2nd-year student pursuing my Bachelor of
-              Science in Software Engineering. I love writing code, picking up
-              new skills, and gaming in my free time. This portfolio follows a
-              fighter-theme style, keep scrolling to continue your journey.
-            </p>
+              <button
+                type="button"
+                className="mk-cta mk-cta-primary"
+                onClick={() =>
+                  document
+                    .querySelector('[data-section-id="projects"]')
+                    ?.scrollIntoView({ behavior: "smooth" })
+                }
+              >
+                View projects ▶
+              </button>
+              <a
+                className="mk-cta mk-cta-ghost"
+                href="https://github.com/Not-PvP"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
+              </a>
+              <a
+                className="mk-cta mk-cta-ghost"
+                href="mailto:contactmarkflorencio@gmail.com"
+              >
+                Email
+              </a>
+            </div>
 
             <div
               style={{

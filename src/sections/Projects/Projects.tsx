@@ -1,57 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { CartridgeSVG } from "./Cartridge";
 import { ConsoleShellSVG } from "./Gameboy";
-
-interface ProjectLink {
-  label: string;
-  url: string;
-}
-
-interface Project {
-  id: string;
-  name: string;
-  tagline: string;
-  description: string;
-  stack: string[];
-  links: ProjectLink[];
-  cartColor: string;
-}
-
-const PROJECTS: Project[] = [
-  {
-    id: "cosign",
-    name: "CoSign",
-    tagline: "ML sign language app",
-    description:
-      "A machine learning app that reads sign language in real time — gamified like MonkeyType, but you're signing instead of typing. Includes a practice mode to drill individual hand signs. Full-stack build with separate frontend and backend.",
-    stack: ["Python", "TensorFlow", "TypeScript", "Next.js", "Tailwind CSS", "Vercel"],
-    links: [],
-    cartColor: "#8a0303",
-  },
-  {
-    id: "kramkard",
-    name: "Kram Kard",
-    tagline: "Multiplayer card game",
-    description:
-      "A real-time multiplayer card game — turn-based battles, a competitive leaderboard, and randomly generated cards with their own rarity and tier. Equal parts strategy and luck.",
-    stack: ["TypeScript", "React", "Vite", "Socket.io", "Turso", "Railway"],
-    links: [{ label: "GitHub", url: "https://github.com/Not-PvP/KramKard" }],
-    cartColor: "#d95d00",
-  },
-  {
-    id: "parcomm",
-    name: "ParComm",
-    tagline: "Parking management system",
-    description:
-      "A real-time parking management system using QR-code ticketing and live occupancy dashboards. Guards scan tickets to track vehicle entry/exit, while students and admins get live visibility into available parking — built to cut down search time and campus traffic congestion.",
-    stack: ["TypeScript", "Next.js", "React", "Tailwind CSS", "Firebase", "Vercel"],
-    links: [
-      { label: "GitHub", url: "https://github.com/Not-PvP/ParComm" },
-      { label: "Live demo", url: "https://par-comm.vercel.app/" },
-    ],
-    cartColor: "#4a4e57",
-  },
-];
+import { PROJECTS, type Project } from "../../data/projects";
 
 interface GithubStats {
   stars: number;
@@ -133,6 +83,7 @@ export default function Projects() {
     )
   );
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const arenaRef = useRef<HTMLDivElement | null>(null);
 
   const [poweredOn, setPoweredOn] = useState<boolean>(false);
   const [inserting, setInserting] = useState<boolean>(false);
@@ -363,6 +314,73 @@ export default function Projects() {
             linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
             linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
         }
+        .mk-overview {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 16px;
+          width: 100%;
+          max-width: 1100px;
+          margin: 0 0 56px 0;
+        }
+        .mk-ov-card {
+          display: flex;
+          flex-direction: column;
+          text-align: left;
+          background: rgba(18, 19, 23, 0.85);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 10px;
+          overflow: hidden;
+          transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .mk-ov-card:hover, .mk-ov-card:focus-within {
+          border-color: rgba(232,40,60,0.55);
+          box-shadow: 0 10px 30px rgba(232,40,60,0.15);
+          transform: translateY(-3px);
+        }
+        .mk-ov-card[data-selected="true"] {
+          border-color: rgba(232,40,60,0.8);
+        }
+        .mk-ov-thumb {
+          position: relative;
+          aspect-ratio: 16 / 9;
+          display: flex;
+          align-items: flex-end;
+          padding: 12px 14px;
+          box-sizing: border-box;
+          border: none;
+          width: 100%;
+          cursor: pointer;
+          font: inherit;
+          color: inherit;
+          overflow: hidden;
+        }
+        .mk-ov-thumb img {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .mk-ov-thumb:focus-visible { outline: 2px solid #ff8a5b; outline-offset: -2px; }
+        .mk-ov-link {
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          text-decoration: none;
+          color: #ff8a5b;
+          border: 1px solid rgba(255,138,91,0.35);
+          padding: 6px 10px;
+          border-radius: 4px;
+        }
+        .mk-ov-link:hover { background: #e8283c; border-color: #e8283c; color: #fff; }
+        @media (max-width: 900px) {
+          .mk-overview { grid-template-columns: 1fr; max-width: 520px; margin-bottom: 40px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .mk-ov-card, .mk-ov-card:hover { transition: none; transform: none; }
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .mk-panel { animation: none !important; }
           .mk-wipe { display: none !important; }
@@ -467,7 +485,7 @@ export default function Projects() {
               fontWeight: 700,
             }}
           >
-            ROUND THREE
+            ROUND TWO
           </p>
         </div>
         <h1
@@ -486,7 +504,94 @@ export default function Projects() {
         </h1>
       </div>
 
+      <div className="mk-overview" role="list" aria-label="Project overview">
+        {PROJECTS.map((project) => {
+          const isSelected = project.id === selectedId;
+          return (
+            <article
+              key={project.id}
+              role="listitem"
+              className="mk-ov-card"
+              data-selected={isSelected}
+            >
+              <button
+                type="button"
+                className="mk-ov-thumb"
+                onClick={() => {
+                  selectProject(project.id);
+                  arenaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                }}
+                aria-label={`Open ${project.name} in the console`}
+                style={{
+                  background: `linear-gradient(135deg, ${project.cartColor} 0%, #120a0a 85%)`,
+                }}
+              >
+                {project.image ? (
+                  <img src={project.image} alt={`${project.name} screenshot`} loading="lazy" />
+                ) : (
+                  <span
+                    style={{
+                      position: "relative",
+                      fontFamily: "'Anton', sans-serif",
+                      fontSize: "34px",
+                      letterSpacing: "0.03em",
+                      color: "rgba(255,255,255,0.92)",
+                      textTransform: "uppercase",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {project.name}
+                  </span>
+                )}
+              </button>
+              <div style={{ padding: "14px 16px 16px", display: "flex", flexDirection: "column", gap: "10px", flex: 1 }}>
+                <div>
+                  <h3
+                    style={{
+                      margin: "0 0 4px",
+                      fontFamily: "'Anton', sans-serif",
+                      fontSize: "20px",
+                      letterSpacing: "0.03em",
+                      color: "#f2f2f2",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {project.name}
+                  </h3>
+                  <p style={{ margin: 0, fontSize: "12px", color: "#ff6b7a", letterSpacing: "0.04em" }}>
+                    {project.tagline}
+                  </p>
+                </div>
+                <p style={{ margin: 0, fontSize: "11px", lineHeight: 1.6, color: "rgba(255,255,255,0.55)" }}>
+                  {project.stack.join(" · ")}
+                </p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "auto" }}>
+                  {project.links.length > 0 ? (
+                    project.links.map((link) => (
+                      <a
+                        key={link.url}
+                        className="mk-ov-link"
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {link.label} ↗
+                      </a>
+                    ))
+                  ) : (
+                    <span style={{ fontSize: "10px", letterSpacing: "0.12em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase" }}>
+                      Private repo
+                    </span>
+                  )}
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
       <div
+        ref={arenaRef}
         className="mk-arena-row"
         style={{
           display: "grid",

@@ -21,7 +21,7 @@ export default function Separator({ next, name = "FLORENCIO" }: SeparatorProps) 
         borderTop: "1px solid rgba(232,40,60,0.4)",
         borderBottom: "1px solid rgba(232,40,60,0.4)",
         boxShadow: "0 0 20px rgba(232,40,60,0.15) inset, 0 0 12px rgba(232,40,60,0.25)",
-        padding: "18px 0",
+        padding: "9px 0",
       }}
     >
       <style>{`
@@ -39,7 +39,7 @@ export default function Separator({ next, name = "FLORENCIO" }: SeparatorProps) 
         }
         .mk-separator-item {
           font-family: 'Anton', sans-serif;
-          font-size: clamp(26px, 4.5vw, 44px);
+          font-size: clamp(18px, 2.6vw, 26px);
           letter-spacing: 0.04em;
           text-transform: uppercase;
           white-space: nowrap;

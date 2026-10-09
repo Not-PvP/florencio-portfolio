@@ -13,9 +13,9 @@ import Outro from "./sections/shared/Outro";
 
 const SECTIONS = [
   { id: "about", label: "About", Component: AboutMe },
-  { id: "school", label: "School", Component: Education },
   { id: "projects", label: "Projects", Component: Projects },
   { id: "skills", label: "Skills", Component: Skills },
+  { id: "school", label: "School", Component: Education },
   { id: "contact", label: "Contact", Component: Contact },
 ] as const;
 
@@ -65,7 +65,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ width: "100%", background: "#0a0a0a", overflowX: "hidden" }}>
+    <div style={{ width: "100%", background: "#0a0a0a", overflowX: "clip" }}>
       <style>{`
         html {
           scroll-behavior: smooth;

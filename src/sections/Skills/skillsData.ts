@@ -1,4 +1,4 @@
-import { Code2, Layers, Cpu, Wrench, Database, type LucideIcon } from "lucide-react";
+import { Code2, Layers, Database, Wrench, type LucideIcon } from "lucide-react";
 
 export interface Skill {
   name: string;
@@ -13,11 +13,9 @@ export interface SkillCategory {
   icon: LucideIcon;
   accent: string;
   skills: Skill[];
-  portraitUrl?: string;
 }
 
 export const CATEGORIES: SkillCategory[] = [
-
   {
     id: "languages",
     fighterName: "Arsenal",
@@ -25,8 +23,8 @@ export const CATEGORIES: SkillCategory[] = [
     icon: Code2,
     accent: "#e8283c",
     skills: [
-      { name: "JavaScript", tag: "JS", iconSlug: "javascript" },
       { name: "TypeScript", tag: "TS", iconSlug: "typescript" },
+      { name: "JavaScript", tag: "JS", iconSlug: "javascript" },
       { name: "Python", tag: "PY", iconSlug: "python" },
       { name: "Dart", tag: "DART", iconSlug: "dart" },
       { name: "HTML", tag: "HTML", iconSlug: "html5" },
@@ -36,7 +34,7 @@ export const CATEGORIES: SkillCategory[] = [
   {
     id: "stack",
     fighterName: "Rig",
-    label: "Frameworks & Libraries",
+    label: "Frameworks & libraries",
     icon: Layers,
     accent: "#ff8a3d",
     skills: [
@@ -44,10 +42,11 @@ export const CATEGORIES: SkillCategory[] = [
       { name: "Next.js", tag: "NX", iconSlug: "nextjs" },
       { name: "Node.js", tag: "ND", iconSlug: "nodejs" },
       { name: "Express", tag: "EXP", iconSlug: "express" },
-      { name: "Flutter", tag: "FLTR", iconSlug: "flutter" },
+      { name: "Socket.io", tag: "IO", iconSlug: "socketio" },
       { name: "Tailwind CSS", tag: "TW", iconSlug: "tailwindcss" },
       { name: "Vite", tag: "VT", iconSlug: "vite" },
-      { name: "Socket.io", tag: "IO", iconSlug: "socketio" },
+      { name: "Flutter", tag: "FLTR", iconSlug: "flutter" },
+      { name: "TensorFlow", tag: "TF", iconSlug: "tensorflow" },
       { name: "Zod", tag: "ZOD", iconSlug: "zod" },
       { name: "Godot", tag: "GD", iconSlug: "godot" },
     ],
@@ -55,7 +54,7 @@ export const CATEGORIES: SkillCategory[] = [
   {
     id: "data",
     fighterName: "Home Base",
-    label: "Databases & Hosting",
+    label: "Databases & hosting",
     icon: Database,
     accent: "#38bdf8",
     skills: [
@@ -69,29 +68,19 @@ export const CATEGORIES: SkillCategory[] = [
     ],
   },
   {
-    id: "ai-ml",
-    fighterName: "Special Moves",
-    label: "AI Tools",
-    icon: Cpu,
-    accent: "#c9a227",
-    skills: [
-      { name: "Claude", tag: "CL", iconSlug: "claude" },
-      { name: "ChatGPT", tag: "GPT" },
-      { name: "Gemini", tag: "GM", iconSlug: "googlegemini" },
-      { name: "TensorFlow", tag: "TF", iconSlug: "tensorflow" },
-    ],
-  },
-  {
     id: "tools",
     fighterName: "Utility Belt",
-    label: "Dev Tools",
+    label: "Tools",
     icon: Wrench,
-    accent: "#9aa0ab",
+    accent: "#c9a227",
     skills: [
       { name: "Git", tag: "GIT", iconSlug: "git" },
       { name: "GitHub", tag: "GH", iconSlug: "github" },
       { name: "VS Code", tag: "VSC", iconSlug: "vscode" },
       { name: "Docker", tag: "DKR", iconSlug: "docker" },
+      { name: "Claude", tag: "CL", iconSlug: "claude" },
+      { name: "Gemini", tag: "GM", iconSlug: "googlegemini" },
+      { name: "ChatGPT", tag: "GPT" },
       { name: "AutoCAD", tag: "CAD", iconSlug: "autocad" },
     ],
   },
