@@ -77,7 +77,7 @@ export default function EasterEgg() {
         justifyContent: "center",
         background: "rgba(0,0,0,0.82)",
         padding: "24px",
-        fontFamily: "'Space Mono', 'JetBrains Mono', monospace",
+        fontFamily: "var(--mk-font-body)",
       }}
       onClick={() => setUnlocked(false)}
     >
@@ -99,18 +99,18 @@ export default function EasterEgg() {
           maxWidth: "440px",
           width: "100%",
           border: "2px solid #e8283c",
-          borderRadius: "12px",
+          borderRadius: 0,
           background: "#0d0d0d",
           padding: "32px 28px",
           textAlign: "center",
-          boxShadow: "0 0 60px rgba(232,40,60,0.35)",
+          
         }}
       >
         <p
           style={{
             margin: "0 0 8px",
-            fontSize: "11px",
-            letterSpacing: "0.35em",
+            fontSize: "13px",
+            letterSpacing: "0.03em",
             color: "#e8283c",
             fontWeight: 700,
           }}
@@ -120,7 +120,7 @@ export default function EasterEgg() {
         <h2
           style={{
             margin: "0 0 16px",
-            fontFamily: "'Anton', sans-serif",
+            fontFamily: "var(--mk-font-display)",
             fontSize: "28px",
             color: "#f2f2f2",
             letterSpacing: "0.02em",
@@ -131,7 +131,7 @@ export default function EasterEgg() {
         <p
           style={{
             margin: "0 0 24px",
-            fontSize: "13px",
+            fontSize: "14px",
             lineHeight: 1.7,
             color: "rgba(255,255,255,0.65)",
           }}
@@ -144,13 +144,13 @@ export default function EasterEgg() {
           type="button"
           onClick={() => setUnlocked(false)}
           style={{
-            fontSize: "11px",
+            fontSize: "13px",
             fontWeight: 700,
             letterSpacing: "0.08em",
             color: "#0a0a0a",
             background: "#e8283c",
             border: "none",
-            borderRadius: "4px",
+            borderRadius: 0,
             padding: "10px 22px",
             cursor: "pointer",
           }}

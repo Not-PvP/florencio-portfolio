@@ -36,7 +36,7 @@ export default function AboutMe() {
 
         minHeight: "100vh",
         background: "transparent",
-        fontFamily: "'Space Mono', 'JetBrains Mono', monospace",
+        fontFamily: "var(--mk-font-body)",
         position: "relative",
         overflow: "visible",
         isolation: "isolate",
@@ -70,13 +70,13 @@ export default function AboutMe() {
           border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         .mk-stat dt {
-          font-size: 11px;
+          font-size: 13px;
           color: #e8283c;
           margin: 0 0 4px;
         }
         .mk-stat dd {
           margin: 0;
-          font-size: 14px;
+          font-size: 15px;
           color: #f5f0e6;
         }
 
@@ -85,9 +85,7 @@ export default function AboutMe() {
           inset: 0;
           z-index: -1;
           pointer-events: none;
-          background:
-            radial-gradient(ellipse 38% 50% at 100% 0%, rgba(196, 30, 30, 0.18), transparent 70%),
-            radial-gradient(ellipse 38% 50% at 100% 100%, rgba(196, 30, 30, 0.18), transparent 70%);
+          
         }
 
         .mk-globe-slot {
@@ -136,7 +134,7 @@ export default function AboutMe() {
             height: auto !important;
             aspect-ratio: 4 / 3 !important;
             min-height: 0 !important;
-            border-radius: 18px !important;
+            border-radius: 0;
             flex-shrink: 0 !important;
           }
           .mk-hero-photo {
@@ -150,11 +148,11 @@ export default function AboutMe() {
           .mk-hero-copy h1 {
             font-size: clamp(44px, 14vw, 64px) !important;
           }
-          .mk-stat dd { font-size: 13px; }
+          .mk-stat dd { font-size: 14px; }
           .mk-cta-primary { width: 100%; justify-content: center; }
           .mk-cta-ghost { flex: 1; justify-content: center; }
           .mk-hero-copy p {
-            font-size: 15px !important;
+            font-size: 16px !important;
             line-height: 1.6 !important;
           }
         }
@@ -181,9 +179,8 @@ export default function AboutMe() {
             alignSelf: "stretch",
             position: "relative",
             background:
-              "linear-gradient(160deg, #1a1010 0%, #0a0a0a 60%, #150a0a 100%)",
+              "#140d0d",
             overflow: "hidden",
-            boxShadow: "inset 0 0 30px rgba(0,0,0,0.4)",
             boxSizing: "border-box",
             transition:
               "width 0.65s cubic-bezier(0.16, 0.9, 0.2, 1), min-width 0.65s cubic-bezier(0.16, 0.9, 0.2, 1)",
@@ -202,18 +199,6 @@ export default function AboutMe() {
               transformOrigin: "center 12%",
               filter:
                 "saturate(0.78) contrast(1.12) brightness(0.9) hue-rotate(-12deg)",
-            }}
-          />
-
-          <div
-            aria-hidden="true"
-            style={{
-              position: "absolute",
-              inset: 0,
-              pointerEvents: "none",
-              background:
-                "linear-gradient(160deg, rgba(20,4,8,0.2) 0%, rgba(10,6,10,0.08) 45%, rgba(120,20,20,0.12) 100%)",
-              mixBlendMode: "multiply",
             }}
           />
         </div>
@@ -243,9 +228,9 @@ export default function AboutMe() {
             <div
               style={{
                 color: "#e8283c",
-                fontFamily: "'Press Start 2P', monospace",
-                fontSize: "11px",
-                letterSpacing: "3px",
+                fontFamily: "var(--mk-font-pixel)",
+                fontSize: "13px",
+                letterSpacing: "0.02em",
                 marginBottom: "18px",
               }}
             >
@@ -254,13 +239,13 @@ export default function AboutMe() {
 
             <h1
               style={{
-                fontFamily: "'Anton', sans-serif",
+                fontFamily: "var(--mk-font-display)",
                 fontSize: "clamp(48px, 6.5vw, 96px)",
                 color: "#f5f0e6",
                 lineHeight: 0.92,
                 margin: "0 0 28px 0",
                 textTransform: "uppercase",
-                textShadow: "0 0 24px rgba(232,40,60,0.35)",
+                
               }}
             >
               Mark Angelo
@@ -288,33 +273,36 @@ export default function AboutMe() {
                 display: inline-flex;
                 align-items: center;
                 gap: 8px;
-                font-family: 'Press Start 2P', monospace;
-                font-size: 9px;
-                letter-spacing: 1px;
-                text-transform: uppercase;
+                min-height: 44px;
+                font-family: var(--mk-font-body);
+                font-size: 16px;
+                font-weight: 700;
                 text-decoration: none;
-                padding: 12px 16px;
-                border-radius: 2px;
+                padding: 8px 18px;
+                border-radius: 0;
                 cursor: pointer;
-                transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+                transition: transform 0.08s steps(2), box-shadow 0.08s steps(2);
               }
               .mk-cta:focus-visible { outline: 2px solid #ff8a5b; outline-offset: 3px; }
               .mk-cta-primary {
                 background: #e8283c;
-                color: #0a0a0a;
-                border: 1px solid #e8283c;
-                box-shadow: 0 0 18px rgba(232,40,60,0.45);
+                color: #fff;
+                border: 3px solid #0a0a0a;
+                box-shadow: 4px 4px 0 #7a1420;
               }
-              .mk-cta-primary:hover { background: #ff3b4f; transform: translateY(-1px); }
               .mk-cta-ghost {
-                background: transparent;
-                color: #d8d0c8;
-                border: 1px solid rgba(255,255,255,0.18);
+                background: #0a0a0a;
+                color: #f5f0e6;
+                border: 3px solid rgba(255,255,255,0.7);
+                box-shadow: 4px 4px 0 rgba(255,255,255,0.18);
               }
-              .mk-cta-ghost:hover { color: #ff8a5b; border-color: #ff8a5b; }
+              .mk-cta:hover { transform: translate(2px, 2px); }
+              .mk-cta-primary:hover { box-shadow: 2px 2px 0 #7a1420; }
+              .mk-cta-ghost:hover { box-shadow: 2px 2px 0 rgba(255,255,255,0.18); }
+              .mk-cta:active { transform: translate(4px, 4px); box-shadow: none; }
               @media (prefers-reduced-motion: reduce) {
                 .mk-cta { transition: none; }
-                .mk-cta-primary:hover { transform: none; }
+                .mk-cta:hover, .mk-cta:active { transform: none; }
               }
             `}</style>
 

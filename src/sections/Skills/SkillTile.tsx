@@ -49,7 +49,7 @@ export function SkillTile({
         style={{
           width: "116px",
           border: "1px solid rgba(255,255,255,0.15)",
-          borderRadius: "10px",
+          borderRadius: 0,
           padding: "16px 10px",
           display: "flex",
           flexDirection: "column",
@@ -63,12 +63,12 @@ export function SkillTile({
           style={{
             width: "52px",
             height: "52px",
-            borderRadius: "10px",
+            borderRadius: 0,
             border: "1px solid rgba(255,255,255,0.1)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "11px",
+            fontSize: "13px",
             fontWeight: 700,
             letterSpacing: "0.02em",
             color: accent,
@@ -89,7 +89,7 @@ export function SkillTile({
         </div>
         <span
           style={{
-            fontSize: "9.5px",
+            fontSize: "13px",
             color: "rgba(255,255,255,0.75)",
             textAlign: "center",
             letterSpacing: "0.02em",

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, Lock, CircleDashed, Send, ChevronLeft, ChevronRight, GraduationCap, Trophy, Users } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, ChevronDown, CircleDashed, GraduationCap, Lock, Send, Trophy, Users } from "lucide-react";
 import RoundTag from "../shared/RoundTag";
 import { ARCS, ORIGIN, type Arc, type Highlight, type HighlightKind, type QuestStatus, type Stage } from "../../data/education";
 
@@ -8,17 +8,6 @@ const STATUS_COPY: Record<QuestStatus, string> = {
   "in-progress": "In progress",
   submitted: "Submitted",
 };
-
-interface FlatStage {
-  stage: Stage;
-  arc: Arc;
-  index: number;
-}
-
-const FLAT: FlatStage[] = ARCS.flatMap((arc) => arc.stages.map((stage) => ({ stage, arc }))).map((s, index) => ({
-  ...s,
-  index,
-}));
 
 const GROUPS: { kind: HighlightKind; label: string; Icon: typeof Trophy }[] = [
   { kind: "academic", label: "Academic", Icon: GraduationCap },
@@ -34,6 +23,25 @@ function kindOf(h: Highlight): HighlightKind {
 }
 
 const hasLog = (s: Stage) => Boolean(s.tracks?.length || s.highlights?.length);
+const isOpenable = (s: Stage) => s.status !== "locked";
+
+/** Chronological stage numbers (Stage 1 = Riyadh), shown newest first. */
+const NUMBERED = ARCS.map((arc, i) => ({ arc, number: i + 1 }));
+const NEWEST_FIRST = [...NUMBERED].reverse();
+
+function defaultStageId(arc: Arc): string {
+  const open = arc.stages.filter(isOpenable);
+  const current = open.find((s) => s.status === "current");
+  return (current ?? open[open.length - 1] ?? arc.stages[0]).id;
+}
+
+function arcStatus(arc: Arc): "current" | "cleared" {
+  return arc.stages.some((s) => s.status === "current") ? "current" : "cleared";
+}
+
+function countHighlights(arc: Arc): number {
+  return arc.stages.reduce((n, s) => n + (s.highlights?.length ?? 0), 0);
+}
 
 function StatusMark({ status }: { status: QuestStatus }) {
   const Icon = status === "cleared" ? Check : status === "submitted" ? Send : CircleDashed;
@@ -44,29 +52,98 @@ function StatusMark({ status }: { status: QuestStatus }) {
   );
 }
 
+function StageLog({ stage }: { stage: Stage }) {
+  if (!hasLog(stage)) {
+    return (
+      <div className="mk-ed-wip">
+        <p className="mk-ed-wip-title">In progress</p>
+        <p className="mk-ed-wip-text">{stage.label} is still running. Nothing to show until it is cleared.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="mk-ed-card-body">
+      {stage.tracks && (
+        <div className="mk-ed-tracks">
+          {stage.tracks.map((track) => (
+            <section key={track.id} aria-label={track.label}>
+              <h4 className="mk-ed-track-label">{track.label}</h4>
+              <ul className="mk-ed-quests">
+                {track.quests.map((quest) => (
+                  <li key={quest.name} className="mk-ed-quest">
+                    <StatusMark status={quest.status} />
+                    <div>
+                      <div className="mk-ed-qhead">
+                        <p className="mk-ed-qname">{quest.name}</p>
+                        <span className="mk-ed-qstatus">{STATUS_COPY[quest.status]}</span>
+                      </div>
+                      <p className="mk-ed-qsum">{quest.summary}</p>
+                      <div className="mk-ed-qfoot">
+                        {quest.stack.map((s) => (
+                          <span key={s} className="mk-ed-chip">{s}</span>
+                        ))}
+                        {quest.link && (
+                          <a className="mk-ed-link" href={quest.link.url} target="_blank" rel="noopener noreferrer">
+                            {quest.link.label}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      )}
+
+      {stage.highlights && (
+        <div className="mk-ed-groups">
+          {GROUPS.map(({ kind, label, Icon }) => {
+            const items = stage.highlights!.filter((h) => kindOf(h) === kind);
+            if (items.length === 0) return null;
+            return (
+              <section key={kind} className="mk-ed-group" aria-label={label}>
+                <h4 className="mk-ed-group-label">
+                  <Icon size={15} aria-hidden="true" />
+                  {label}
+                </h4>
+                <ul className="mk-ed-highlights">
+                  {items.map((h) => {
+                    const place = h.title.match(/^(1st|2nd|3rd|\d+th) Place,\s*/);
+                    const top = h.title.match(/^Top (\d+),\s*/);
+                    const rank = place ? place[1] : top ? `#${top[1]}` : null;
+                    const medal = place?.[1] === "1st" ? "gold" : place?.[1] === "2nd" ? "silver" : place?.[1] === "3rd" ? "bronze" : "plain";
+                    const title = place ? h.title.slice(place[0].length) : top ? h.title.slice(top[0].length) : h.title;
+                    return (
+                      <li key={h.title} className={rank ? "mk-ed-ranked" : undefined}>
+                        {rank && <span className={`mk-ed-medal mk-ed-medal-${medal}`} aria-hidden="true">{rank}</span>}
+                        <span className="mk-ed-hl-title">
+                          {rank && <span className="mk-ed-sr">{place ? `${place[1]} place, ` : `Top ${top![1]}, `}</span>}
+                          {title}
+                        </span>
+                        {h.detail && <span className="mk-ed-hl-detail">{h.detail}</span>}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Education() {
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const scrollRef = useRef<HTMLDivElement | null>(null);
   const [sectionIn, setSectionIn] = useState(false);
-  const currentIndex = Math.max(0, FLAT.findIndex((f) => f.stage.status === "current"));
-  const defaultIndex = (() => {
-    for (let i = currentIndex; i >= 0; i--) if (hasLog(FLAT[i].stage)) return i;
-    return currentIndex;
-  })();
-  const [selectedId, setSelectedId] = useState<string>(FLAT[defaultIndex]?.stage.id ?? "");
-  const selected = useMemo(() => FLAT.find((f) => f.stage.id === selectedId) ?? FLAT[defaultIndex], [selectedId, defaultIndex]);
-  const total = FLAT.length;
-  const navigable = FLAT.filter((f) => f.stage.status !== "locked" && hasLog(f.stage));
-  const navIndex = navigable.findIndex((f) => f.stage.id === selected?.stage.id);
-  const prevStage = navIndex > 0 ? navigable[navIndex - 1] : undefined;
-  const nextStage = navIndex >= 0 && navIndex < navigable.length - 1 ? navigable[navIndex + 1] : undefined;
-
-  useEffect(() => {
-    const box = scrollRef.current;
-    if (!box || box.scrollWidth <= box.clientWidth) return;
-    const step = box.scrollWidth / total;
-    box.scrollLeft = Math.max(0, step * (currentIndex + 0.5) - box.clientWidth / 2);
-  }, [currentIndex, total]);
+  const currentArc = NEWEST_FIRST.find(({ arc }) => arcStatus(arc) === "current") ?? NEWEST_FIRST[0];
+  const [openArcId, setOpenArcId] = useState<string | null>(currentArc.arc.id);
+  const [stageByArc, setStageByArc] = useState<Record<string, string>>(() =>
+    Object.fromEntries(ARCS.map((arc) => [arc.id, defaultStageId(arc)]))
+  );
 
   useEffect(() => {
     const node = rootRef.current;
@@ -78,7 +155,7 @@ export default function Education() {
           observer.disconnect();
         }
       },
-      { threshold: 0.2 }
+      { threshold: 0.15 }
     );
     observer.observe(node);
     return () => observer.disconnect();
@@ -89,7 +166,7 @@ export default function Education() {
       <style>{`
         .mk-ed-root {
           width: 100%;
-          font-family: 'Space Mono', 'JetBrains Mono', monospace;
+          font-family: var(--mk-font-mono);
           padding: 96px 24px;
           box-sizing: border-box;
           display: flex;
@@ -97,514 +174,175 @@ export default function Education() {
         }
         .mk-ed-inner { width: 100%; max-width: 1100px; }
         .mk-ed-title {
-          margin: 0 0 10px;
-          font-family: 'Anton', sans-serif;
+          margin: 0 0 14px;
+          font-family: var(--mk-font-display);
+          font-weight: 400;
           font-size: clamp(40px, 5.4vw, 72px);
           line-height: 1;
-          color: #f5f0e6;
+          color: var(--mk-cream);
           text-transform: uppercase;
           letter-spacing: 0.02em;
         }
-        .mk-ed-lede { margin: 0 0 10px; font-size: 15px; line-height: 1.7; color: rgba(255,255,255,0.78); max-width: 62ch; }
-        .mk-ed-hint { margin: 0 0 56px; font-size: 12px; color: rgba(255,255,255,0.45); }
+        .mk-ed-lede { margin: 0 0 40px; font-size: 18px; line-height: 1.6; color: var(--mk-text); max-width: 56ch; }
 
-        /* map */
-        .mk-ed-mapscroll { overflow-x: auto; margin: 0 -8px 40px; padding: 0 8px 8px; }
-        .mk-ed-map { min-width: calc(var(--n) * 100px); }
-        .mk-ed-arcs { display: flex; margin-bottom: 28px; }
-        .mk-ed-arc {
-          flex: var(--count) 1 0;
-          padding: 0 14px 0 12px;
-          border-left: 2px solid rgba(255,138,91,0.5);
-          box-sizing: border-box;
-        }
-        .mk-ed-arc + .mk-ed-arc { margin-left: 0; }
-        .mk-ed-arc-label { margin: 0 0 4px; font-size: 12px; color: #ff8a5b; }
-        .mk-ed-arc-school { margin: 0; font-size: 14px; font-weight: 700; line-height: 1.4; color: #f5f0e6; }
-        .mk-ed-arc-meta { margin: 2px 0 0; font-size: 12px; color: rgba(255,255,255,0.5); }
+        .mk-ed-stages { margin: 0; padding: 0; list-style: none; display: grid; gap: 14px; }
+        .mk-ed-arc { border: 3px solid #2e2724; background: #141110; }
+        .mk-ed-arc[data-open="true"] { border-color: var(--mk-orange); }
+        .mk-ed-arc[data-status="current"] { border-color: #6b2630; }
+        .mk-ed-arc[data-status="current"][data-open="true"] { border-color: var(--mk-red); box-shadow: 8px 8px 0 #3d1218; }
 
-        .mk-ed-rail {
-          position: relative;
-          z-index: 1;
-          display: grid;
-          grid-template-columns: repeat(var(--n), minmax(0, 1fr));
-          margin: 0;
-          padding: 0;
-          list-style: none;
-        }
-        .mk-ed-railbox { position: relative; }
-        .mk-ed-railbox::before, .mk-ed-fill {
-          content: "";
-          position: absolute;
-          top: 28px;
-          left: calc(100% / var(--n) / 2);
-        }
-        .mk-ed-railbox::before {
-          width: calc(100% - 100% / var(--n));
-          border-top: 2px dashed rgba(255,255,255,0.14);
-        }
-        .mk-ed-fill {
-          top: 27px;
-          height: 4px;
-          width: 0;
-          background: linear-gradient(90deg, #ff8a5b, #e8283c);
-          box-shadow: 0 0 12px rgba(232,40,60,0.6);
-          transition: width 1.2s cubic-bezier(0.2, 0.85, 0.25, 1) 0.2s;
-        }
-        .mk-ed-root.in .mk-ed-fill { width: calc(100% / var(--n) * var(--cur)); }
-        .mk-ed-stage { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; }
-        .mk-ed-node {
-          position: relative;
-          z-index: 1;
-          width: 44px;
-          height: 44px;
-          margin: 6px 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0;
-          border-radius: 8px;
-          transform: rotate(45deg);
-          background: #121317;
-          border: 2px solid rgba(255,255,255,0.14);
-          box-sizing: border-box;
-          font: inherit;
-          color: inherit;
-        }
-        button.mk-ed-node { cursor: pointer; transition: box-shadow 0.15s ease; }
-        button.mk-ed-node:hover { box-shadow: 0 0 0 4px rgba(255,138,91,0.18); }
-        button.mk-ed-node:focus-visible { outline: 2px solid #f5f0e6; outline-offset: 4px; }
-        .mk-ed-node > * { transform: rotate(-45deg); }
-        .mk-ed-stage-cleared .mk-ed-node { border-color: #ff8a5b; background: #1c1210; color: #ff8a5b; }
-        .mk-ed-stage-current .mk-ed-node {
-          border-color: #e8283c;
-          background: #e8283c;
-          color: #0a0a0a;
-          box-shadow: 0 0 0 6px rgba(232,40,60,0.18), 0 0 28px rgba(232,40,60,0.55);
-        }
-        .mk-ed-stage[data-selected="true"] .mk-ed-node { outline: 2px solid #f5f0e6; outline-offset: 5px; }
-        .mk-ed-p1 {
-          position: absolute;
-          top: -26px;
-          left: 50%;
-          transform: translateX(-50%);
-          font-family: 'Press Start 2P', monospace;
-          font-size: 8px;
-          padding: 4px 5px;
-          background: #f5f0e6;
-          color: #0a0a0a;
-          border-radius: 2px;
-        }
-        .mk-ed-stage-label { margin-top: 16px; font-size: 14px; font-weight: 700; color: #f5f0e6; }
-        .mk-ed-stage-state { margin-top: 2px; font-size: 11px; color: rgba(255,255,255,0.42); }
-        .mk-ed-stage-cleared .mk-ed-stage-state { color: #ff8a5b; }
-        .mk-ed-stage-current .mk-ed-stage-state { color: #ff6b7a; }
-        .mk-ed-stage-locked .mk-ed-stage-label { color: rgba(255,255,255,0.4); }
+        .mk-ed-arc-btn { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 20px; width: 100%; padding: 20px 24px; font: inherit; color: inherit; text-align: left; background: none; border: none; border-radius: 0; cursor: pointer; }
+        .mk-ed-arc-btn:hover .mk-ed-arc-school { color: var(--mk-orange); }
+        .mk-ed-stagetag { grid-column: 1 / -1; font-size: 15px; font-weight: 700; color: var(--mk-orange); }
+        .mk-ed-arc[data-status="current"] .mk-ed-stagetag { color: var(--mk-red-soft); }
+        .mk-ed-arc-school { margin: 0; font-family: var(--mk-font-display); font-weight: 400; font-size: 34px; line-height: 1.05; color: var(--mk-cream); transition: color 0.15s ease; }
+        .mk-ed-arc-meta { margin: 6px 0 0; font-size: 15px; line-height: 1.5; color: var(--mk-text-2); }
+        .mk-ed-arc-side { display: flex; align-items: center; gap: 14px; }
+        .mk-ed-arc-state { font-size: 15px; font-weight: 700; color: var(--mk-orange); white-space: nowrap; }
+        .mk-ed-arc[data-status="current"] .mk-ed-arc-state { color: var(--mk-red-soft); }
+        .mk-ed-chev { color: var(--mk-text-2); transition: transform 0.25s ease; }
+        .mk-ed-arc[data-open="true"] .mk-ed-chev { transform: rotate(180deg); }
 
-        .mk-ed-arcstart::before {
-          content: "";
-          position: absolute;
-          left: 0;
-          top: -6px;
-          height: 72px;
-          border-left: 1px dashed rgba(255,138,91,0.35);
-        }
+        .mk-ed-arc-panel { padding: 0 24px 28px; }
+        .mk-ed-tabs { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 28px; padding-top: 20px; border-top: 3px solid #2e2724; }
+        .mk-ed-tab { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 14px; font: inherit; font-size: 15px; font-weight: 700; color: var(--mk-cream); background: var(--mk-bg); border: 3px solid #2e2724; border-radius: 0; cursor: pointer; }
+        .mk-ed-tab small { font-size: 13px; font-weight: 400; color: var(--mk-orange); }
+        .mk-ed-tab[data-state="current"] small { color: var(--mk-red-soft); }
+        .mk-ed-tab:hover:not(:disabled) { border-color: var(--mk-orange); }
+        .mk-ed-tab[aria-pressed="true"] { border-color: var(--mk-orange); background: var(--mk-orange); color: var(--mk-bg); }
+        .mk-ed-tab[aria-pressed="true"] small { color: var(--mk-bg); }
+        .mk-ed-tab:disabled { cursor: default; color: var(--mk-text-3); }
+        .mk-ed-tab:disabled small { color: var(--mk-text-3); }
 
-        /* log */
-        .mk-ed-log {
-          border-top: 1px solid rgba(255,255,255,0.1);
-          padding-top: 40px;
-        }
-        .mk-ed-loghead {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: flex-end;
-          justify-content: space-between;
-          gap: 16px 32px;
-          margin-bottom: 32px;
-        }
-        .mk-ed-loghead-main { min-width: 0; }
-        .mk-ed-loghead-title { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 8px; }
-        .mk-ed-log .mk-ed-log-title { font-size: 44px; margin: 0; }
-        .mk-ed-badge {
-          padding: 5px 9px;
-          border-radius: 4px;
-          font-size: 12px;
-          font-weight: 700;
-          color: #0a0a0a;
-          background: #ff8a5b;
-        }
-        .mk-ed-logmeta { margin: 0; font-size: 13px; color: rgba(255,255,255,0.55); }
-        .mk-ed-stepper { display: flex; gap: 8px; }
-        .mk-ed-step {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          font: inherit;
-          font-size: 12px;
-          font-weight: 700;
-          color: #f5f0e6;
-          background: #121317;
-          border: 1px solid rgba(255,255,255,0.14);
-          border-radius: 6px;
-          padding: 8px 12px;
-          cursor: pointer;
-        }
-        .mk-ed-step:hover:not(:disabled), .mk-ed-step:focus-visible { border-color: #ff8a5b; color: #ff8a5b; outline: none; }
-        .mk-ed-step:disabled { opacity: 0.35; cursor: default; }
-        .mk-ed-groups {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-          gap: 20px;
-          align-items: stretch;
-        }
+        .mk-ed-wip { padding: 28px 24px; border: 3px dashed #6b2630; }
+        .mk-ed-wip-title { margin: 0 0 6px; font-family: var(--mk-font-display); font-size: 34px; line-height: 1; color: var(--mk-red-soft); }
+        .mk-ed-wip-text { margin: 0; font-size: 16px; line-height: 1.5; color: var(--mk-text-2); }
+        .mk-ed-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; align-items: stretch; }
+        .mk-ed-group { padding: 18px 20px 6px; border: 3px solid #2e2724; background: var(--mk-bg); }
+        .mk-ed-tracks + .mk-ed-groups { margin-top: 40px; }
+        .mk-ed-group-label { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; font-size: 15px; font-weight: 700; color: var(--mk-orange); }
+        .mk-ed-tracks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 56px; row-gap: 40px; }
+        .mk-ed-track-label { margin: 0 0 6px; padding-bottom: 10px; font-size: 16px; font-weight: 700; color: var(--mk-orange); border-bottom: 3px solid #2e2724; }
+        .mk-ed-quests, .mk-ed-highlights { margin: 0; padding: 0; list-style: none; }
+        .mk-ed-quest { display: grid; grid-template-columns: 28px minmax(0, 1fr); column-gap: 12px; padding: 16px 0; border-bottom: 2px solid #231e1b; }
+        .mk-ed-quest:last-child { border-bottom: none; }
+        .mk-ed-mark { width: 24px; height: 24px; margin-top: 1px; display: flex; align-items: center; justify-content: center; border-radius: 0; }
+        .mk-ed-mark-cleared { background: rgba(255,138,91,0.15); color: var(--mk-orange); }
+        .mk-ed-mark-in-progress { background: rgba(232,40,60,0.15); color: var(--mk-red-soft); }
+        .mk-ed-mark-submitted { background: rgba(245,240,230,0.1); color: var(--mk-cream); }
+        .mk-ed-qhead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+        .mk-ed-qname { margin: 0; font-size: 18px; color: var(--mk-cream); font-weight: 700; }
+        .mk-ed-qstatus { font-size: 14px; color: var(--mk-text-3); }
+        .mk-ed-qsum { margin: 6px 0 10px; font-size: 15px; line-height: 1.6; color: var(--mk-text-2); max-width: 60ch; }
+        .mk-ed-qfoot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+        .mk-ed-chip { font-size: 13px; color: var(--mk-text-2); border: 2px solid #2e2724; padding: 2px 7px; }
+        .mk-ed-link { margin-left: auto; font-size: 14px; font-weight: 700; color: var(--mk-orange); text-decoration: underline; text-underline-offset: 3px; }
+        .mk-ed-link:hover { color: #fff; border-bottom-color: #fff; }
+        .mk-ed-highlights { display: grid; grid-template-columns: 1fr; }
+        .mk-ed-highlights li { position: relative; display: flex; flex-direction: column; gap: 3px; padding: 14px 0 14px 26px; border-bottom: 2px solid #231e1b; }
+        .mk-ed-highlights li:last-child { border-bottom: none; }
+        .mk-ed-highlights li::before { content: ""; position: absolute; left: 4px; top: 20px; width: 8px; height: 8px; background: var(--mk-orange); transform: rotate(45deg); }
         .mk-ed-highlights li.mk-ed-ranked { padding-left: 46px; min-height: 36px; justify-content: center; }
         .mk-ed-highlights li.mk-ed-ranked::before { display: none; }
+        .mk-ed-hl-title { font-size: 16px; font-weight: 700; line-height: 1.4; color: var(--mk-cream); }
+        .mk-ed-hl-detail { font-size: 14px; line-height: 1.5; color: var(--mk-text-3); }
         .mk-ed-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
         .mk-ed-medal {
-          position: absolute;
-          left: 0;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 34px;
-          height: 34px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-family: 'Anton', sans-serif;
-          font-size: 13px;
-          letter-spacing: 0.02em;
-          color: #1a1208;
-          box-shadow: inset 0 -2px 0 rgba(0,0,0,0.22);
+          position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+          width: 34px; height: 34px; border-radius: 0;
+          display: flex; align-items: center; justify-content: center;
+          font-family: var(--mk-font-display); font-size: 13px; letter-spacing: 0.02em; color: #1a1208;
+          
         }
-        .mk-ed-medal-gold { background: radial-gradient(circle at 35% 30%, #fff1b8, #e3b53c 72%); }
-        .mk-ed-medal-silver { background: radial-gradient(circle at 35% 30%, #ffffff, #b6bcc6 72%); }
-        .mk-ed-medal-bronze { background: radial-gradient(circle at 35% 30%, #ffdcc2, #c47a45 72%); }
-        .mk-ed-medal-plain { background: rgba(255,138,91,0.16); color: #ff8a5b; box-shadow: inset 0 0 0 1px rgba(255,138,91,0.45); }
-        .mk-ed-group {
-          padding: 18px 20px 6px;
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 10px;
-          background: #111114;
-        }
-        .mk-ed-group-label {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin: 0 0 4px;
-          font-size: 12px;
-          font-weight: 700;
-          color: #ff8a5b;
-        }
-        .mk-ed-card-body { min-width: 0; }
+        .mk-ed-medal-gold { background: #e3b53c; }
+        .mk-ed-medal-silver { background: #b6bcc6; }
+        .mk-ed-medal-bronze { background: #c47a45; }
+        .mk-ed-medal-plain { background: rgba(255,138,91,0.16); color: var(--mk-orange);  }
 
-        /* mobile stage picker */
-        .mk-ed-picker { display: none; }
-        .mk-ed-pick-arc + .mk-ed-pick-arc { margin-top: 20px; }
-        .mk-ed-pick-school { margin: 0 0 10px; font-size: 13px; font-weight: 700; color: #f5f0e6; }
-        .mk-ed-pick-row { display: grid; grid-template-columns: repeat(var(--count), minmax(0, 1fr)); gap: 8px; }
-        .mk-ed-pick {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          align-items: flex-start;
-          padding: 10px 8px;
-          min-width: 0;
-          border-radius: 6px;
-          border: 1px solid rgba(255,255,255,0.12);
-          background: #121317;
-          color: inherit;
-          font: inherit;
-          text-align: left;
-          cursor: pointer;
-        }
-        .mk-ed-pick-label { font-size: 13px; font-weight: 700; color: #f5f0e6; white-space: nowrap; }
-        .mk-ed-pick-state { font-size: 10px; color: #ff8a5b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-        .mk-ed-pick-current { border-color: rgba(232,40,60,0.6); }
-        .mk-ed-pick-current .mk-ed-pick-state { color: #ff6b7a; }
-        .mk-ed-pick:disabled { cursor: default; opacity: 0.55; }
-        .mk-ed-pick-locked .mk-ed-pick-state { color: rgba(255,255,255,0.4); }
-        .mk-ed-pick[aria-pressed="true"] { border-color: #ff8a5b; background: rgba(255,138,91,0.14); box-shadow: 0 0 0 1px #ff8a5b; }
-        .mk-ed-pick:focus-visible { outline: 2px solid #f5f0e6; outline-offset: 2px; }
-        .mk-ed-log-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin: 0 0 28px; }
-        .mk-ed-log-title {
-          margin: 0;
-          font-family: 'Anton', sans-serif;
-          font-size: 30px;
-          line-height: 1;
-          color: #f5f0e6;
-          letter-spacing: 0.02em;
-          text-transform: uppercase;
-        }
-        .mk-ed-log-sub { font-size: 13px; color: rgba(255,255,255,0.5); }
-        .mk-ed-tracks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 56px; row-gap: 40px; }
-        .mk-ed-track-label { margin: 0 0 6px; padding-bottom: 10px; font-size: 13px; font-weight: 700; color: #ff8a5b; border-bottom: 1px solid rgba(255,138,91,0.3); }
-        .mk-ed-quests, .mk-ed-highlights { margin: 0; padding: 0; list-style: none; }
-        .mk-ed-quest { display: grid; grid-template-columns: 28px minmax(0, 1fr); column-gap: 12px; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
-        .mk-ed-quest:last-child { border-bottom: none; }
-        .mk-ed-mark { width: 24px; height: 24px; margin-top: 1px; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
-        .mk-ed-mark-cleared { background: rgba(255,138,91,0.15); color: #ff8a5b; }
-        .mk-ed-mark-in-progress { background: rgba(232,40,60,0.15); color: #ff6b7a; }
-        .mk-ed-mark-submitted { background: rgba(245,240,230,0.1); color: #f5f0e6; }
-        .mk-ed-qhead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
-        .mk-ed-qname { margin: 0; font-size: 16px; color: #f5f0e6; font-weight: 700; }
-        .mk-ed-qstatus { font-size: 11px; color: rgba(255,255,255,0.42); }
-        .mk-ed-qsum { margin: 6px 0 10px; font-size: 13px; line-height: 1.65; color: rgba(255,255,255,0.68); max-width: 60ch; }
-        .mk-ed-qfoot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-        .mk-ed-chip { font-size: 11px; color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.12); border-radius: 3px; padding: 3px 7px; }
-        .mk-ed-link { margin-left: auto; font-size: 12px; color: #ff8a5b; text-decoration: none; border-bottom: 1px solid rgba(255,138,91,0.4); }
-        .mk-ed-link:hover, .mk-ed-link:focus-visible { color: #fff; border-bottom-color: #fff; outline: none; }
-        .mk-ed-highlights { display: grid; grid-template-columns: 1fr; }
-        .mk-ed-highlights li {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          gap: 3px;
-          padding: 14px 0 14px 26px;
-          border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-        .mk-ed-highlights li:last-child { border-bottom: none; }
-        .mk-ed-hl-title { font-size: 14px; font-weight: 700; line-height: 1.45; color: #f5f0e6; }
-        .mk-ed-hl-detail { font-size: 12px; line-height: 1.5; color: rgba(255,255,255,0.55); }
-        .mk-ed-highlights li::before {
-          content: "";
-          position: absolute;
-          left: 4px;
-          top: 20px;
-          width: 8px;
-          height: 8px;
-          background: #ff8a5b;
-          transform: rotate(45deg);
-        }
+        @keyframes mk-ed-open { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+        .mk-ed-arc-panel { animation: mk-ed-open 0.25s ease; }
 
         @media (max-width: 820px) {
-          .mk-ed-root { padding: 72px 18px; }
+          .mk-ed-root { padding: 72px 16px; }
+          .mk-ed-arc-btn { grid-template-columns: minmax(0, 1fr) auto; padding: 18px 16px; }
+          .mk-ed-stagetag { grid-column: 1 / -1; justify-self: start; }
+          .mk-ed-arc-state { display: none; }
+          .mk-ed-arc-panel { padding: 0 16px 22px; }
           .mk-ed-tracks { grid-template-columns: 1fr; row-gap: 32px; }
-          .mk-ed-mapscroll { display: none; }
-          .mk-ed-picker { display: block; margin-bottom: 36px; }
-          .mk-ed-log { padding-top: 28px; }
-          .mk-ed-log .mk-ed-log-title { font-size: 34px; }
-          .mk-ed-stepper { width: 100%; justify-content: space-between; }
-          .mk-ed-highlights { row-gap: 0; }
-          .mk-ed-arc-school { font-size: 13px; }
-          .mk-ed-map { min-width: calc(var(--n) * 112px); }
-          .mk-ed-stage-label { font-size: 12px; }
-          .mk-ed-mapscroll {
-            -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 24px), transparent 100%);
-            mask-image: linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 24px), transparent 100%);
-          }
         }
         @media (prefers-reduced-motion: reduce) {
-          .mk-ed-fill { transition: none; }
+          .mk-ed-arc-panel { animation: none; }
+          .mk-ed-chev { transition: none; }
         }
       `}</style>
 
       <div className="mk-ed-inner">
         <RoundTag label="Round four" />
-        <h2 className="mk-ed-title">Training grounds</h2>
+        <h2 className="mk-ed-title">Stage select</h2>
         <p className="mk-ed-lede">{ORIGIN}</p>
-        <p className="mk-ed-hint">From Riyadh to Roxas to Iloilo. Pick a stage to see what I achieved there.</p>
 
-        <div className="mk-ed-mapscroll" ref={scrollRef}>
-          <div
-            className="mk-ed-map"
-            style={{ "--n": total, "--cur": currentIndex } as React.CSSProperties}
-          >
-            <div className="mk-ed-arcs">
-              {ARCS.map((arc) => (
-                <div key={arc.id} className="mk-ed-arc" style={{ "--count": arc.stages.length } as React.CSSProperties}>
-                  <p className="mk-ed-arc-label">{arc.label}</p>
-                  <p className="mk-ed-arc-school">{arc.school}</p>
-                  <p className="mk-ed-arc-meta">{arc.years}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mk-ed-railbox">
-            <span className="mk-ed-fill" aria-hidden="true" />
-            <ol className="mk-ed-rail" aria-label="School progress">
-              {FLAT.map(({ stage, arc }, i) => {
-                const arcStart = i > 0 && FLAT[i - 1].arc.id !== arc.id;
-                const clickable = stage.status !== "locked" && hasLog(stage);
-                const isSelected = stage.id === selected?.stage.id;
-                const inner =
-                  stage.status === "locked" ? (
-                    <Lock size={16} color="rgba(255,255,255,0.35)" aria-hidden="true" />
-                  ) : stage.status === "cleared" ? (
-                    <Check size={18} strokeWidth={3} aria-hidden="true" />
-                  ) : (
-                    <span style={{ fontFamily: "'Anton', sans-serif", fontSize: "18px" }} aria-hidden="true">
-                      {stage.label.replace(/\D+/g, "").slice(0, 2) || "•"}
+        <ol className="mk-ed-stages" aria-label="Schools, newest first">
+          {NEWEST_FIRST.map(({ arc, number }) => {
+            const open = openArcId === arc.id;
+            const status = arcStatus(arc);
+            const selectedId = stageByArc[arc.id];
+            const selected = arc.stages.find((s) => s.id === selectedId) ?? arc.stages[0];
+            const awards = countHighlights(arc);
+            const meta = [arc.detail, arc.place, arc.years].filter(Boolean).join(", ");
+            const panelId = `mk-ed-panel-${arc.id}`;
+            return (
+              <li key={arc.id} className="mk-ed-arc" data-open={open} data-status={status}>
+                <button
+                  type="button"
+                  className="mk-ed-arc-btn"
+                  aria-expanded={open}
+                  aria-controls={panelId}
+                  onClick={() => setOpenArcId(open ? null : arc.id)}
+                >
+                  <span className="mk-ed-stagetag">Stage {number}</span>
+                  <span>
+                    <p className="mk-ed-arc-school">{arc.school}</p>
+                    <p className="mk-ed-arc-meta">{meta}</p>
+                  </span>
+                  <span className="mk-ed-arc-side">
+                    <span className="mk-ed-arc-state">
+                      {status === "current" ? "Now playing" : awards > 0 ? `Cleared, ${awards} awards` : "Cleared"}
                     </span>
-                  );
-                return (
-                  <li
-                    key={stage.id}
-                    className={`mk-ed-stage mk-ed-stage-${stage.status}${arcStart ? " mk-ed-arcstart" : ""}`}
-                    data-selected={clickable && isSelected}
-                    aria-current={stage.status === "current" ? "step" : undefined}
-                  >
-                    {stage.status === "current" && <span className="mk-ed-p1" aria-hidden="true">P1</span>}
-                    {clickable ? (
-                      <button
-                        type="button"
-                        className="mk-ed-node"
-                        aria-pressed={isSelected}
-                        aria-label={`Open ${arc.label} ${stage.label} log`}
-                        onClick={() => setSelectedId(stage.id)}
-                      >
-                        {inner}
-                      </button>
-                    ) : (
-                      <div className="mk-ed-node">{inner}</div>
-                    )}
-                    <span className="mk-ed-stage-label">{stage.label}</span>
-                    <span className="mk-ed-stage-state">
-                      {stage.status === "cleared" ? stage.honor ?? "Cleared" : stage.status === "current" ? "Now playing" : "Locked"}
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
-            </div>
-          </div>
-        </div>
+                    <ChevronDown className="mk-ed-chev" size={20} aria-hidden="true" />
+                  </span>
+                </button>
 
-        <div className="mk-ed-picker" aria-label="School stages">
-          {ARCS.map((arc) => (
-            <div key={arc.id} className="mk-ed-pick-arc">
-              <p className="mk-ed-arc-label">{arc.label}</p>
-              <p className="mk-ed-pick-school">{arc.school}</p>
-              <div className="mk-ed-pick-row" style={{ "--count": arc.stages.length } as React.CSSProperties}>
-                {arc.stages.map((stage) => {
-                  const clickable = stage.status !== "locked" && hasLog(stage);
-                  const isSelected = stage.id === selected?.stage.id;
-                  return (
-                    <button
-                      key={stage.id}
-                      type="button"
-                      className={`mk-ed-pick mk-ed-pick-${stage.status}`}
-                      aria-pressed={isSelected}
-                      disabled={!clickable}
-                      onClick={() => setSelectedId(stage.id)}
-                    >
-                      <span className="mk-ed-pick-label">{stage.label}</span>
-                      <span className="mk-ed-pick-state">
-                        {stage.status === "cleared" ? stage.honor ?? "Cleared" : stage.status === "current" ? "Now playing" : "Locked"}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {selected && hasLog(selected.stage) && (
-          <div className="mk-ed-log" aria-live="polite">
-            <header className="mk-ed-loghead">
-              <div className="mk-ed-loghead-main">
-                <div className="mk-ed-loghead-title">
-                  <h3 className="mk-ed-log-title">{selected.stage.label}</h3>
-                  {selected.stage.honor && <span className="mk-ed-badge">{selected.stage.honor}</span>}
-                </div>
-                <p className="mk-ed-logmeta">
-                  {[selected.arc.school, selected.arc.detail, selected.arc.place].filter(Boolean).join(", ")}
-                </p>
-              </div>
-              <div className="mk-ed-stepper">
-                {prevStage && (
-                  <button type="button" className="mk-ed-step" onClick={() => setSelectedId(prevStage.stage.id)} aria-label={`Previous: ${prevStage.stage.label}`}>
-                    <ChevronLeft size={16} aria-hidden="true" />
-                    <span>{prevStage.stage.label}</span>
-                  </button>
+                {open && (
+                  <div className="mk-ed-arc-panel" id={panelId}>
+                    <div className="mk-ed-tabs" role="group" aria-label={`${arc.label} years`}>
+                      {arc.stages.map((stage) => {
+                        const clickable = isOpenable(stage);
+                        const state =
+                          stage.status === "current" ? "Now playing" : stage.status === "locked" ? "Locked" : stage.honor ?? "Cleared";
+                        return (
+                          <button
+                            key={stage.id}
+                            type="button"
+                            className="mk-ed-tab"
+                            data-state={stage.status}
+                            aria-pressed={clickable && stage.id === selected.id}
+                            disabled={!clickable}
+                            onClick={() => setStageByArc((prev) => ({ ...prev, [arc.id]: stage.id }))}
+                          >
+                            {stage.status === "locked" && <Lock size={13} aria-hidden="true" />}
+                            {stage.label}
+                            <small>{state}</small>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <StageLog stage={selected} />
+                  </div>
                 )}
-                {nextStage && (
-                  <button type="button" className="mk-ed-step" onClick={() => setSelectedId(nextStage.stage.id)} aria-label={`Next: ${nextStage.stage.label}`}>
-                    <span>{nextStage.stage.label}</span>
-                    <ChevronRight size={16} aria-hidden="true" />
-                  </button>
-                )}
-              </div>
-            </header>
-            <div className="mk-ed-card-body">
-            {selected.stage.tracks && (
-              <div className="mk-ed-tracks">
-                {selected.stage.tracks.map((track) => (
-                  <section key={track.id} aria-label={track.label}>
-                    <h4 className="mk-ed-track-label">{track.label}</h4>
-                    <ul className="mk-ed-quests">
-                      {track.quests.map((quest) => (
-                        <li key={quest.name} className="mk-ed-quest">
-                          <StatusMark status={quest.status} />
-                          <div>
-                            <div className="mk-ed-qhead">
-                              <p className="mk-ed-qname">{quest.name}</p>
-                              <span className="mk-ed-qstatus">{STATUS_COPY[quest.status]}</span>
-                            </div>
-                            <p className="mk-ed-qsum">{quest.summary}</p>
-                            <div className="mk-ed-qfoot">
-                              {quest.stack.map((s) => (
-                                <span key={s} className="mk-ed-chip">{s}</span>
-                              ))}
-                              {quest.link && (
-                                <a className="mk-ed-link" href={quest.link.url} target="_blank" rel="noopener noreferrer">
-                                  {quest.link.label}
-                                </a>
-                              )}
-                            </div>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                ))}
-              </div>
-            )}
-
-            {selected.stage.highlights && (
-              <div className="mk-ed-groups">
-                {GROUPS.map(({ kind, label, Icon }) => {
-                  const items = selected.stage.highlights!.filter(
-                    (h) => kindOf(h) === kind
-                  );
-                  if (items.length === 0) return null;
-                  return (
-                    <section key={kind} className="mk-ed-group" aria-label={label}>
-                      <h4 className="mk-ed-group-label">
-                        <Icon size={15} aria-hidden="true" />
-                        {label}
-                      </h4>
-                      <ul className="mk-ed-highlights">
-                        {items.map((h) => {
-                          const place = h.title.match(/^(1st|2nd|3rd|\d+th) Place,\s*/);
-                          const top = h.title.match(/^Top (\d+),\s*/);
-                          const rank = place ? place[1] : top ? `#${top[1]}` : null;
-                          const medal = place?.[1] === "1st" ? "gold" : place?.[1] === "2nd" ? "silver" : place?.[1] === "3rd" ? "bronze" : "plain";
-                          const title = place ? h.title.slice(place[0].length) : top ? h.title.slice(top[0].length) : h.title;
-                          return (
-                            <li key={h.title} className={rank ? "mk-ed-ranked" : undefined}>
-                              {rank && (
-                                <span className={`mk-ed-medal mk-ed-medal-${medal}`} aria-hidden="true">{rank}</span>
-                              )}
-                              <span className="mk-ed-hl-title">
-                                {rank && <span className="mk-ed-sr">{place ? `${place[1]} place, ` : `Top ${top![1]}, `}</span>}
-                                {title}
-                              </span>
-                              {h.detail && <span className="mk-ed-hl-detail">{h.detail}</span>}
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </section>
-                  );
-                })}
-              </div>
-            )}
-            </div>
-          </div>
-        )}
+              </li>
+            );
+          })}
+        </ol>
       </div>
     </div>
   );

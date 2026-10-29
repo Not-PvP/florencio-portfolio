@@ -15,7 +15,7 @@ export interface QuestTrack {
   quests: Quest[];
 }
 
-/** Year 2 coursework, kept for later. Add `tracks: COLLEGE_YEAR_2` to the Year 2 stage to show it. */
+/** Year 2 coursework, kept for when the year is cleared. Add `tracks: COLLEGE_YEAR_2` to the Year 2 stage to show it. */
 export const COLLEGE_YEAR_2: QuestTrack[] = [
   {
     id: "mobile",

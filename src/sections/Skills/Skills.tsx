@@ -31,7 +31,7 @@ function BrandIcon({ skill, size }: { skill: Skill; size: number }) {
       <span
         aria-hidden="true"
         style={{
-          fontFamily: "'Press Start 2P', monospace",
+          fontFamily: "var(--mk-font-pixel)",
           fontSize: Math.round(size * 0.28),
           color: "#e8e3dc",
           lineHeight: 1,
@@ -95,7 +95,7 @@ export default function Skills() {
         .mk-sk-root {
           width: 100%;
           min-height: 100vh;
-          font-family: 'Space Mono', 'JetBrains Mono', monospace;
+          font-family: var(--mk-font-body);
           position: relative;
           display: flex;
           flex-direction: column;
@@ -118,9 +118,9 @@ export default function Skills() {
           width: 100%;
           max-width: 1180px;
           border: 1px solid rgba(232,40,60,0.55);
-          border-radius: 28px;
-          background: linear-gradient(180deg, rgba(20,12,14,0.92), rgba(8,8,10,0.96));
-          box-shadow: 0 0 60px rgba(232,40,60,0.1);
+          border-radius: 0;
+          background: #0e0b0c;
+          
           padding: 36px 40px 40px;
           box-sizing: border-box;
           opacity: 0;
@@ -128,7 +128,7 @@ export default function Skills() {
         .mk-sk-frame.in { animation: mkSkFrameIn 0.6s cubic-bezier(0.2, 0.85, 0.25, 1) forwards; }
         .mk-sk-title {
           margin: 0 0 6px;
-          font-family: 'Anton', sans-serif;
+          font-family: var(--mk-font-display);
           font-size: clamp(30px, 3.8vw, 48px);
           line-height: 1;
           color: #f2f2f2;
@@ -137,7 +137,7 @@ export default function Skills() {
         }
         .mk-sk-sub {
           margin: 0 0 32px;
-          font-size: 13px;
+          font-size: 14px;
           color: rgba(255,255,255,0.5);
         }
         .mk-sk-arena {
@@ -152,7 +152,7 @@ export default function Skills() {
           align-items: center;
           gap: 10px;
           margin: 0 0 10px;
-          font-size: 12px;
+          font-size: 13px;
           color: rgba(255,255,255,0.62);
         }
         .mk-sk-group-label::before {
@@ -160,7 +160,6 @@ export default function Skills() {
           width: 14px;
           height: 3px;
           background: var(--accent);
-          box-shadow: 0 0 8px var(--accent);
         }
         .mk-sk-row {
           display: flex;
@@ -180,37 +179,33 @@ export default function Skills() {
           padding: 0;
           border: 1px solid rgba(255,255,255,0.08);
           border-bottom: 3px solid color-mix(in srgb, var(--accent) 70%, transparent);
-          border-radius: 6px;
-          background:
-            radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
-            #121317;
+          border-radius: 0;
+          background: #121317;
           cursor: pointer;
           transition: border-color 0.15s ease, background 0.15s ease;
         }
         .mk-sk-tile:hover, .mk-sk-tile:focus-visible {
           border-color: var(--accent);
-          background:
-            radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 75%),
-            #16171c;
+          background: color-mix(in srgb, var(--accent) 14%, #121317);
           outline: none;
         }
         .mk-sk-tile[aria-pressed="true"] {
           border: 2px solid #e8283c;
           border-bottom-width: 3px;
-          box-shadow: 0 0 0 2px rgba(232,40,60,0.25), 0 0 18px rgba(232,40,60,0.45);
+          
         }
         .mk-sk-tile[aria-pressed="true"]::after {
           content: "P1";
           position: absolute;
           top: -9px;
           left: -6px;
-          font-family: 'Press Start 2P', monospace;
-          font-size: 7px;
+          font-family: var(--mk-font-pixel);
+          font-size: 12px;
           line-height: 1;
           padding: 3px 4px;
           background: #e8283c;
           color: #0a0a0a;
-          border-radius: 2px;
+          border-radius: 0;
         }
         .mk-sk-icon { display: inline-flex; }
         .mk-sk-icon svg { width: 100%; height: 100%; display: block; }
@@ -220,10 +215,8 @@ export default function Skills() {
           position: sticky;
           top: 96px;
           border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
-          border-radius: 14px;
-          background:
-            linear-gradient(180deg, color-mix(in srgb, var(--accent) 16%, transparent), transparent 55%),
-            #0d0d10;
+          border-radius: 0;
+          background: #0d0d10;
           padding: 22px;
           box-sizing: border-box;
           transition: border-color 0.2s ease;
@@ -235,27 +228,24 @@ export default function Skills() {
           margin-bottom: 18px;
         }
         .mk-sk-p1 {
-          font-family: 'Press Start 2P', monospace;
-          font-size: 9px;
+          font-family: var(--mk-font-pixel);
+          font-size: 12px;
           padding: 5px 7px;
           background: #e8283c;
           color: #0a0a0a;
-          border-radius: 2px;
+          border-radius: 0;
         }
         .mk-sk-class {
-          font-size: 12px;
+          font-size: 13px;
           color: var(--accent);
         }
         .mk-sk-portrait {
           height: 180px;
-          border-radius: 10px;
+          border-radius: 0;
           display: flex;
           align-items: center;
           justify-content: center;
-          background:
-            radial-gradient(circle at 50% 55%, color-mix(in srgb, var(--accent) 38%, transparent), transparent 65%),
-            repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 4px),
-            #0a0a0c;
+          background: #0a0a0c;
           border: 1px solid rgba(255,255,255,0.06);
           margin-bottom: 18px;
           overflow: hidden;
@@ -263,7 +253,7 @@ export default function Skills() {
         .mk-sk-portrait-inner { display: flex; animation: mkSkSlam 0.28s cubic-bezier(0.2, 0.9, 0.3, 1); }
         .mk-sk-name {
           margin: 0 0 4px;
-          font-family: 'Anton', sans-serif;
+          font-family: var(--mk-font-display);
           font-size: 40px;
           line-height: 1;
           color: #f5f0e6;
@@ -271,32 +261,32 @@ export default function Skills() {
           letter-spacing: 0.02em;
           overflow-wrap: anywhere;
         }
-        .mk-sk-cat { margin: 0 0 20px; font-size: 13px; color: rgba(255,255,255,0.55); }
+        .mk-sk-cat { margin: 0 0 20px; font-size: 14px; color: rgba(255,255,255,0.55); }
         .mk-sk-used-label {
           margin: 0 0 8px;
           padding-top: 16px;
           border-top: 1px solid rgba(255,255,255,0.08);
-          font-size: 12px;
-          color: rgba(255,255,255,0.45);
+          font-size: 13px;
+          color: rgba(255,255,255,0.6);
         }
         .mk-sk-used { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
         .mk-sk-proj {
           font: inherit;
-          font-size: 12px;
+          font-size: 13px;
           color: #f2f2f2;
           background: rgba(255,255,255,0.04);
           border: 1px solid rgba(255,255,255,0.14);
-          border-radius: 4px;
+          border-radius: 0;
           padding: 6px 10px;
           cursor: pointer;
         }
         .mk-sk-proj:hover, .mk-sk-proj:focus-visible { border-color: #ff8a5b; color: #ff8a5b; outline: none; }
         .mk-sk-proj-static { cursor: default; display: inline-block; line-height: normal; }
         .mk-sk-proj-static:hover { border-color: rgba(255,255,255,0.14); color: #f2f2f2; }
-        .mk-sk-none { margin: 0; font-size: 12px; color: rgba(255,255,255,0.4); }
+        .mk-sk-none { margin: 0; font-size: 13px; color: rgba(255,255,255,0.6); }
 
         @media (max-width: 900px) {
-          .mk-sk-frame { padding: 26px 18px 28px; border-radius: 20px; }
+          .mk-sk-frame { padding: 26px 18px 28px; border-radius: 0; }
           .mk-sk-arena { grid-template-columns: 1fr; gap: 24px; }
           .mk-sk-panel {
             order: -1;
@@ -307,19 +297,17 @@ export default function Skills() {
             column-gap: 14px;
             align-items: center;
             padding: 12px;
-            background:
-              linear-gradient(180deg, color-mix(in srgb, var(--accent) 16%, transparent), transparent 80%),
-              #0d0d10;
-            box-shadow: 0 10px 24px rgba(0,0,0,0.6);
+            background: #0d0d10;
+            
           }
           .mk-sk-panel-top { display: none; }
           .mk-sk-portrait { grid-row: 1 / span 2; height: 72px; margin: 0; }
           .mk-sk-portrait-inner .mk-sk-icon { width: 40px !important; height: 40px !important; }
           .mk-sk-name { font-size: 24px; align-self: end; }
-          .mk-sk-cat { margin: 0; align-self: start; font-size: 12px; }
-          .mk-sk-used-label { grid-column: 1 / -1; margin: 12px 0 6px; padding-top: 10px; font-size: 11px; }
+          .mk-sk-cat { margin: 0; align-self: start; font-size: 13px; }
+          .mk-sk-used-label { grid-column: 1 / -1; margin: 12px 0 6px; padding-top: 10px; font-size: 13px; }
           .mk-sk-used, .mk-sk-none { grid-column: 1 / -1; }
-          .mk-sk-proj { font-size: 11px; padding: 5px 8px; }
+          .mk-sk-proj { font-size: 13px; padding: 5px 8px; }
         }
         @media (max-width: 480px) {
           .mk-sk-root { padding: 48px 12px; }

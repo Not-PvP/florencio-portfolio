@@ -62,20 +62,20 @@ export default function SoundToggle({ active = true, variant = "fixed" }: SoundT
               alignItems: "center",
               justifyContent: "center",
               gap: "2.5px",
-              borderRadius: "8px",
+              borderRadius: 0,
             }
       }
     >
       <style>{`
         .mk-sound-btn {
-          background: linear-gradient(150deg, #241a17 0%, #0a0a0a 100%);
+          background: #1a1311;
           border: 1px solid rgba(255,197,120,0.55);
-          box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 8px rgba(255,170,90,0.18);
+          box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5);
           transition: box-shadow 0.2s ease, background 0.2s ease, transform 0.15s ease, border-color 0.2s ease;
         }
         .mk-sound-btn[aria-pressed="true"] {
           border-color: rgba(255,138,61,0.75);
-          box-shadow: inset 0 0 0 1px rgba(0,0,0,0.4), 0 0 14px rgba(232,90,40,0.4);
+          box-shadow: inset 0 0 0 1px rgba(0,0,0,0.4);
         }
         .mk-sound-btn:hover { transform: scale(1.08); }
         .mk-sound-btn:active { transform: scale(0.94); }
@@ -85,8 +85,8 @@ export default function SoundToggle({ active = true, variant = "fixed" }: SoundT
         }
 
         @keyframes mk-sound-pulse-ring {
-          0%, 100% { box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 8px rgba(255,170,90,0.18); transform: scale(1); }
-          50% { box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 22px rgba(255,170,90,0.65); transform: scale(1.1); }
+          0%, 100% { box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5); transform: scale(1); }
+          50% { box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5); transform: scale(1.1); }
         }
         .mk-sound-pulse {
           animation: mk-sound-pulse-ring 1.3s ease-in-out 2;
@@ -94,14 +94,14 @@ export default function SoundToggle({ active = true, variant = "fixed" }: SoundT
 
         .mk-eq-bar {
           width: 3px;
-          border-radius: 1px;
+          border-radius: 0;
           background: rgba(255,255,255,0.55);
           height: 4px;
           transform-origin: center;
           transition: background 0.25s ease, height 0.25s ease;
         }
         .mk-sound-btn[aria-pressed="true"] .mk-eq-bar {
-          background: linear-gradient(180deg, #ffd23f, #e8283c);
+          background: var(--mk-orange);
           animation-name: mk-eq-bounce;
           animation-timing-function: ease-in-out;
           animation-iteration-count: infinite;

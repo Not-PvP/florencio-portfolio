@@ -72,7 +72,7 @@ export const CARTRIDGE_CSS = `
     padding: 0.35em 0.5em;
     background: var(--cart);
     color: #fff;
-    font-family: 'Space Mono', monospace;
+    font-family: var(--mk-font-body);
     font-size: 0.72em;
     font-weight: 700;
     line-height: 1.2;
@@ -97,7 +97,7 @@ export const CARTRIDGE_CSS = `
   .mk-gbc-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .mk-gbc-name {
     position: relative;
-    font-family: 'Anton', sans-serif;
+    font-family: var(--mk-font-display);
     font-size: 1.55em;
     line-height: 0.95;
     letter-spacing: 0.02em;

@@ -52,6 +52,26 @@ export const PROJECTS: Project[] = [
     ],
     cartColor: "#4a4e57",
   },
+  {
+    id: "hititup",
+    name: "HIT IT UP!",
+    tagline: "Roblox party game",
+    description:
+      "A chaotic Roblox party game built around balloons and turns — players take turns hitting the balloon and try not to be the one holding it when things go bang. Built solo in Roblox Studio and playtested with friends.",
+    stack: ["Luau", "Roblox Studio"],
+    links: [],
+    cartColor: "#c9356b",
+  },
+  {
+    id: "suga",
+    name: "SUGA",
+    tagline: "Brownout alert app",
+    description:
+      "A brownout notifier for Iloilo that shows scheduled and ongoing power interruptions by area and sends push alerts ahead of time. I built the Express and libSQL backend with its REST API and admin CRUD for advisories, paired with a Flutter app on the front.",
+    stack: ["Flutter", "Dart", "Node.js", "Express", "libSQL"],
+    links: [{ label: "GitHub", url: "https://github.com/Not-PvP/FP_SUGA" }],
+    cartColor: "#e0a100",
+  },
 ];
 
 /** Stack used to build this portfolio site itself (package.json, deployed on Vercel). */

@@ -1,28 +1,96 @@
 @import "tailwindcss";
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@font-face {
+  font-family: "Jersey 10";
+  src: url("/fonts/jersey-10-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+  size-adjust: 128%;
+}
+@font-face {
+  font-family: "Pixelify Sans";
+  src: url("/fonts/pixelify-sans-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pixelify Sans";
+  src: url("/fonts/pixelify-sans-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
 }
 
-html,
-body,
-#root {
-  width: 100%;
-  min-height: 100vh;
+:root {
+  /* surfaces */
+  --mk-bg: #0a0a0a;
+  --mk-bg-deep: #08080a;
+  --mk-surface: #121317;
+  --mk-surface-2: #17181a;
+  /* brand */
+  --mk-red: #e8283c;
+  --mk-red-soft: #ff6b7a;
+  --mk-orange: #ff8a5b;
+  --mk-cream: #f5f0e6;
+  --mk-white: #f2f2f2;
+  /* text on dark; all pass WCAG AA (4.5:1) on --mk-bg */
+  --mk-text: rgba(255, 255, 255, 0.88);
+  --mk-text-2: rgba(255, 255, 255, 0.7);
+  --mk-text-3: rgba(255, 255, 255, 0.58);
+  /* lines */
+  --mk-line: rgba(255, 255, 255, 0.12);
+  --mk-line-red: rgba(232, 40, 60, 0.32);
+  /* type */
+  --mk-font-display: "Jersey 10", "Pixelify Sans", monospace;
+  --mk-font-body: "Pixelify Sans", ui-monospace, monospace;
+  --mk-font-mono: var(--mk-font-body);
+  --mk-font-pixel: var(--mk-font-body);
 }
 
-body {
-  background: #0a0a0a;
+:focus-visible {
+  outline: 2px solid var(--mk-orange);
+  outline-offset: 2px;
 }
 
-/* Hard constraint fallback to guarantee SVGs never expand outside skill badges */
-div[dangerouslySetInnerHTML] svg,
-.group svg {
-  max-width: 100% !important;
-  max-height: 100% !important;
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: contain !important;
+/* Shared button: flat fill, hard offset shadow, presses down on click */
+.mk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 20px;
+  font-family: var(--mk-font-body);
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--mk-bg);
+  background: var(--mk-orange);
+  border: 3px solid var(--mk-bg);
+  border-radius: 0;
+  box-shadow: 4px 4px 0 var(--mk-red);
+  cursor: pointer;
+  transition: transform 0.08s steps(2), box-shadow 0.08s steps(2);
+}
+.mk-btn:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--mk-red);
+}
+.mk-btn:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 var(--mk-red);
+}
+.mk-btn-ghost {
+  color: var(--mk-cream);
+  background: var(--mk-bg);
+  border-color: var(--mk-text-2);
+  box-shadow: 4px 4px 0 rgba(255, 255, 255, 0.18);
+}
+.mk-btn-ghost:hover {
+  color: var(--mk-cream);
+  background: var(--mk-bg);
+  box-shadow: 2px 2px 0 rgba(255, 255, 255, 0.18);
+}
+.mk-btn-ghost:active { box-shadow: 0 0 0 transparent; }
+@media (prefers-reduced-motion: reduce) {
+  .mk-btn { transition: none; }
 }

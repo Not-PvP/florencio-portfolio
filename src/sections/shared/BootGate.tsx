@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
-import { unlockAudio } from "./audio";
+import { useCallback, useEffect, useRef, useState } from "react";
+import heroPortrait from "../../assets/hero-portrait.jpg";
+import { playConfirm, startSoundFromGesture } from "./audio";
 
 interface BootGateProps {
   onDismiss: () => void;
@@ -7,15 +8,15 @@ interface BootGateProps {
 
 export default function BootGate({ onDismiss }: BootGateProps) {
   const [leaving, setLeaving] = useState(false);
-  const [flicker, setFlicker] = useState(false);
+  const [ready, setReady] = useState(false);
+  const startedRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
-    const minBeat = new Promise<void>((resolve) => setTimeout(resolve, 260));
     const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
-    const capped = new Promise<void>((resolve) => setTimeout(resolve, 1500));
-    Promise.race([Promise.all([minBeat, fontsReady]).then(() => {}), capped]).then(() => {
-      if (!cancelled) setFlicker(true);
+    const capped = new Promise<void>((resolve) => setTimeout(resolve, 1200));
+    Promise.race([fontsReady.then(() => {}), capped]).then(() => {
+      if (!cancelled) setReady(true);
     });
     return () => {
       cancelled = true;
@@ -32,10 +33,12 @@ export default function BootGate({ onDismiss }: BootGateProps) {
   }, []);
 
   const dismiss = useCallback(() => {
-    if (leaving) return;
-    unlockAudio();
+    if (leaving || startedRef.current) return;
+    startedRef.current = true;
+    startSoundFromGesture();
+    playConfirm();
     setLeaving(true);
-    setTimeout(onDismiss, 420);
+    setTimeout(onDismiss, 300);
   }, [leaving, onDismiss]);
 
   useEffect(() => {
@@ -51,155 +54,137 @@ export default function BootGate({ onDismiss }: BootGateProps) {
 
   return (
     <div
-      role="button"
-      tabIndex={0}
-      aria-label="Press start to enter the site"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Title screen"
       onClick={dismiss}
-      className={leaving ? "mk-boot-leave" : undefined}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 999,
-        background: "#000",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        cursor: "pointer",
-        fontFamily: "'Space Mono', 'JetBrains Mono', monospace",
-        userSelect: "none",
-      }}
+      className={`mk-title-root${leaving ? " mk-title-leave" : ""}${ready ? " mk-title-ready" : ""}`}
     >
       <style>{`
-        @keyframes mk-boot-flicker-in {
-          0% { opacity: 0; }
-          8% { opacity: 0.7; }
-          12% { opacity: 0.1; }
-          20% { opacity: 0.85; }
-          26% { opacity: 0.2; }
-          40% { opacity: 1; }
-          100% { opacity: 1; }
+        .mk-title-root {
+          position: fixed;
+          inset: 0;
+          z-index: 999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 32px 24px;
+          overflow-y: auto;
+          box-sizing: border-box;
+          background: var(--mk-bg);
+          font-family: var(--mk-font-body);
+          cursor: pointer;
+          user-select: none;
         }
-        @keyframes mk-press-pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.35; }
-        }
-        @keyframes mk-scanline {
-          0% { transform: translateY(-100%); }
-          100% { transform: translateY(100%); }
-        }
-        .mk-boot-content {
-          animation: mk-boot-flicker-in 0.9s steps(1) both;
-        }
-        .mk-press-text {
-          animation: mk-press-pulse 1.4s ease-in-out infinite;
-        }
-        .mk-boot-leave {
-          transition: opacity 0.4s ease;
+        .mk-title-leave { opacity: 0; transition: opacity 0.3s steps(3); }
+        .mk-title-card {
+          display: grid;
+          grid-template-columns: 260px minmax(0, 1fr);
+          align-items: end;
+          gap: 56px;
+          width: 100%;
+          max-width: 980px;
           opacity: 0;
         }
-        .mk-scanline-sweep {
-          animation: mk-scanline 3.2s linear infinite;
+        .mk-title-frame {
+          position: relative;
+          width: 260px;
+          height: 330px;
+          margin: 0 0 12px;
+          border: 4px solid var(--mk-cream);
+          background: #1a1210;
+          box-shadow: 10px 10px 0 var(--mk-red);
+          transform: rotate(-2deg);
+          overflow: hidden;
         }
-        @keyframes mk-boot-grid-pulse {
-          0%, 100% { opacity: 0.15; }
-          50% { opacity: 0.25; }
+        .mk-title-frame img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center 12%;
+          transform: scale(1.35);
+          transform-origin: center 12%;
+          image-rendering: auto;
+          filter: saturate(0.78) contrast(1.12) brightness(0.9) hue-rotate(-12deg);
         }
-        .mk-boot-grid {
-          background-size: 40px 40px;
-          background-image:
-            linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
-          animation: mk-boot-grid-pulse 4s ease-in-out infinite;
+        .mk-title-p1 {
+          position: absolute;
+          top: 0;
+          left: 0;
+          z-index: 1;
+          padding: 4px 10px;
+          font-size: 15px;
+          font-weight: 700;
+          color: var(--mk-bg);
+          background: var(--mk-cream);
+        }
+        .mk-title-brand {
+          margin: 0;
+          font-family: var(--mk-font-display);
+          font-weight: 400;
+          font-size: clamp(76px, 13vw, 168px);
+          line-height: 0.85;
+          color: var(--mk-orange);
+          text-shadow: none;
+        }
+        .mk-title-name { margin: 18px 0 0; font-size: 22px; font-weight: 700; color: var(--mk-cream); }
+        .mk-title-line { margin: 8px 0 28px; max-width: 34ch; font-size: 17px; line-height: 1.5; color: var(--mk-text-2); }
+        .mk-title-start { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+        .mk-title-start .mk-btn { min-width: 200px; font-size: 20px; }
+        .mk-title-hint { margin: 0; font-size: 14px; color: var(--mk-text-3); }
+        .mk-title-cursor {
+          display: inline-block;
+          width: 10px;
+          height: 18px;
+          background: var(--mk-bg);
+          animation: mk-title-blink 1s steps(1) infinite;
+        }
+        @keyframes mk-title-blink { 50% { opacity: 0; } }
+        @keyframes mk-title-drop {
+          from { transform: translateY(-40px) rotate(-2deg); opacity: 0; }
+          to { transform: translateY(0) rotate(-2deg); opacity: 1; }
+        }
+        @keyframes mk-title-fade { to { opacity: 1; } }
+        .mk-title-ready .mk-title-card { animation: mk-title-fade 0.2s steps(2) both; }
+        .mk-title-ready .mk-title-frame { animation: mk-title-drop 0.4s steps(5) both; }
+
+        @media (max-width: 720px) {
+          .mk-title-root { padding-top: 32px; padding-bottom: 32px; }
+          .mk-title-card { grid-template-columns: 1fr; gap: 36px; justify-items: start; }
+          .mk-title-frame { width: 170px; height: 215px; box-shadow: 7px 7px 0 var(--mk-red); }
+          .mk-title-name { font-size: 18px; }
+        }
+        @media (max-height: 560px) and (min-width: 721px) {
+          .mk-title-frame { width: 190px; height: 240px; }
         }
         @media (prefers-reduced-motion: reduce) {
-          .mk-boot-content { animation: none !important; opacity: 1 !important; }
-          .mk-press-text { animation: none !important; }
-          .mk-scanline-sweep { display: none !important; }
-          .mk-boot-grid { animation: none !important; }
+          .mk-title-card { opacity: 1 !important; animation: none !important; }
+          .mk-title-frame { animation: none !important; }
+          .mk-title-cursor { animation: none; }
         }
       `}</style>
 
-      <div
-        aria-hidden="true"
-        className="mk-boot-grid"
-        style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
-      />
-
-      {[
-        { top: 22, left: 22, borderWidth: "3px 0 0 3px" },
-        { top: 22, right: 22, borderWidth: "3px 3px 0 0" },
-        { bottom: 22, left: 22, borderWidth: "0 0 3px 3px" },
-        { bottom: 22, right: 22, borderWidth: "0 3px 3px 0" },
-      ].map((pos, i) => (
-        <div
-          key={i}
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            width: "26px",
-            height: "26px",
-            borderColor: "rgba(232,40,60,0.6)",
-            borderStyle: "solid",
-            pointerEvents: "none",
-            ...pos,
-          }}
-        />
-      ))}
-
-      <div
-        aria-hidden="true"
-        className="mk-scanline-sweep"
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          height: "120px",
-          background:
-            "linear-gradient(180deg, transparent, rgba(232,40,60,0.06), transparent)",
-          pointerEvents: "none",
-        }}
-      />
-
-      {flicker && (
-        <div className="mk-boot-content" style={{ textAlign: "center" }}>
-          <p
-            style={{
-              margin: "0 0 14px",
-              fontSize: "12px",
-              letterSpacing: "0.4em",
-              color: "#c41e1e",
-              fontWeight: 700,
-            }}
-          >
-            MATCH READY
-          </p>
-          <h1
-            style={{
-              margin: 0,
-              fontFamily: "'Anton', sans-serif",
-              fontSize: "clamp(40px, 8vw, 84px)",
-              color: "#f2f2f2",
-              letterSpacing: "0.03em",
-              textShadow:
-                "0 0 30px rgba(232,40,60,0.55), 0 0 70px rgba(232,40,60,0.25)",
-            }}
-          >
-            MARK ANGELO FLORENCIO
-          </h1>
-          <p
-            className="mk-press-text"
-            style={{
-              marginTop: "40px",
-              fontSize: "14px",
-              letterSpacing: "0.3em",
-              color: "rgba(255,255,255,0.6)",
-            }}
-          >
-            PRESS START
-          </p>
+      <div className="mk-title-card">
+        <div className="mk-title-frame">
+          <span className="mk-title-p1" aria-hidden="true">P1</span>
+          <img src={heroPortrait} alt="Mark Angelo Florencio" />
         </div>
-      )}
+
+        <div>
+          <h1 className="mk-title-brand">KRAM.DEV</h1>
+          <p className="mk-title-name">Mark Angelo Florencio</p>
+          <p className="mk-title-line">
+            Software engineering student in Iloilo. I build web apps, mobile apps and games.
+          </p>
+          <div className="mk-title-start">
+            <button type="button" className="mk-btn" autoFocus onClick={dismiss}>
+              Press start
+              <span className="mk-title-cursor" aria-hidden="true" />
+            </button>
+            <p className="mk-title-hint">Enter, space or tap. Sound turns on when you start.</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

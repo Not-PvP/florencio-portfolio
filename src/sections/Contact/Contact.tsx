@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { playHit } from "../shared/audio";
+import { playHit, playMiss, playSelect } from "../shared/audio";
 
 type ArrowKey = "ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight";
 
@@ -106,16 +106,6 @@ export default function Contact() {
   const [miss, setMiss] = useState<boolean>(false);
   const [buffer, setBuffer] = useState<ArrowKey[]>([]);
   const [lastTrigger, setLastTrigger] = useState<string | null>(null);
-  const [copied, setCopied] = useState<"" | "ok" | "fail">("");
-  async function copyEmail() {
-    try {
-      await navigator.clipboard.writeText("contactmarkflorencio@gmail.com");
-      setCopied("ok");
-    } catch {
-      setCopied("fail");
-    }
-    window.setTimeout(() => setCopied(""), 2500);
-  }
   const [burst, setBurst] = useState<{ text: string; color: string } | null>(
     null
   );
@@ -206,6 +196,7 @@ export default function Contact() {
   }, [updateBuffer]);
 
   function flashMiss() {
+    playMiss();
     setMiss(true);
     setTimeout(() => setMiss(false), 320);
   }
@@ -241,6 +232,7 @@ export default function Contact() {
 
       if ((ARROW_KEYS as string[]).includes(e.key)) {
         e.preventDefault();
+        playSelect(e.key === "ArrowUp" || e.key === "ArrowRight");
         updateBuffer([...bufferRef.current, e.key as ArrowKey].slice(-MAX_BUFFER));
         armBufferTimeout();
         return;
@@ -300,6 +292,7 @@ export default function Contact() {
         ? "ArrowDown"
         : "ArrowUp";
 
+    playSelect(direction === "ArrowUp" || direction === "ArrowRight");
     setPadDir(direction);
     setPadPulse((n) => n + 1);
     if (padDirTimerRef.current) clearTimeout(padDirTimerRef.current);
@@ -331,8 +324,9 @@ export default function Contact() {
       style={{
         width: "100%",
         minHeight: "100vh",
-        background: "transparent",
-        fontFamily: "'Space Mono', 'JetBrains Mono', monospace",
+        // Dark until the slam finishes, then a hard cut to red.
+        background: smashDone ? "var(--mk-red)" : "#0a0a0a",
+        fontFamily: "var(--mk-font-body)",
         position: "relative",
         overflow: "hidden",
         isolation: "isolate",
@@ -352,17 +346,17 @@ export default function Contact() {
           justify-content: center;
           gap: 10px 14px;
           margin-top: 22px;
-          font-size: 12px;
+          font-size: 13px;
         }
         .mk-copy-addr { color: rgba(255,255,255,0.6); user-select: all; }
         .mk-copy-btn {
           font: inherit;
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 700;
           color: #f5f0e6;
           background: transparent;
           border: 1px solid rgba(255,255,255,0.2);
-          border-radius: 4px;
+          border-radius: 0;
           padding: 7px 12px;
           cursor: pointer;
         }
@@ -381,8 +375,8 @@ export default function Contact() {
         }
 
         @keyframes finishHimSlam {
-          0% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); filter: blur(6px); }
-          18% { opacity: 1; transform: translate(-50%, -50%) scale(1.18); filter: blur(0px); }
+          0% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); }
+          18% { opacity: 1; transform: translate(-50%, -50%) scale(1.18); }
           26% { transform: translate(-50%, -50%) scale(1.12); }
           70% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
           100% { opacity: 0; transform: translate(-50%, -50%) scale(0.34); }
@@ -393,12 +387,12 @@ export default function Contact() {
           32% { opacity: 0; }
         }
         @keyframes flicker {
-          0%, 100% { opacity: 1; text-shadow: 0 0 28px rgba(232,40,60,0.55), 0 0 60px rgba(232,40,60,0.25); }
-          92% { opacity: 1; text-shadow: 0 0 28px rgba(232,40,60,0.55), 0 0 60px rgba(232,40,60,0.25); }
-          93% { opacity: 0.4; text-shadow: none; }
-          94% { opacity: 1; text-shadow: 0 0 28px rgba(232,40,60,0.55), 0 0 60px rgba(232,40,60,0.25); }
-          96% { opacity: 0.6; text-shadow: none; }
-          97% { opacity: 1; text-shadow: 0 0 28px rgba(232,40,60,0.55), 0 0 60px rgba(232,40,60,0.25); }
+          0%, 100% { opacity: 1;  }
+          92% { opacity: 1;  }
+          93% { opacity: 0.4;  }
+          94% { opacity: 1;  }
+          96% { opacity: 0.6;  }
+          97% { opacity: 1;  }
         }
         @keyframes screenShake {
           0% { transform: translate(0, 0); }
@@ -482,7 +476,7 @@ export default function Contact() {
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .mk-fade, .mk-title { animation: none !important; opacity: 1 !important; transform: none !important; text-shadow: 0 0 28px rgba(232,40,60,0.4) !important; }
+          .mk-fade, .mk-title { animation: none !important; opacity: 1 !important; transform: none !important;  }
           .mk-shake { animation: none !important; }
           .mk-move { transform: none !important; }
           .mk-finish-overlay { display: none !important; }
@@ -495,30 +489,8 @@ export default function Contact() {
       <div
         aria-hidden="true"
         className="mk-contact-grid"
-        style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none" }}
+        style={{ display: "none" }}
       />
-
-      {[
-        { top: 22, left: 22, borderWidth: "3px 0 0 3px" },
-        { top: 22, right: 22, borderWidth: "3px 3px 0 0" },
-        { bottom: 22, left: 22, borderWidth: "0 0 3px 3px" },
-        { bottom: 22, right: 22, borderWidth: "0 3px 3px 0" },
-      ].map((pos, i) => (
-        <div
-          key={i}
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            width: "26px",
-            height: "26px",
-            borderColor: "rgba(232,40,60,0.6)",
-            borderStyle: "solid",
-            pointerEvents: "none",
-            zIndex: 1,
-            ...pos,
-          }}
-        />
-      ))}
 
       {smash && !smashDone && (
         <>
@@ -543,13 +515,13 @@ export default function Contact() {
               top: "50%",
               left: "50%",
               zIndex: 9,
-              fontFamily: "'Anton', sans-serif",
+              fontFamily: "var(--mk-font-display)",
               fontSize: "clamp(48px, 9vw, 104px)",
               lineHeight: 0.92,
               color: "#f2f2f2",
               letterSpacing: "0.02em",
               whiteSpace: "nowrap",
-              textShadow: "0 0 40px rgba(232,40,60,0.8), 0 0 90px rgba(232,40,60,0.4)",
+              
               animation: "finishHimSlam 0.9s cubic-bezier(0.16, 0.9, 0.2, 1) both",
               pointerEvents: "none",
             }}
@@ -573,9 +545,8 @@ export default function Contact() {
             className="mk-fade"
             style={{
               margin: 0,
-              fontSize: "12px",
-              letterSpacing: "0.35em",
-              color: "#c41e1e",
+              color: "#0a0a0a",
+              fontSize: "16px",
               fontWeight: 700,
               opacity: titleIn ? 1 : 0,
               animation: titleIn ? "fadeUp 0.5s ease-out both" : "none",
@@ -587,10 +558,11 @@ export default function Contact() {
             className={titleIn ? "mk-title mk-fade" : "mk-fade"}
             style={{
               margin: "4px 0 12px",
-              fontFamily: "'Anton', sans-serif",
-              fontSize: "clamp(48px, 9vw, 104px)",
-              lineHeight: 0.92,
-              color: "#f2f2f2",
+              fontFamily: "var(--mk-font-display)",
+              fontSize: "clamp(64px, 14vw, 168px)",
+              lineHeight: 0.88,
+              color: "#f5f0e6",
+              textShadow: "6px 6px 0 #0a0a0a",
               letterSpacing: "0.02em",
               opacity: titleIn ? 1 : 0,
               animation: titleIn
@@ -604,9 +576,9 @@ export default function Contact() {
             className="mk-fade"
             style={{
               margin: 0,
-              fontSize: "12px",
-              letterSpacing: "0.12em",
-              color: "rgba(255,255,255,0.45)",
+              fontSize: "17px",
+              fontWeight: 700,
+              color: "#0a0a0a",
               opacity: titleIn ? 1 : 0,
               animation: titleIn
                 ? "fadeUp 0.5s ease-out 0.16s both"
@@ -640,20 +612,17 @@ export default function Contact() {
               <div
                 key={i}
                 style={{
-                  width: "34px",
-                  height: "34px",
-                  border: `1px solid ${
-                    miss
-                      ? "rgba(232,40,60,0.7)"
-                      : glyph
-                      ? "rgba(255,138,91,0.6)"
-                      : "rgba(255,255,255,0.12)"
+                  width: "44px",
+                  height: "44px",
+                  background: "#0a0a0a",
+                  border: `3px solid ${
+                    miss ? "#ffffff" : glyph ? "#ff8a5b" : "#0a0a0a"
                   }`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: "16px",
-                  color: glyph ? "#ff8a5b" : "rgba(255,255,255,0.2)",
+                  color: glyph ? "#ff8a5b" : "rgba(255,255,255,0.45)",
                   animation: glyph ? "slotPop 0.15s ease-out" : miss ? "missShake 0.3s ease-in-out" : "none",
                 }}
               >
@@ -683,22 +652,10 @@ export default function Contact() {
                 position: "relative",
                 width: "176px",
                 height: "176px",
+                background: "#0a0a0a",
                 touchAction: "none",
               }}
             >
-
-              <div
-                className="mk-pad-glow"
-                aria-hidden="true"
-                style={{
-                  position: "absolute",
-                  inset: "18px",
-                  borderRadius: "50%",
-                  background:
-                    "radial-gradient(circle, rgba(232,40,60,0.18) 0%, transparent 72%)",
-                  pointerEvents: "none",
-                }}
-              />
 
               <svg
                 viewBox="0 0 160 160"
@@ -789,9 +746,9 @@ export default function Contact() {
 
             <span
               style={{
-                fontSize: "9.5px",
-                letterSpacing: "0.14em",
-                color: "rgba(255,255,255,0.3)",
+                fontSize: "13px",
+                letterSpacing: "0.03em",
+                color: "#0a0a0a",
               }}
             >
               SWIPE THE JOYSTICK
@@ -817,10 +774,10 @@ export default function Contact() {
                 isTouch
                   ? `Execute ${move.moveName}: swipe ${move.keys
                       .map((k) => ARROW_GLYPH[k])
-                      .join(" ")} on the gate above, or activate to open ${move.target}`
+                      .join(" ")} on the gate above, or activate to open ${move.channel}`
                   : `Execute ${move.moveName}: press ${move.keys
                       .map((k) => ARROW_GLYPH[k])
-                      .join(" ")} then ${move.triggerKey.toUpperCase()}, or activate to open ${move.target}`
+                      .join(" ")} then ${move.triggerKey.toUpperCase()}, or activate to open ${move.channel}`
               }
               style={{
                 display: "flex",
@@ -828,8 +785,9 @@ export default function Contact() {
                 gap: "20px",
                 width: "100%",
                 padding: "16px 18px",
-                background: "transparent",
-                border: "1px solid rgba(255,255,255,0.1)",
+                background: "#0a0a0a",
+                border: "3px solid #0a0a0a",
+                boxShadow: "6px 6px 0 #7a1420",
                 cursor: "pointer",
                 textAlign: "left",
                 font: "inherit",
@@ -854,7 +812,7 @@ export default function Contact() {
                   <span
                     key={gi}
                     style={{
-                      fontSize: "15px",
+                      fontSize: "16px",
                       color: "rgba(255,255,255,0.55)",
                       width: "18px",
                       textAlign: "center",
@@ -867,8 +825,8 @@ export default function Contact() {
                   <>
                     <span
                       style={{
-                        fontSize: "9px",
-                        color: "rgba(255,255,255,0.3)",
+                        fontSize: "12px",
+                        color: "rgba(255,255,255,0.6)",
                         margin: "0 2px",
                       }}
                     >
@@ -876,10 +834,10 @@ export default function Contact() {
                     </span>
                     <span
                       style={{
-                        fontSize: "11px",
+                        fontSize: "13px",
                         fontWeight: 700,
                         padding: "3px 8px",
-                        borderRadius: "3px",
+                        borderRadius: 0,
                         color: "#0a0a0a",
                         background: move.accent,
                         letterSpacing: "0.03em",
@@ -902,20 +860,9 @@ export default function Contact() {
                   }}
                 >
                   {move.channel}
-                  <span className="mk-move-alias" style={{ marginLeft: "10px", fontSize: "10px", fontWeight: 400, color: move.accent, letterSpacing: "0.08em" }}>
+                  <span className="mk-move-alias" style={{ marginLeft: "10px", fontSize: "13px", fontWeight: 400, color: move.accent, letterSpacing: "0.08em" }}>
                     {move.moveName}
                   </span>
-                </div>
-                <div
-                  style={{
-                    fontSize: "12px",
-                    color: "rgba(255,255,255,0.55)",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {move.target}
                 </div>
               </div>
 
@@ -923,7 +870,7 @@ export default function Contact() {
                 className="mk-move-action"
                 style={{
                   flexShrink: 0,
-                  fontSize: "11px",
+                  fontSize: "13px",
                   letterSpacing: "0.04em",
                   color: move.accent,
                   border: `1px solid ${move.accent}`,
@@ -937,15 +884,6 @@ export default function Contact() {
           ))}
         </div>
 
-        <div className="mk-copy-row">
-          <span className="mk-copy-addr">contactmarkflorencio@gmail.com</span>
-          <button type="button" className="mk-copy-btn" onClick={copyEmail}>
-            {copied === "ok" ? "Copied" : "Copy email"}
-          </button>
-          <span className="mk-copy-status" role="status">
-            {copied === "fail" ? "Copy didn't work here. Select the address instead." : ""}
-          </span>
-        </div>
       </div>
 
       {burst && (
@@ -969,11 +907,10 @@ export default function Contact() {
               top: "50%",
               left: "50%",
               zIndex: 6,
-              fontFamily: "'Anton', sans-serif",
+              fontFamily: "var(--mk-font-display)",
               fontSize: "clamp(32px, 6vw, 64px)",
               color: "#f2f2f2",
               letterSpacing: "0.03em",
-              textShadow: `0 0 30px ${burst.color}`,
               animation: "burstIn 0.9s ease-out forwards",
               pointerEvents: "none",
               whiteSpace: "nowrap",

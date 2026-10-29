@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Trophy } from "lucide-react";
 import { Cartridge, CARTRIDGE_CSS } from "./Cartridge";
 import { ConsoleShellSVG } from "./Gameboy";
+import RoundTag from "../shared/RoundTag";
+import { playInsert } from "../shared/audio";
 import { PROJECTS, type Project } from "../../data/projects";
 
 interface GithubStats {
@@ -126,10 +128,12 @@ export default function Projects() {
     setSelectedId(project.id);
 
     if (reduceMotion) {
+      playInsert(true);
       setPoweredOn(true);
       return;
     }
 
+    playInsert();
     setPoweredOn(false);
     setInsertingProject(project);
     setInserting(true);
@@ -182,7 +186,7 @@ export default function Projects() {
         width: "100%",
         minHeight: "100vh",
         background: "#08080a",
-        fontFamily: "'Space Mono', 'JetBrains Mono', monospace",
+        fontFamily: "var(--mk-font-body)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -196,8 +200,8 @@ export default function Projects() {
     >
       <style>{`
         @keyframes titleSlam {
-          0% { opacity: 0; transform: translateY(-20px) scale(1.1); filter: blur(10px); }
-          60% { opacity: 1; transform: translateY(2px) scale(0.98); filter: blur(0px); }
+          0% { opacity: 0; transform: translateY(-20px) scale(1.1); }
+          60% { opacity: 1; transform: translateY(2px) scale(0.98); }
           100% { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes rowSlotIn {
@@ -209,7 +213,7 @@ export default function Projects() {
           to { opacity: 0; background: rgba(232,40,60,0); }
         }
         @keyframes panelIn {
-          from { opacity: 0; transform: translateY(8px) scale(0.98); filter: blur(2px); }
+          from { opacity: 0; transform: translateY(8px) scale(0.98); }
           to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
         @keyframes panelSlideRight {
@@ -240,7 +244,7 @@ export default function Projects() {
         .mk-stat-box {
           background: rgba(18, 19, 23, 0.85);
           border: 1px solid rgba(232,40,60,0.25);
-          border-radius: 10px;
+          border-radius: 0;
           padding: 18px 20px;
           transition: border-color 0.3s ease;
         }
@@ -253,10 +257,10 @@ export default function Projects() {
           outline: none;
         }
         .mk-cart:hover {
-          filter: drop-shadow(0 12px 24px rgba(232,40,60,0.4)) brightness(1.15);
+          
         }
         .mk-cart:focus-visible {
-          filter: drop-shadow(0 0 16px #e8283c);
+          
         }
         .mk-link {
           transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -264,7 +268,7 @@ export default function Projects() {
         .mk-link:hover {
           background: #e8283c !important;
           color: #ffffff !important;
-          box-shadow: 0 0 15px rgba(232,40,60,0.6);
+          
           transform: translateY(-2px);
         }
         .mk-panel {
@@ -279,7 +283,7 @@ export default function Projects() {
         }
         .mk-panel::-webkit-scrollbar-thumb {
           background: rgba(232,40,60,0.6);
-          border-radius: 4px;
+          border-radius: 0;
         }
         .mk-bg-grid {
           background-size: 40px 40px;
@@ -306,9 +310,8 @@ export default function Projects() {
           right: -24px;
           bottom: 0;
           height: 6px;
-          border-radius: 3px;
-          background: linear-gradient(180deg, #2a2b31, #16171b);
-          box-shadow: 0 6px 14px rgba(0,0,0,0.55);
+          border-radius: 0;
+          background: #23242a;
         }
         .mk-slot {
           display: flex;
@@ -324,15 +327,15 @@ export default function Projects() {
         }
         .mk-slot .mk-gbc {
           transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease;
-          filter: drop-shadow(0 10px 14px rgba(0,0,0,0.55));
+          
         }
         .mk-slot:hover .mk-gbc, .mk-slot:focus-visible .mk-gbc {
           transform: translateY(-8px) rotate(-1.5deg);
-          filter: drop-shadow(0 16px 18px rgba(0,0,0,0.6)) drop-shadow(0 0 14px rgba(232,40,60,0.35));
+          
         }
         .mk-slot:focus-visible { outline: none; }
         .mk-slot:focus-visible .mk-slot-cap { color: #ff8a5b; }
-        .mk-slot-cap { font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap; }
+        .mk-slot-cap { font-size: 13px; color: rgba(255,255,255,0.5); white-space: nowrap; }
         .mk-slot-empty {
           display: flex;
           flex-direction: column;
@@ -344,13 +347,13 @@ export default function Projects() {
           aspect-ratio: 57 / 65;
           box-sizing: border-box;
           border: 2px dashed rgba(232,40,60,0.45);
-          border-radius: 6px 6px 14px 14px;
+          border-radius: 0;
           display: flex;
           align-items: center;
           justify-content: center;
           text-align: center;
           padding: 10px;
-          font-size: 11px;
+          font-size: 13px;
           line-height: 1.5;
           color: #ff6b7a;
           background: rgba(232,40,60,0.05);
@@ -363,16 +366,16 @@ export default function Projects() {
           margin-top: 18px;
         }
         .mk-console-link {
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 700;
           text-decoration: none;
           color: #f5f0e6;
           border: 1px solid rgba(255,255,255,0.2);
-          border-radius: 4px;
+          border-radius: 0;
           padding: 8px 14px;
         }
         .mk-console-link:hover, .mk-console-link:focus-visible { border-color: #ff8a5b; color: #ff8a5b; outline: none; }
-        .mk-console-private { font-size: 12px; color: rgba(255,255,255,0.45); padding: 8px 0; }
+        .mk-console-private { font-size: 13px; color: rgba(255,255,255,0.6); padding: 8px 0; }
 
         @media (min-width: 1101px) {
           .mk-arena-row { grid-template-columns: 370px 300px !important; gap: 56px !important; }
@@ -383,23 +386,23 @@ export default function Projects() {
           align-items: flex-start;
           padding: 12px;
           margin-bottom: 18px;
-          border-radius: 8px;
+          border-radius: 0;
           background: rgba(201,162,39,0.1);
           border: 1px solid rgba(201,162,39,0.35);
           color: #e9c75a;
         }
-        .mk-info-award small { display: block; font-size: 10px; color: rgba(233,199,90,0.75); margin-bottom: 2px; }
-        .mk-info-award strong { font-size: 13px; color: #f5f0e6; }
-        .mk-info-label { margin: 0 0 8px; font-size: 11px; color: rgba(255,255,255,0.5); }
+        .mk-info-award small { display: block; font-size: 13px; color: rgba(233,199,90,0.75); margin-bottom: 2px; }
+        .mk-info-award strong { font-size: 14px; color: #f5f0e6; }
+        .mk-info-label { margin: 0 0 8px; font-size: 13px; color: rgba(255,255,255,0.5); }
         .mk-info-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
-        .mk-info-chip { font-size: 11px; color: #f5f0e6; border: 1px solid rgba(255,255,255,0.14); border-radius: 4px; padding: 4px 8px; }
+        .mk-info-chip { font-size: 13px; color: #f5f0e6; border: 1px solid rgba(255,255,255,0.14); border-radius: 0; padding: 4px 8px; }
         .mk-info-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
         @media (max-width: 600px) {
           .mk-shelf { gap: 12px; padding-bottom: 14px; }
           .mk-shelf::after { left: -8px; right: -8px; }
           .mk-slot .mk-gbc { --w: 96px !important; }
-          .mk-slot-ghost { width: 96px; font-size: 10px; padding: 6px; }
-          .mk-slot-cap { font-size: 10px; }
+          .mk-slot-ghost { width: 96px; font-size: 13px; padding: 6px; }
+          .mk-slot-cap { font-size: 13px; }
         }
         @media (prefers-reduced-motion: reduce) {
           .mk-slot .mk-gbc, .mk-slot:hover .mk-gbc { transition: none; transform: none; }
@@ -451,32 +454,9 @@ export default function Projects() {
           position: "absolute",
           inset: 0,
           zIndex: -1,
-          background:
-            "radial-gradient(ellipse 65% 45% at 50% 60%, rgba(232,40,60,0.09), transparent 70%)",
           pointerEvents: "none",
         }}
       />
-
-      {[
-        { top: 22, left: 22, borderWidth: "3px 0 0 3px" },
-        { top: 22, right: 22, borderWidth: "3px 3px 0 0" },
-        { bottom: 22, left: 22, borderWidth: "0 0 3px 3px" },
-        { bottom: 22, right: 22, borderWidth: "0 3px 3px 0" },
-      ].map((pos, i) => (
-        <div
-          key={i}
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            width: "26px",
-            height: "26px",
-            borderColor: "rgba(232,40,60,0.6)",
-            borderStyle: "solid",
-            pointerEvents: "none",
-            ...pos,
-          }}
-        />
-      ))}
 
       <div
         className="mk-fade"
@@ -487,41 +467,17 @@ export default function Projects() {
           animation: sectionIn ? "titleSlam 0.7s cubic-bezier(0.16, 1, 0.3, 1) both" : "none",
         }}
       >
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            background: "rgba(232,40,60,0.1)",
-            border: "1px solid rgba(232,40,60,0.3)",
-            padding: "4px 12px",
-            borderRadius: "20px",
-            marginBottom: "12px",
-          }}
-        >
-          <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#e8283c", boxShadow: "0 0 8px #e8283c" }} />
-          <p
-            style={{
-              margin: 0,
-              fontSize: "11px",
-              letterSpacing: "0.3em",
-              color: "#ff6b7a",
-              fontWeight: 700,
-            }}
-          >
-            ROUND TWO
-          </p>
-        </div>
+        <RoundTag label="Round two" />
         <h1
           style={{
             margin: "0",
-            fontFamily: "'Anton', sans-serif",
+            fontFamily: "var(--mk-font-display)",
             fontSize: "clamp(32px, 4.5vw, 56px)",
             color: "#ffffff",
             textTransform: "uppercase",
             letterSpacing: "0.04em",
             lineHeight: 1,
-            textShadow: "0 0 30px rgba(232,40,60,0.35)",
+            
           }}
         >
           Select Your Project
@@ -627,7 +583,7 @@ export default function Projects() {
               width: "80%",
               height: "40%",
               background: "#08090c",
-              borderRadius: "4px",
+              borderRadius: 0,
               overflow: "hidden",
               padding: "16px 18px",
               boxSizing: "border-box",
@@ -678,15 +634,15 @@ export default function Projects() {
                   <p
                     style={{
                       margin: 0,
-                      fontSize: "10px",
-                      letterSpacing: "0.22em",
+                      fontSize: "13px",
+                      letterSpacing: "0.03em",
                       color: "#e8283c",
                       fontWeight: 700,
                     }}
                   >
                     {selected.tagline.toUpperCase()}
                   </p>
-                  <span style={{ fontSize: "8px", color: "rgba(255,255,255,0.3)", letterSpacing: "0.1em" }}>
+                  <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.6)", letterSpacing: "0.03em" }}>
                     SYS.READY
                   </span>
                 </div>
@@ -694,13 +650,13 @@ export default function Projects() {
                 <h2
                   style={{
                     margin: "2px 0 10px",
-                    fontFamily: "'Anton', sans-serif",
+                    fontFamily: "var(--mk-font-display)",
                     fontSize: "24px",
                     color: "#ffffff",
                     textTransform: "uppercase",
                     letterSpacing: "0.03em",
                     lineHeight: 1,
-                    textShadow: "0 0 12px rgba(232,40,60,0.3)",
+                    
                   }}
                 >
                   {selected.name}
@@ -709,7 +665,7 @@ export default function Projects() {
                 <p
                   style={{
                     margin: "0 0 14px",
-                    fontSize: "11px",
+                    fontSize: "13px",
                     lineHeight: 1.6,
                     color: "rgba(255,255,255,0.75)",
                   }}
@@ -729,11 +685,11 @@ export default function Projects() {
                     <span
                       key={tech}
                       style={{
-                        fontSize: "9px",
+                        fontSize: "12px",
                         padding: "3px 8px",
                         background: "rgba(232,40,60,0.12)",
                         border: "1px solid rgba(232,40,60,0.4)",
-                        borderRadius: "3px",
+                        borderRadius: 0,
                         color: "#ff8593",
                         letterSpacing: "0.05em",
                         fontWeight: 700,
@@ -798,15 +754,15 @@ function NoSignalPlaceholder() {
       <p
         style={{
           margin: 0,
-          fontSize: "10px",
-          letterSpacing: "0.25em",
-          color: "rgba(255,255,255,0.4)",
-          fontFamily: "'Space Mono', monospace",
+          fontSize: "13px",
+          letterSpacing: "0.03em",
+          color: "rgba(255,255,255,0.6)",
+          fontFamily: "var(--mk-font-body)",
         }}
       >
         NO CARTRIDGE DETECTED
       </p>
-      <p className="mk-blink" style={{ margin: 0, fontSize: "10px", letterSpacing: "0.15em", color: "#e8283c", fontWeight: 700 }}>
+      <p className="mk-blink" style={{ margin: 0, fontSize: "13px", letterSpacing: "0.03em", color: "#e8283c", fontWeight: 700 }}>
         ▸ INSERT TO CONTINUE
       </p>
     </div>
@@ -817,9 +773,9 @@ function PanelHeader({ label }: { label: string }) {
   return (
     <div
       style={{
-        fontFamily: "'Press Start 2P', monospace",
-        fontSize: "9px",
-        letterSpacing: "0.15em",
+        fontFamily: "var(--mk-font-pixel)",
+        fontSize: "12px",
+        letterSpacing: "0.03em",
         color: "#e8283c",
         marginBottom: "16px",
         paddingBottom: "8px",
@@ -830,7 +786,7 @@ function PanelHeader({ label }: { label: string }) {
       }}
     >
       <span>{label}</span>
-      <span style={{ width: "4px", height: "4px", background: "#e8283c", boxShadow: "0 0 6px #e8283c" }} />
+      <span style={{ width: "4px", height: "4px", background: "#e8283c" }} />
     </div>
   );
 }
@@ -846,7 +802,7 @@ function IntelRow({ label, value, highlight }: { label: string; value: string; h
         borderBottom: "1px solid rgba(255,255,255,0.06)",
       }}
     >
-      <span style={{ fontSize: "9px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.5)" }}>{label}</span>
+      <span style={{ fontSize: "12px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.5)" }}>{label}</span>
       <span
         style={{
           fontSize: highlight ? "11px" : "10px",
@@ -855,7 +811,7 @@ function IntelRow({ label, value, highlight }: { label: string; value: string; h
           letterSpacing: "0.05em",
           background: highlight ? "rgba(232,40,60,0.15)" : "transparent",
           padding: highlight ? "2px 6px" : "0",
-          borderRadius: "3px",
+          borderRadius: 0,
           border: highlight ? "1px solid rgba(232,40,60,0.3)" : "none",
         }}
       >

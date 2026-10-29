@@ -4,12 +4,12 @@ import Education from "./sections/Education/Education";
 import Projects from "./sections/Projects/Projects";
 import Skills from './sections/Skills/Skills';
 import Contact from "./sections/Contact/Contact";
-import EmberBackground from "./sections/shared/Background";
 import BootGate from "./sections/shared/BootGate";
 import EasterEgg from "./sections/shared/EasterEgg";
 import SoundToggle from "./sections/shared/SoundToggle";
 import Separator from "./sections/shared/Separator";
 import Outro from "./sections/shared/Outro";
+import { playClick } from "./sections/shared/audio";
 
 const SECTIONS = [
   { id: "about", label: "About", Component: AboutMe },
@@ -60,6 +60,17 @@ export default function App() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    // One quiet tick for every button and link. Elements can opt out with data-silent.
+    function onClick(e: MouseEvent) {
+      const el = (e.target as Element | null)?.closest("button, a[href], [role='button']");
+      if (!el || el.closest("[data-silent], .mk-sound-btn")) return;
+      playClick();
+    }
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, []);
+
   function scrollToSection(id: string) {
     sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth" });
   }
@@ -88,12 +99,10 @@ export default function App() {
           background: none;
           border: none;
           cursor: pointer;
-          font-family: 'Space Mono', 'JetBrains Mono', monospace;
-          font-size: 11px;
+          font-family: var(--mk-font-body);
+          font-size: 16px;
           font-weight: 700;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: rgba(255,255,255,0.5);
+          color: var(--mk-text-2);
           padding: 6px 2px;
           transition: color 0.2s ease;
         }
@@ -112,32 +121,45 @@ export default function App() {
           position: absolute;
           left: 2px;
           right: 2px;
-          bottom: -2px;
-          height: 2px;
+          bottom: -3px;
+          height: 3px;
           background: #e8283c;
-          box-shadow: 0 0 6px rgba(232,40,60,0.7);
+          
         }
 
-        .mk-navbar-name {
-          font-family: 'Anton', sans-serif;
-          font-size: 14px;
-          letter-spacing: 0.04em;
-          color: #f2f2f2;
+        .mk-navbar-brand {
+          display: flex;
+          flex-direction: column;
+          line-height: 1;
           white-space: nowrap;
+        }
+        .mk-navbar-name {
+          font-family: var(--mk-font-display);
+          font-size: 26px;
+          color: var(--mk-orange);
+        }
+        .mk-navbar-sub {
+          margin-top: 2px;
+          font-family: var(--mk-font-mono);
+          font-size: 13px;
+          color: var(--mk-text-3);
         }
 
         @media (max-width: 720px) {
+          .mk-navbar-sub { display: none; }
+          .mk-navbar-links { gap: 14px !important; }
+          .mk-navbar-link { font-size: 15px !important; padding: 12px 2px !important; }
+        }
+        @media (max-width: 480px) {
           .mk-navbar-name { display: none; }
-          .mk-navbar-links { gap: 12px !important; }
-          .mk-navbar-link { font-size: 9.5px !important; letter-spacing: 0.06em !important; }
+          .mk-navbar-links { gap: 10px !important; }
+          .mk-navbar-link { font-size: 14px !important; }
         }
       `}</style>
 
       {!booted && <BootGate onDismiss={() => setBooted(true)} />}
 
       <EasterEgg />
-
-      <EmberBackground />
 
       <nav
         aria-label="Section navigation"
@@ -147,9 +169,9 @@ export default function App() {
           left: 0,
           width: "100%",
           zIndex: 30,
-          background: "rgba(8,8,10,0.85)",
-          backdropFilter: "blur(10px)",
-          borderBottom: "1px solid rgba(232,40,60,0.25)",
+          background: "#08080a",
+          
+          borderBottom: "none",
           boxSizing: "border-box",
         }}
       >
@@ -165,8 +187,11 @@ export default function App() {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <img src="/favicon.svg" alt="" width={35} height={35} style={{ display: "block", borderRadius: "6px" }} />
-            <span className="mk-navbar-name">MARK ANGELO FLORENCIO</span>
+            <img src="/favicon.svg" alt="" width={35} height={35} style={{ display: "block", borderRadius: 0 }} />
+            <span className="mk-navbar-brand">
+              <span className="mk-navbar-name">KRAM.DEV</span>
+              <span className="mk-navbar-sub">MARK ANGELO FLORENCIO</span>
+            </span>
           </div>
 
           <div
@@ -196,16 +221,16 @@ export default function App() {
           aria-hidden="true"
           style={{
             width: "100%",
-            height: "2px",
-            background: "rgba(255,255,255,0.06)",
+            height: "3px",
+            background: "#2a2220",
           }}
         >
           <div
             style={{
               height: "100%",
               width: `${scrollProgress}%`,
-              background: "linear-gradient(90deg, #e8283c, #ff8a5b)",
-              boxShadow: "0 0 8px rgba(232,40,60,0.6)",
+              background: "var(--mk-red)",
+              
             }}
           />
         </div>
@@ -226,8 +251,8 @@ export default function App() {
           )}
         </div>
       ))}
-      <Separator next="GG" />
-      <Outro />
+      <Separator next="CONTINUE" />
+      <Outro sections={SECTIONS} />
     </div>
   );
 }

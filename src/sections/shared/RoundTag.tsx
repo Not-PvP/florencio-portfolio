@@ -1,28 +1,18 @@
-/** Small "ROUND N" pill used above section titles, matching the Projects header. */
+/** Small "Round N" tag above section titles: a flat red block, like an arcade round counter. */
 export default function RoundTag({ label }: { label: string }) {
   return (
     <span
       style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "8px",
-        background: "rgba(232,40,60,0.1)",
-        border: "1px solid rgba(232,40,60,0.3)",
-        padding: "4px 12px",
-        borderRadius: "20px",
+        display: "inline-block",
         marginBottom: "14px",
-        fontFamily: "'Space Mono', monospace",
-        fontSize: "11px",
+        padding: "3px 10px",
+        fontFamily: "var(--mk-font-body)",
+        fontSize: "15px",
         fontWeight: 700,
-        letterSpacing: "0.3em",
-        color: "#ff6b7a",
-        textTransform: "uppercase",
+        color: "#fff",
+        background: "var(--mk-red)",
       }}
     >
-      <span
-        aria-hidden="true"
-        style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#e8283c", boxShadow: "0 0 8px #e8283c" }}
-      />
       {label}
     </span>
   );

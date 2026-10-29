@@ -5,7 +5,7 @@ interface SeparatorProps {
   name?: string;
 }
 
-export default function Separator({ next, name = "FLORENCIO" }: SeparatorProps) {
+export default function Separator({ next, name = "KRAM.DEV" }: SeparatorProps) {
   const token = `${name} // ${next.toUpperCase()} //`;
 
   const half = useMemo(() => Array.from({ length: 8 }, () => token), [token]);
@@ -20,7 +20,7 @@ export default function Separator({ next, name = "FLORENCIO" }: SeparatorProps) 
         background: "#0a0a0a",
         borderTop: "1px solid rgba(232,40,60,0.4)",
         borderBottom: "1px solid rgba(232,40,60,0.4)",
-        boxShadow: "0 0 20px rgba(232,40,60,0.15) inset, 0 0 12px rgba(232,40,60,0.25)",
+        
         padding: "9px 0",
       }}
     >
@@ -38,7 +38,7 @@ export default function Separator({ next, name = "FLORENCIO" }: SeparatorProps) 
           .mk-separator-track { animation: none; }
         }
         .mk-separator-item {
-          font-family: 'Anton', sans-serif;
+          font-family: var(--mk-font-display);
           font-size: clamp(18px, 2.6vw, 26px);
           letter-spacing: 0.04em;
           text-transform: uppercase;
