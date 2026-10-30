@@ -69,8 +69,21 @@ export const PROJECTS: Project[] = [
     description:
       "A brownout notifier for Iloilo that shows scheduled and ongoing power interruptions by area and sends push alerts ahead of time. I built the Express and libSQL backend with its REST API and admin CRUD for advisories, paired with a Flutter app on the front.",
     stack: ["Flutter", "Dart", "Node.js", "Express", "libSQL"],
-    links: [{ label: "GitHub", url: "https://github.com/Not-PvP/FP_SUGA" }],
+    links: [
+      { label: "GitHub", url: "https://github.com/Not-PvP/FP_SUGA" },
+      { label: "Live demo", url: "https://suga-web.vercel.app/" },
+    ],
     cartColor: "#e0a100",
+  },
+  {
+    id: "wordlerace",
+    name: "Wordle Race",
+    tagline: "Multiplayer word race",
+    description:
+      "A fast, competitive multiplayer word-guessing game — create a room, share the code, and race your friends to solve the word first against the clock.",
+    stack: ["TypeScript", "Next.js", "React", "Tailwind CSS", "Vercel"],
+    links: [{ label: "Live demo", url: "https://wordlerace-beta.vercel.app/" }],
+    cartColor: "#2f7d4f",
   },
 ];
 
