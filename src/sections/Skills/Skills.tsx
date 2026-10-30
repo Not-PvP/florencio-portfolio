@@ -94,7 +94,7 @@ export default function Skills() {
       <style>{`
         .mk-sk-root {
           width: 100%;
-          min-height: 100vh;
+          min-height: 100svh;
           font-family: var(--mk-font-body);
           position: relative;
           display: flex;
@@ -305,9 +305,20 @@ export default function Skills() {
           .mk-sk-portrait-inner .mk-sk-icon { width: 40px !important; height: 40px !important; }
           .mk-sk-name { font-size: 24px; align-self: end; }
           .mk-sk-cat { margin: 0; align-self: start; font-size: 13px; }
-          .mk-sk-used-label { grid-column: 1 / -1; margin: 12px 0 6px; padding-top: 10px; font-size: 13px; }
-          .mk-sk-used, .mk-sk-none { grid-column: 1 / -1; }
-          .mk-sk-proj { font-size: 13px; padding: 5px 8px; }
+          .mk-sk-used-label { display: none; }
+          .mk-sk-used {
+            grid-column: 1 / -1;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            margin-top: 10px;
+            padding-bottom: 2px;
+            scrollbar-width: none;
+          }
+          .mk-sk-used::-webkit-scrollbar { display: none; }
+          .mk-sk-none { grid-column: 1 / -1; margin-top: 8px; }
+          .mk-sk-proj { font-size: 13px; padding: 5px 8px; white-space: nowrap; }
+          /* keep tapped tiles from scrolling in underneath the pinned panel */
+          .mk-sk-tile { scroll-margin-top: 190px; }
         }
         @media (max-width: 480px) {
           .mk-sk-root { padding: 48px 12px; }

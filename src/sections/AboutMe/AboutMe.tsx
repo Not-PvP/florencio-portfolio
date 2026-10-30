@@ -34,7 +34,7 @@ export default function AboutMe() {
       style={{
         width: "100%",
 
-        minHeight: "100vh",
+        minHeight: "100svh",
         background: "transparent",
         fontFamily: "var(--mk-font-body)",
         position: "relative",
@@ -116,13 +116,13 @@ export default function AboutMe() {
         @media (max-width: 720px) {
           .mk-about-root {
             height: auto !important;
-            min-height: 100vh !important;
+            min-height: 100svh !important;
             overflow: visible !important;
           }
           .mk-hero-row {
             flex-direction: column !important;
             height: auto !important;
-            min-height: 100vh !important;
+            min-height: 100svh !important;
             padding: 95px 20px 0 !important;
             box-sizing: border-box !important;
             gap: 8px !important;
@@ -132,13 +132,13 @@ export default function AboutMe() {
             width: 100% !important;
             min-width: 100% !important;
             height: auto !important;
-            aspect-ratio: 4 / 3 !important;
+            aspect-ratio: 4 / 5 !important;
             min-height: 0 !important;
             border-radius: 0;
             flex-shrink: 0 !important;
           }
           .mk-hero-photo {
-            object-position: center 8% !important;
+            object-position: center 10% !important;
             transform: none !important;
           }
           .mk-hero-copy {
@@ -165,7 +165,7 @@ export default function AboutMe() {
           zIndex: 2,
           width: "100%",
           paddingTop: "63px",
-          minHeight: "100vh",
+          minHeight: "100svh",
           display: "flex",
           overflow: "hidden",
         }}

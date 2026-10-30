@@ -81,10 +81,17 @@ const OCTAGON_VERTS: [number, number][] = [
   [55.51, 20.87],
 ];
 const MAX_BUFFER = Math.max(...MOVES.map((m) => m.keys.length));
-const BUFFER_TIMEOUT_MS = 1600;
+const BUFFER_TIMEOUT_MS = 2200;
 
-const SWIPE_MIN_DISTANCE = 28;
-const SWIPE_MAX_DURATION = 650;
+/** Finger travel (px) that registers one joystick direction. */
+const PAD_STEP = 26;
+/** Same direction twice in one drag needs this many steps of travel, so one flick counts once. */
+const PAD_REPEAT_FACTOR = 3;
+
+function openUrl(url: string) {
+  if (url.startsWith("mailto:")) window.location.href = url;
+  else window.open(url, "_blank", "noopener,noreferrer");
+}
 
 function sequencesMatch(tail: ArrowKey[], seq: ArrowKey[]): boolean {
   if (tail.length !== seq.length) return false;
@@ -121,9 +128,15 @@ export default function Contact() {
   const pendingTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const inViewRef = useRef<boolean>(false);
-  const swipeStartRef = useRef<{ x: number; y: number; time: number } | null>(
-    null
-  );
+  const padRef = useRef<HTMLDivElement | null>(null);
+  const padTouchRef = useRef<{
+    id: number;
+    ox: number;
+    oy: number;
+    last: ArrowKey | null;
+  } | null>(null);
+  const pendingOpenRef = useRef<string | null>(null);
+  const [nub, setNub] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const bufferRef = useRef<ArrowKey[]>([]);
 
@@ -174,7 +187,7 @@ export default function Contact() {
     };
   }, []);
 
-  const executeMove = useCallback((move: ComboMove) => {
+  const executeMove = useCallback((move: ComboMove, deferOpen = false) => {
     if (burstActiveRef.current) return;
 
     if (typeof navigator !== "undefined" && navigator.vibrate) {
@@ -187,7 +200,10 @@ export default function Contact() {
     setShaking(true);
     setBurst({ text: move.resultText, color: move.accent });
 
-    window.open(move.url, "_blank", "noopener,noreferrer");
+    // Links open on finger-up when a drag finished the combo: a drag is not
+    // a user gesture, so opening mid-drag gets blocked as a popup.
+    if (deferOpen) pendingOpenRef.current = move.url;
+    else openUrl(move.url);
 
     const shakeTimer = setTimeout(() => setShaking(false), 380);
     const clearTimer = setTimeout(() => setBurst(null), 900);
@@ -265,34 +281,9 @@ export default function Contact() {
     }
   }
 
-  function handlePadTouchStart(e: React.TouchEvent) {
-    const t = e.touches[0];
-    swipeStartRef.current = { x: t.clientX, y: t.clientY, time: Date.now() };
-  }
-
-  function handlePadTouchEnd(e: React.TouchEvent) {
-    const start = swipeStartRef.current;
-    swipeStartRef.current = null;
-    if (!start || burstActiveRef.current) return;
-
-    const t = e.changedTouches[0];
-    const dx = t.clientX - start.x;
-    const dy = t.clientY - start.y;
-    const duration = Date.now() - start.time;
-    const distance = Math.max(Math.abs(dx), Math.abs(dy));
-
-    if (distance < SWIPE_MIN_DISTANCE || duration > SWIPE_MAX_DURATION) return;
-
-    const direction: ArrowKey =
-      Math.abs(dx) > Math.abs(dy)
-        ? dx > 0
-          ? "ArrowRight"
-          : "ArrowLeft"
-        : dy > 0
-        ? "ArrowDown"
-        : "ArrowUp";
-
+  function registerDirection(direction: ArrowKey) {
     playSelect(direction === "ArrowUp" || direction === "ArrowRight");
+    if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(8);
     setPadDir(direction);
     setPadPulse((n) => n + 1);
     if (padDirTimerRef.current) clearTimeout(padDirTimerRef.current);
@@ -302,7 +293,7 @@ export default function Contact() {
     const completed = MOVES.find((m) => sequencesMatch(next, m.keys));
     if (completed) {
       updateBuffer([]);
-      executeMove(completed);
+      executeMove(completed, true);
       return;
     }
 
@@ -318,12 +309,62 @@ export default function Contact() {
     armBufferTimeout();
   }
 
+  function handlePadTouchStart(e: React.TouchEvent) {
+    const t = e.changedTouches[0];
+    padTouchRef.current = { id: t.identifier, ox: t.clientX, oy: t.clientY, last: null };
+  }
+
+  function handlePadTouchMove(e: React.TouchEvent) {
+    const s = padTouchRef.current;
+    if (!s) return;
+    const t = Array.from(e.touches).find((x) => x.identifier === s.id);
+    if (!t) return;
+
+    let dx = t.clientX - s.ox;
+    let dy = t.clientY - s.oy;
+    const direction: ArrowKey =
+      Math.abs(dx) > Math.abs(dy)
+        ? dx > 0
+          ? "ArrowRight"
+          : "ArrowLeft"
+        : dy > 0
+        ? "ArrowDown"
+        : "ArrowUp";
+    const travel = Math.max(Math.abs(dx), Math.abs(dy));
+    const needed = direction === s.last ? PAD_STEP * PAD_REPEAT_FACTOR : PAD_STEP;
+
+    if (travel >= needed) {
+      s.last = direction;
+      s.ox = t.clientX;
+      s.oy = t.clientY;
+      dx = 0;
+      dy = 0;
+      if (!burstActiveRef.current) registerDirection(direction);
+    }
+
+    // The nub follows the finger inside the ring (SVG units, viewBox is 160).
+    const width = padRef.current?.getBoundingClientRect().width || 176;
+    const k = 160 / width;
+    const len = Math.hypot(dx, dy);
+    const cap = Math.min(len, PAD_STEP);
+    const scale = len > 0 ? cap / len : 0;
+    setNub({ x: dx * scale * k, y: dy * scale * k });
+  }
+
+  function endPadTouch() {
+    padTouchRef.current = null;
+    setNub({ x: 0, y: 0 });
+    const url = pendingOpenRef.current;
+    pendingOpenRef.current = null;
+    if (url) openUrl(url);
+  }
+
   return (
     <div
       ref={sectionRef}
       style={{
         width: "100%",
-        minHeight: "100vh",
+        minHeight: "100svh",
         // Dark until the slam finishes, then a hard cut to red.
         background: smashDone ? "var(--mk-red)" : "#0a0a0a",
         fontFamily: "var(--mk-font-body)",
@@ -585,7 +626,7 @@ export default function Contact() {
                 : "none",
             }}
           >
-            {isTouch ? "Swipe the combo, or tap a move" : "Press the combo, or click a move"}
+            {isTouch ? "Drag the joystick, or tap a move" : "Press the combo, or click a move"}
           </p>
         </div>
 
@@ -601,7 +642,7 @@ export default function Contact() {
             animation: titleIn ? "fadeUp 0.5s ease-out 0.24s both" : "none",
           }}
         >
-          {Array.from({ length: MAX_BUFFER + 1 }).map((_, i) => {
+          {Array.from({ length: isTouch ? MAX_BUFFER : MAX_BUFFER + 1 }).map((_, i) => {
             const isTriggerSlot = i === MAX_BUFFER;
             const glyph = isTriggerSlot
               ? lastTrigger
@@ -639,39 +680,40 @@ export default function Contact() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: "8px",
+              gap: "14px",
               margin: "0 auto 32px",
               opacity: titleIn ? 1 : 0,
               animation: titleIn ? "fadeUp 0.5s ease-out 0.3s both" : "none",
             }}
           >
             <div
+              ref={padRef}
               onTouchStart={handlePadTouchStart}
-              onTouchEnd={handlePadTouchEnd}
+              onTouchMove={handlePadTouchMove}
+              onTouchEnd={endPadTouch}
+              onTouchCancel={endPadTouch}
+              role="img"
+              aria-label="Joystick. Drag in a direction to enter a combo."
               style={{
                 position: "relative",
-                width: "176px",
-                height: "176px",
+                width: "min(66vw, 260px)",
+                aspectRatio: "1 / 1",
                 background: "#0a0a0a",
+                boxShadow: "6px 6px 0 #7a1420",
                 touchAction: "none",
+                userSelect: "none",
+                WebkitUserSelect: "none",
+                WebkitTouchCallout: "none",
+                WebkitTapHighlightColor: "transparent",
               }}
             >
-
               <svg
                 viewBox="0 0 160 160"
-                width="176"
-                height="176"
+                width="100%"
+                height="100%"
                 aria-hidden="true"
-                style={{ position: "relative", pointerEvents: "none" }}
+                style={{ display: "block", pointerEvents: "none" }}
               >
-                <defs>
-                  <radialGradient id="mkPadCore" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#ff8a5b" stopOpacity="0.9" />
-                    <stop offset="55%" stopColor="#e8283c" stopOpacity="0.5" />
-                    <stop offset="100%" stopColor="#e8283c" stopOpacity="0" />
-                  </radialGradient>
-                </defs>
-
                 {OCTAGON_VERTS.map(([x1, y1], i) => {
                   const [x2, y2] = OCTAGON_VERTS[(i + 1) % OCTAGON_VERTS.length];
                   const cardinal: ArrowKey | null =
@@ -703,19 +745,12 @@ export default function Contact() {
                       y2={y2}
                       stroke={stroke}
                       strokeWidth={width}
-                      strokeLinecap="round"
-                      style={{ transition: "stroke 0.15s ease, stroke-width 0.15s ease" }}
+                      strokeLinecap="square"
                     />
                   );
                 })}
 
-                <circle
-                  className="mk-pad-core"
-                  cx={80}
-                  cy={80}
-                  r={26}
-                  fill="url(#mkPadCore)"
-                />
+                <circle cx={80} cy={80} r={34} fill="#16161a" stroke="rgba(255,255,255,0.22)" strokeWidth={2} />
 
                 <g style={{ transform: `rotate(${DIR_ANGLE[padDir ?? "ArrowUp"]}deg)`, transformOrigin: "80px 80px" }}>
                   {padDir && (
@@ -723,35 +758,36 @@ export default function Contact() {
                       key={`trail-${padPulse}`}
                       className="mk-pad-trail"
                       x={76}
-                      y={34}
+                      y={30}
                       width={8}
                       height={26}
-                      rx={4}
                       fill={miss ? "#e8283c" : "#ff8a5b"}
                       style={{ transformOrigin: "80px 80px" }}
                     />
                   )}
-                  <circle
-                    key={`nub-${padPulse}`}
-                    className="mk-pad-nub"
-                    cx={80}
-                    cy={80}
-                    r={11}
-                    fill={miss ? "#e8283c" : "#f2f2f2"}
-                    style={{ transformOrigin: "80px 80px" }}
-                  />
                 </g>
+
+                <circle
+                  cx={80 + nub.x}
+                  cy={80 + nub.y}
+                  r={15}
+                  fill={miss ? "#e8283c" : "#f5f0e6"}
+                  stroke="#0a0a0a"
+                  strokeWidth={3}
+                />
               </svg>
             </div>
 
             <span
               style={{
-                fontSize: "13px",
+                fontSize: "15px",
                 letterSpacing: "0.03em",
                 color: "#0a0a0a",
+                fontWeight: 700,
+                textAlign: "center",
               }}
             >
-              SWIPE THE JOYSTICK
+              Drag in a direction to enter it
             </span>
           </div>
         )}

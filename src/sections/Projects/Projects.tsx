@@ -184,7 +184,7 @@ export default function Projects() {
       className="mk-projects-root"
       style={{
         width: "100%",
-        minHeight: "100vh",
+        minHeight: "100svh",
         background: "#08080a",
         fontFamily: "var(--mk-font-body)",
         display: "flex",
@@ -398,11 +398,14 @@ export default function Projects() {
         .mk-info-chip { font-size: 13px; color: #f5f0e6; border: 1px solid rgba(255,255,255,0.14); border-radius: 0; padding: 4px 8px; }
         .mk-info-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
         @media (max-width: 600px) {
-          .mk-shelf { gap: 12px; padding-bottom: 14px; }
-          .mk-shelf::after { left: -8px; right: -8px; }
+          /* wrap the cartridges onto shelves instead of overflowing off both sides */
+          .mk-shelf { flex-wrap: wrap; gap: 20px 12px; padding-bottom: 0; margin-bottom: 28px; }
+          .mk-shelf::after { display: none; }
+          .mk-shelf > li { border-bottom: 6px solid #23242a; padding-bottom: 12px; }
           .mk-slot .mk-gbc { --w: 96px !important; }
           .mk-slot-ghost { width: 96px; font-size: 13px; padding: 6px; }
-          .mk-slot-cap { font-size: 13px; }
+          .mk-slot-cap { font-size: 13px; white-space: normal; text-align: center; max-width: 100px; line-height: 1.25; }
+          .mk-arena-row { scroll-margin-top: 84px; }
         }
         @media (prefers-reduced-motion: reduce) {
           .mk-slot .mk-gbc, .mk-slot:hover .mk-gbc { transition: none; transform: none; }
@@ -417,7 +420,22 @@ export default function Projects() {
           .mk-blink { animation: none !important; }
         }
 
+        .mk-info-desc { display: none; }
+        @media (max-width: 1100px) { .mk-screen-chips { display: none !important; } }
         @media (max-width: 1100px) {
+          .mk-screen-desc {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 5;
+            overflow: hidden;
+          }
+          .mk-info-desc {
+            display: block;
+            margin: 0 0 16px;
+            font-size: 15px;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.78);
+          }
           .mk-arena-row {
             grid-template-columns: 1fr !important;
             gap: 48px !important;
@@ -442,8 +460,9 @@ export default function Projects() {
           }
           .mk-console-wrap {
             width: 100% !important;
-            max-width: 340px !important;
+            max-width: 360px !important;
           }
+          .mk-stats-sidebar { width: 100% !important; }
         }
       `}</style>
 
@@ -501,7 +520,8 @@ export default function Projects() {
                   aria-label={`Load ${project.name}: ${project.tagline}`}
                   onClick={() => {
                     selectProject(project.id);
-                    arenaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                    const phone = window.matchMedia("(max-width: 600px)").matches;
+                    arenaRef.current?.scrollIntoView({ behavior: "smooth", block: phone ? "start" : "center" });
                   }}
                 >
                   <Cartridge
@@ -663,6 +683,7 @@ export default function Projects() {
                 </h2>
 
                 <p
+                  className="mk-screen-desc"
                   style={{
                     margin: "0 0 14px",
                     fontSize: "13px",
@@ -674,6 +695,7 @@ export default function Projects() {
                 </p>
 
                 <div
+                  className="mk-screen-chips"
                   style={{
                     display: "flex",
                     gap: "6px",
@@ -827,6 +849,7 @@ function InfoPanel({ project, stats }: { project: Project; stats?: StatsState })
   return (
     <div className="mk-stat-box" aria-live="polite">
       <PanelHeader label="CARTRIDGE INFO" />
+      <p className="mk-info-desc">{project.description}</p>
       {project.award && (
         <div className="mk-info-award">
           <Trophy size={18} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />

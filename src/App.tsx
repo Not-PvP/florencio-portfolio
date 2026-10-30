@@ -152,8 +152,15 @@ export default function App() {
         }
         @media (max-width: 480px) {
           .mk-navbar-name { display: none; }
-          .mk-navbar-links { gap: 10px !important; }
+          .mk-navbar-logo { display: none !important; }
+          .mk-navbar-inner { padding: 12px 12px !important; gap: 8px !important; }
+          .mk-navbar-links { gap: 8px !important; width: 100%; justify-content: space-between; }
           .mk-navbar-link { font-size: 14px !important; }
+        }
+        @media (max-width: 350px) {
+          .mk-navbar-inner { padding: 12px 8px !important; gap: 4px !important; }
+          .mk-navbar-links { gap: 4px !important; }
+          .mk-navbar-link { font-size: 12px !important; }
         }
       `}</style>
 
@@ -176,6 +183,7 @@ export default function App() {
         }}
       >
         <div
+          className="mk-navbar-inner"
           style={{
             display: "flex",
             alignItems: "center",
@@ -186,7 +194,7 @@ export default function App() {
             margin: "0 auto",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="mk-navbar-logo" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <img src="/favicon.svg" alt="" width={35} height={35} style={{ display: "block", borderRadius: 0 }} />
             <span className="mk-navbar-brand">
               <span className="mk-navbar-name">KRAM.DEV</span>
