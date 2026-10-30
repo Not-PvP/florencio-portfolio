@@ -63,13 +63,6 @@ const ARROW_GLYPH: Record<ArrowKey, string> = {
 };
 const ARROW_KEYS = Object.keys(ARROW_GLYPH) as ArrowKey[];
 
-const DIR_ANGLE: Record<ArrowKey, number> = {
-  ArrowUp: 0,
-  ArrowRight: 90,
-  ArrowDown: 180,
-  ArrowLeft: 270,
-};
-
 const OCTAGON_VERTS: [number, number][] = [
   [104.49, 20.87],
   [139.13, 55.51],
@@ -473,7 +466,7 @@ export default function Contact() {
         }
         @keyframes padNubKick {
           0% { transform: translateY(0) scale(1); }
-          28% { transform: translateY(-16px) scale(1.15); }
+          28% { transform: translateY(-6px) scale(1.08); }
           100% { transform: translateY(0) scale(1); }
         }
         @keyframes padTrailStreak {
@@ -696,10 +689,8 @@ export default function Contact() {
               aria-label="Joystick. Drag in a direction to enter a combo."
               style={{
                 position: "relative",
-                width: "min(66vw, 260px)",
+                width: "min(74vw, 290px)",
                 aspectRatio: "1 / 1",
-                background: "#0a0a0a",
-                boxShadow: "6px 6px 0 #7a1420",
                 touchAction: "none",
                 userSelect: "none",
                 WebkitUserSelect: "none",
@@ -708,73 +699,88 @@ export default function Contact() {
               }}
             >
               <svg
-                viewBox="0 0 160 160"
+                viewBox="0 0 200 200"
                 width="100%"
                 height="100%"
                 aria-hidden="true"
-                style={{ display: "block", pointerEvents: "none" }}
+                style={{ display: "block", pointerEvents: "none", overflow: "visible" }}
               >
-                {OCTAGON_VERTS.map(([x1, y1], i) => {
-                  const [x2, y2] = OCTAGON_VERTS[(i + 1) % OCTAGON_VERTS.length];
-                  const cardinal: ArrowKey | null =
-                    i === 7 ? "ArrowUp" : i === 1 ? "ArrowRight" : i === 3 ? "ArrowDown" : i === 5 ? "ArrowLeft" : null;
+                {/* Arcade stick in 3/4 view: base, restrictor gate, shaft, ball top. */}
+                <ellipse cx={104} cy={160} rx={86} ry={30} fill="rgba(10,10,10,0.28)" />
+                <ellipse cx={100} cy={146} rx={80} ry={36} fill="#7a1420" />
+                <rect x={20} y={128} width={160} height={18} fill="#7a1420" />
+                <ellipse cx={100} cy={128} rx={80} ry={36} fill="#0a0a0a" />
+                <ellipse cx={100} cy={128} rx={80} ry={36} fill="none" stroke="#2a2a30" strokeWidth={3} />
+                {[[34, 128], [166, 128], [100, 98], [100, 158]].map(([sx, sy]) => (
+                  <rect key={`${sx}-${sy}`} x={sx - 3} y={sy - 2} width={6} height={4} fill="#3a3a42" />
+                ))}
 
-                  let stroke = "rgba(255,255,255,0.14)";
-                  let width = 2;
-                  if (cardinal) {
-                    if (miss) {
-                      stroke = "#e8283c";
-                      width = 4;
-                    } else if (padDir === cardinal) {
-                      stroke = "#ff8a5b";
-                      width = 4;
-                    } else if (buffer.includes(cardinal)) {
-                      stroke = "rgba(255,138,91,0.55)";
-                      width = 3;
-                    } else {
-                      stroke = "rgba(255,255,255,0.22)";
+                <g transform="translate(100 128) scale(0.72 0.33) translate(-80 -80)">
+                  {OCTAGON_VERTS.map(([x1, y1], i) => {
+                    const [x2, y2] = OCTAGON_VERTS[(i + 1) % OCTAGON_VERTS.length];
+                    const cardinal: ArrowKey | null =
+                      i === 7 ? "ArrowUp" : i === 1 ? "ArrowRight" : i === 3 ? "ArrowDown" : i === 5 ? "ArrowLeft" : null;
+
+                    let stroke = "#2e2e35";
+                    let width = 3;
+                    if (cardinal) {
+                      if (miss) {
+                        stroke = "#f5f0e6";
+                        width = 5;
+                      } else if (padDir === cardinal) {
+                        stroke = "#ff8a5b";
+                        width = 6;
+                      } else if (buffer.includes(cardinal)) {
+                        stroke = "#a0533a";
+                        width = 5;
+                      } else {
+                        stroke = "#4a4a52";
+                      }
                     }
-                  }
 
-                  return (
-                    <line
-                      key={i}
-                      x1={x1}
-                      y1={y1}
-                      x2={x2}
-                      y2={y2}
-                      stroke={stroke}
-                      strokeWidth={width}
-                      strokeLinecap="square"
-                    />
-                  );
-                })}
-
-                <circle cx={80} cy={80} r={34} fill="#16161a" stroke="rgba(255,255,255,0.22)" strokeWidth={2} />
-
-                <g style={{ transform: `rotate(${DIR_ANGLE[padDir ?? "ArrowUp"]}deg)`, transformOrigin: "80px 80px" }}>
-                  {padDir && (
-                    <rect
-                      key={`trail-${padPulse}`}
-                      className="mk-pad-trail"
-                      x={76}
-                      y={30}
-                      width={8}
-                      height={26}
-                      fill={miss ? "#e8283c" : "#ff8a5b"}
-                      style={{ transformOrigin: "80px 80px" }}
-                    />
-                  )}
+                    return (
+                      <line
+                        key={i}
+                        x1={x1}
+                        y1={y1}
+                        x2={x2}
+                        y2={y2}
+                        stroke={stroke}
+                        strokeWidth={width}
+                        strokeLinecap="square"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    );
+                  })}
                 </g>
 
-                <circle
-                  cx={80 + nub.x}
-                  cy={80 + nub.y}
-                  r={15}
-                  fill={miss ? "#e8283c" : "#f5f0e6"}
-                  stroke="#0a0a0a"
-                  strokeWidth={3}
-                />
+                {(() => {
+                  // nub is in the old 160-unit space, capped near 16; tilt the stick with it.
+                  const bx = 100 + nub.x * 2.4;
+                  const by = 64 + nub.y * 1.5;
+                  const ball = miss ? "#f5f0e6" : "#ff8a5b";
+                  const ballShade = miss ? "#c9c2b6" : "#d95d00";
+                  return (
+                    <>
+                      <ellipse cx={100 + nub.x * 1.3} cy={128 + nub.y * 0.6} rx={22} ry={9} fill="rgba(0,0,0,0.45)" />
+                      <ellipse cx={100} cy={128} rx={15} ry={7} fill="#3a3a42" stroke="#0a0a0a" strokeWidth={2} />
+                      <line x1={100} y1={127} x2={bx} y2={by} stroke="#0a0a0a" strokeWidth={15} strokeLinecap="round" />
+                      <line x1={100} y1={127} x2={bx} y2={by} stroke="#bfb8ad" strokeWidth={8} strokeLinecap="round" />
+                      <line x1={98} y1={124} x2={bx - 3} y2={by} stroke="#ece6dc" strokeWidth={2} />
+                      <g
+                        key={`ball-${padPulse}`}
+                        className={padDir ? "mk-pad-nub" : undefined}
+                        style={{ transformBox: "fill-box", transformOrigin: "center" }}
+                      >
+                        <circle cx={bx} cy={by} r={29} fill="#0a0a0a" />
+                        <circle cx={bx} cy={by} r={26} fill={ballShade} />
+                        <circle cx={bx - 3} cy={by - 4} r={22} fill={ball} />
+                        <rect x={bx - 15} y={by - 17} width={9} height={6} fill="#ffe0cf" />
+                        <rect x={bx - 17} y={by - 10} width={4} height={5} fill="#ffe0cf" />
+                      </g>
+                    </>
+                  );
+                })()}
               </svg>
             </div>
 

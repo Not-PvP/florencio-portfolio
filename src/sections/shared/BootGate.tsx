@@ -101,9 +101,10 @@ export default function BootGate({ onDismiss }: BootGateProps) {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          object-position: center 12%;
-          transform: scale(1.35);
-          transform-origin: center 12%;
+          object-position: center 4%;
+          /* Face sits left of the photo's center, so pan right to center it. */
+          transform: translateX(33px) scale(1.35);
+          transform-origin: center 4%;
           image-rendering: auto;
           filter: saturate(0.78) contrast(1.12) brightness(0.9) hue-rotate(-12deg);
         }

@@ -113,6 +113,10 @@ export default function AboutMe() {
           .mk-globe-slot { display: none !important; }
         }
 
+        .mk-hero-p1 { display: none; }
+
+        /* Mobile: character-select layout. Photo leads edge to edge, fades
+           into the page in hard pixel bands, and the name lands on top of it. */
         @media (max-width: 720px) {
           .mk-about-root {
             height: auto !important;
@@ -122,31 +126,73 @@ export default function AboutMe() {
           .mk-hero-row {
             flex-direction: column !important;
             height: auto !important;
-            min-height: 100svh !important;
-            padding: 95px 20px 0 !important;
+            min-height: 0 !important;
+            padding: 56px 0 0 !important;
             box-sizing: border-box !important;
-            gap: 8px !important;
+            gap: 0 !important;
           }
           .mk-drawer {
-            order: 2;
+            order: 0;
             width: 100% !important;
             min-width: 100% !important;
-            height: auto !important;
-            aspect-ratio: 4 / 5 !important;
+            height: min(118vw, 64svh) !important;
             min-height: 0 !important;
-            border-radius: 0;
             flex-shrink: 0 !important;
+            background: var(--mk-bg) !important;
+          }
+          .mk-drawer::after {
+            content: "";
+            position: absolute;
+            inset: auto 0 0 0;
+            height: 46%;
+            pointer-events: none;
+            background: linear-gradient(
+              to bottom,
+              transparent 0 20%,
+              rgba(10,10,10,0.35) 20% 40%,
+              rgba(10,10,10,0.62) 40% 60%,
+              rgba(10,10,10,0.85) 60% 80%,
+              #0a0a0a 80% 100%
+            );
           }
           .mk-hero-photo {
-            object-position: center 10% !important;
-            transform: none !important;
+            /* the face sits left of the photo's center; pan it into the middle */
+            object-position: center 6% !important;
+            transform: scale(1.22) translateX(7.5%) !important;
+            transform-origin: center top !important;
+          }
+          .mk-hero-p1 {
+            display: block;
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            z-index: 2;
+            padding: 4px 10px;
+            font-family: var(--mk-font-pixel);
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--mk-bg);
+            background: var(--mk-cream);
+            box-shadow: 4px 4px 0 var(--mk-red);
           }
           .mk-hero-copy {
-            padding: 8px 0 32px !important;
+            order: 1;
+            margin-top: -118px;
+            padding: 0 20px 36px !important;
             flex: none !important;
+            z-index: 3;
+          }
+          .mk-hero-eyebrow {
+            display: inline-block;
+            padding: 4px 8px;
+            margin-bottom: 10px !important;
+            background: var(--mk-red);
+            color: var(--mk-bg) !important;
           }
           .mk-hero-copy h1 {
-            font-size: clamp(44px, 14vw, 64px) !important;
+            font-size: clamp(48px, 15vw, 68px) !important;
+            text-shadow: 4px 4px 0 var(--mk-bg);
+            margin-bottom: 22px !important;
           }
           .mk-stat dd { font-size: 14px; }
           .mk-cta-primary { width: 100%; justify-content: center; }
@@ -201,6 +247,7 @@ export default function AboutMe() {
                 "saturate(0.78) contrast(1.12) brightness(0.9) hue-rotate(-12deg)",
             }}
           />
+          <span className="mk-hero-p1" aria-hidden="true">P1</span>
         </div>
 
         <div
@@ -226,6 +273,7 @@ export default function AboutMe() {
 
           <div style={{ position: "relative", zIndex: 1, maxWidth: "640px" }}>
             <div
+              className="mk-hero-eyebrow"
               style={{
                 color: "#e8283c",
                 fontFamily: "var(--mk-font-pixel)",

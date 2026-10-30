@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { CATEGORIES, type Skill, type SkillCategory } from "./skillsData";
 import { BRAND_SVGS, MONO_BRAND_ICONS } from "./brandSvgs";
 import { playSelectBlip } from "./skillSound";
@@ -57,6 +57,34 @@ export default function Skills() {
   const [previewName, setPreviewName] = useState<string>("");
   const [sectionIn, setSectionIn] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const [isNarrow, setIsNarrow] = useState<boolean>(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches
+  );
+  const [notchX, setNotchX] = useState<number>(34);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 900px)");
+    const onChange = () => setIsNarrow(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  // On mobile the detail box opens under the tapped tile's row, with its notch
+  // pointing at that tile. Measure where the tile sits inside its group.
+  useLayoutEffect(() => {
+    if (!isNarrow) return;
+    const measure = () => {
+      const tile = rootRef.current?.querySelector<HTMLElement>('.mk-sk-tile[aria-pressed="true"]');
+      const group = tile?.closest<HTMLElement>(".mk-sk-group");
+      if (!tile || !group) return;
+      const t = tile.getBoundingClientRect();
+      const g = group.getBoundingClientRect();
+      setNotchX(Math.round(t.left - g.left + t.width / 2));
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [isNarrow, selectedName]);
 
   useEffect(() => {
     const node = rootRef.current;
@@ -77,6 +105,8 @@ export default function Skills() {
   const shownName = previewName || selectedName;
   const shown = ROSTER.find((e) => e.skill.name === shownName) ?? ROSTER[0];
   const usedIn = useMemo(() => projectsUsing(shown.skill.name), [shown.skill.name]);
+  const picked = ROSTER.find((e) => e.skill.name === selectedName) ?? ROSTER[0];
+  const pickedUsedIn = useMemo(() => projectsUsing(picked.skill.name), [picked.skill.name]);
 
   function choose(name: string) {
     if (name !== selectedName) playSelectBlip(true);
@@ -88,6 +118,26 @@ export default function Skills() {
   }
 
   const accent = shown.category.accent;
+
+  function renderUsed(list: string[]) {
+    return list.length > 0 ? (
+      <ul className="mk-sk-used">
+        {list.map((name) => (
+          <li key={name}>
+            {name === "This portfolio" ? (
+              <span className="mk-sk-proj mk-sk-proj-static">{name}</span>
+            ) : (
+              <button type="button" className="mk-sk-proj" onClick={goToProjects}>
+                {name}
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p className="mk-sk-none">Not in a featured project yet.</p>
+    );
+  }
 
   return (
     <div ref={rootRef} className="mk-sk-root">
@@ -285,40 +335,75 @@ export default function Skills() {
         .mk-sk-proj-static:hover { border-color: rgba(255,255,255,0.14); color: #f2f2f2; }
         .mk-sk-none { margin: 0; font-size: 13px; color: rgba(255,255,255,0.6); }
 
+        .mk-sk-group { position: relative; }
+        .mk-sk-dialog { display: none; }
+
+        @keyframes mkSkBoxOpen {
+          0% { clip-path: inset(0 0 100% 0); }
+          100% { clip-path: inset(0 0 0 0); }
+        }
+
+        /* Mobile: no pinned panel. Tapping a tile opens an RPG-style text box
+           right under its row, notched toward the tile you picked. */
         @media (max-width: 900px) {
-          .mk-sk-frame { padding: 26px 18px 28px; border-radius: 0; }
-          .mk-sk-arena { grid-template-columns: 1fr; gap: 24px; }
-          .mk-sk-panel {
-            order: -1;
-            top: 66px;
-            z-index: 5;
-            display: grid;
-            grid-template-columns: 72px minmax(0, 1fr);
-            column-gap: 14px;
+          .mk-sk-frame { padding: 26px 18px 28px; }
+          .mk-sk-arena { grid-template-columns: 1fr; gap: 0; }
+          .mk-sk-panel { display: none; }
+          .mk-sk-sub { margin-bottom: 24px; }
+          .mk-sk-dialog {
+            display: block;
+            position: relative;
+            margin: 16px 0 4px;
+            padding: 14px 14px 16px;
+            background: var(--mk-bg);
+            border: 3px solid var(--mk-cream);
+            box-shadow: 5px 5px 0 var(--accent);
+            animation: mkSkBoxOpen 0.18s steps(4, end);
+          }
+          /* notch: cream outer triangle with a dark inner one to keep the border */
+          .mk-sk-dialog::before,
+          .mk-sk-dialog::after {
+            content: "";
+            position: absolute;
+            left: calc(var(--notch) - 10px);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+          }
+          .mk-sk-dialog::before { top: -13px; border-bottom: 10px solid var(--mk-cream); }
+          .mk-sk-dialog::after { top: -8px; border-bottom: 10px solid var(--mk-bg); }
+          .mk-sk-dialog-head {
+            display: flex;
             align-items: center;
-            padding: 12px;
-            background: #0d0d10;
-            
+            gap: 12px;
           }
-          .mk-sk-panel-top { display: none; }
-          .mk-sk-portrait { grid-row: 1 / span 2; height: 72px; margin: 0; }
-          .mk-sk-portrait-inner .mk-sk-icon { width: 40px !important; height: 40px !important; }
-          .mk-sk-name { font-size: 24px; align-self: end; }
-          .mk-sk-cat { margin: 0; align-self: start; font-size: 13px; }
-          .mk-sk-used-label { display: none; }
-          .mk-sk-used {
-            grid-column: 1 / -1;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            margin-top: 10px;
-            padding-bottom: 2px;
-            scrollbar-width: none;
+          .mk-sk-dialog-icon {
+            width: 52px;
+            height: 52px;
+            flex: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #121317;
+            border-bottom: 3px solid var(--accent);
+            animation: mkSkSlam 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
           }
-          .mk-sk-used::-webkit-scrollbar { display: none; }
-          .mk-sk-none { grid-column: 1 / -1; margin-top: 8px; }
-          .mk-sk-proj { font-size: 13px; padding: 5px 8px; white-space: nowrap; }
-          /* keep tapped tiles from scrolling in underneath the pinned panel */
-          .mk-sk-tile { scroll-margin-top: 190px; }
+          .mk-sk-dialog-name {
+            margin: 0;
+            font-family: var(--mk-font-display);
+            font-size: 30px;
+            line-height: 0.95;
+            color: var(--mk-cream);
+            text-transform: uppercase;
+            overflow-wrap: anywhere;
+          }
+          .mk-sk-dialog-class { margin: 2px 0 0; font-size: 13px; color: var(--accent); }
+          .mk-sk-dialog-label {
+            margin: 14px 0 8px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+          }
         }
         @media (max-width: 480px) {
           .mk-sk-root { padding: 48px 12px; }
@@ -329,6 +414,7 @@ export default function Skills() {
           .mk-sk-frame, .mk-sk-frame.in { animation: none; opacity: 1; }
           .mk-sk-portrait-inner { animation: none; }
           .mk-sk-tile, .mk-sk-panel { transition: none; }
+          .mk-sk-dialog, .mk-sk-dialog-icon { animation: none !important; }
         }
       `}</style>
 
@@ -362,15 +448,37 @@ export default function Skills() {
                         aria-label={skill.name}
                         title={skill.name}
                         onClick={() => choose(skill.name)}
-                        onMouseEnter={() => setPreviewName(skill.name)}
-                        onFocus={() => setPreviewName(skill.name)}
-                        onBlur={() => setPreviewName("")}
+                        // Preview only feeds the desktop side panel. On touch it re-renders
+                        // mid-tap and swallows the click, so skip it on narrow screens.
+                        onMouseEnter={isNarrow ? undefined : () => setPreviewName(skill.name)}
+                        onFocus={isNarrow ? undefined : () => setPreviewName(skill.name)}
+                        onBlur={isNarrow ? undefined : () => setPreviewName("")}
                       >
                         <BrandIcon skill={skill} size={30} />
                       </button>
                     </li>
                   ))}
                 </ul>
+                {isNarrow && picked.category.id === category.id && (
+                  <div
+                    key={picked.skill.name}
+                    className="mk-sk-dialog"
+                    aria-live="polite"
+                    style={{ "--notch": `${notchX}px` } as React.CSSProperties}
+                  >
+                    <div className="mk-sk-dialog-head">
+                      <span className="mk-sk-dialog-icon">
+                        <BrandIcon skill={picked.skill} size={34} />
+                      </span>
+                      <div>
+                        <p className="mk-sk-dialog-name">{picked.skill.name}</p>
+                        <p className="mk-sk-dialog-class">{picked.category.fighterName}</p>
+                      </div>
+                    </div>
+                    <p className="mk-sk-dialog-label">Featured in</p>
+                    {renderUsed(pickedUsedIn)}
+                  </div>
+                )}
               </section>
             ))}
           </div>
@@ -392,23 +500,7 @@ export default function Skills() {
             <p className="mk-sk-name">{shown.skill.name}</p>
             <p className="mk-sk-cat">{shown.category.label}</p>
             <p className="mk-sk-used-label">Featured in</p>
-            {usedIn.length > 0 ? (
-              <ul className="mk-sk-used">
-                {usedIn.map((name) => (
-                  <li key={name}>
-                    {name === "This portfolio" ? (
-                      <span className="mk-sk-proj mk-sk-proj-static">{name}</span>
-                    ) : (
-                      <button type="button" className="mk-sk-proj" onClick={goToProjects}>
-                        {name}
-                      </button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mk-sk-none">Not in a featured project yet.</p>
-            )}
+            {renderUsed(usedIn)}
           </aside>
         </div>
       </div>
