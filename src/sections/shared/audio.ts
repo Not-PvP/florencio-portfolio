@@ -23,6 +23,8 @@ let sfxBus: GainNode | null = null;
 let musicBus: GainNode | null = null;
 let noiseBuffer: AudioBuffer | null = null;
 let muted = true;
+let finishVoice: AudioBuffer | null = null;
+let finishVoiceLoading = false;
 const listeners = new Set<(muted: boolean) => void>();
 
 function readPref(): "on" | "off" | null {
@@ -84,6 +86,28 @@ function getCtx(): AudioContext | null {
   return ctx;
 }
 
+/**
+ * The spoken "FINISH HIM" line (public/audio/finish-him.mp3). Swap that file for your own recording and
+ * keep the name; if it can't load, the synthesized slam still plays without the voice.
+ */
+function loadFinishVoice(): void {
+  const a = ctx;
+  if (!a || finishVoice || finishVoiceLoading) return;
+  finishVoiceLoading = true;
+  fetch("/audio/finish-him.mp3")
+    .then((res) => (res.ok ? res.arrayBuffer() : Promise.reject(new Error(String(res.status)))))
+    .then((data) => a.decodeAudioData(data))
+    .then((buffer) => {
+      finishVoice = buffer;
+    })
+    .catch(() => {
+      /* no voice: playFinishHim falls back to the synthesized slam alone */
+    })
+    .finally(() => {
+      finishVoiceLoading = false;
+    });
+}
+
 export function isMuted(): boolean {
   return muted;
 }
@@ -119,11 +143,13 @@ export function unlockAudio(): void {
 /** Call from the first user gesture. Turns sound on unless the visitor muted it before. */
 export function startSoundFromGesture(): void {
   getCtx();
+  loadFinishVoice();
   if (readPref() !== "off") applyMuted(false);
 }
 
 export function preloadSFX(): void {
   getCtx();
+  loadFinishVoice();
 }
 
 /* ---------- building blocks ---------- */
@@ -253,14 +279,24 @@ export function playFinishHim(): void {
   const a = ctx!;
   const t = a.currentTime;
   const hit = 0.15;
-  duckMusic(1.2);
+  duckMusic(2.6);
+
+  // the spoken line, starting just before the impact so "FIN-" lands on it
+  if (finishVoice && sfxBus) {
+    const voice = a.createBufferSource();
+    voice.buffer = finishVoice;
+    voice.connect(sfxBus);
+    voice.start(t + 0.08);
+  } else {
+    loadFinishVoice();
+  }
 
   // riser into the slam
   noise(hit, 0.22, 300, 7000, 0);
   tone({ type: "sawtooth", freq: 90, to: 360, dur: hit, gain: 0.08, at: t });
 
   // impact: crack, sub drop, gritty body
-  noise(0.5, 0.6, 6500, 120, hit);
+  noise(0.5, 0.45, 6500, 120, hit);
   tone({ type: "sine", freq: 120, to: 30, dur: 0.9, gain: 0.7, at: t + hit });
   tone({ type: "square", freq: 240, to: 55, dur: 0.3, gain: 0.14, at: t + hit });
 
@@ -273,7 +309,7 @@ export function playFinishHim(): void {
   growl.frequency.exponentialRampToValueAtTime(180, t + hit + 0.75);
   const env = a.createGain();
   env.gain.setValueAtTime(0.0001, t + hit);
-  env.gain.exponentialRampToValueAtTime(0.2, t + hit + 0.03);
+  env.gain.exponentialRampToValueAtTime(0.1, t + hit + 0.03);
   env.gain.exponentialRampToValueAtTime(0.0001, t + hit + 0.8);
   growl.connect(env);
   env.connect(sfxBus);
