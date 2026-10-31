@@ -355,7 +355,7 @@ function ChallengerRoster() {
         .mk-ch-pick-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
         .mk-ch-pick-row .mk-ch-step { margin: 0; }
         .mk-ch-shuffle {
-          display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 4px 10px;
+          display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 4px 12px;
           font: inherit; font-size: 14px; font-weight: 700; color: var(--mk-text-2);
           background: none; border: 2px solid #2e2724; border-radius: 0; cursor: pointer;
         }
