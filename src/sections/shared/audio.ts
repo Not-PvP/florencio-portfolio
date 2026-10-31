@@ -243,6 +243,52 @@ export function playHit(): void {
   tone({ type: "square", freq: 420, to: 110, dur: 0.1, gain: 0.1 });
 }
 
+/**
+ * "FINISH HIM" slam. Lines up with the Contact intro (0.9s): a short riser, the
+ * impact on the red flash at ~0.15s, then a dark tritone growl that dies away
+ * as the text shrinks out.
+ */
+export function playFinishHim(): void {
+  if (!ready()) return;
+  const a = ctx!;
+  const t = a.currentTime;
+  const hit = 0.15;
+  duckMusic(1.2);
+
+  // riser into the slam
+  noise(hit, 0.22, 300, 7000, 0);
+  tone({ type: "sawtooth", freq: 90, to: 360, dur: hit, gain: 0.08, at: t });
+
+  // impact: crack, sub drop, gritty body
+  noise(0.5, 0.6, 6500, 120, hit);
+  tone({ type: "sine", freq: 120, to: 30, dur: 0.9, gain: 0.7, at: t + hit });
+  tone({ type: "square", freq: 240, to: 55, dur: 0.3, gain: 0.14, at: t + hit });
+
+  // growl: two detuned saws a tritone apart, filter closing like a vowel
+  if (!sfxBus) return;
+  const growl = a.createBiquadFilter();
+  growl.type = "lowpass";
+  growl.Q.value = 6;
+  growl.frequency.setValueAtTime(1800, t + hit);
+  growl.frequency.exponentialRampToValueAtTime(180, t + hit + 0.75);
+  const env = a.createGain();
+  env.gain.setValueAtTime(0.0001, t + hit);
+  env.gain.exponentialRampToValueAtTime(0.2, t + hit + 0.03);
+  env.gain.exponentialRampToValueAtTime(0.0001, t + hit + 0.8);
+  growl.connect(env);
+  env.connect(sfxBus);
+  [82.41, 116.54].forEach((f, i) => {
+    const osc = a.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(f, t + hit);
+    osc.frequency.exponentialRampToValueAtTime(f * 0.85, t + hit + 0.8);
+    osc.detune.value = i ? 9 : -9;
+    osc.connect(growl);
+    osc.start(t + hit);
+    osc.stop(t + hit + 0.85);
+  });
+}
+
 /** Cartridge going into the console, then the screen powering on. */
 export function playInsert(quick = false): void {
   if (!ready()) return;

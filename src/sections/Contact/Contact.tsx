@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { playHit, playMiss, playSelect } from "../shared/audio";
+import { playFinishHim, playHit, playMiss, playSelect } from "../shared/audio";
 
 type ArrowKey = "ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight";
 
@@ -158,6 +158,7 @@ export default function Contact() {
       ([entry]) => {
         if (entry.isIntersecting) {
           setSmash(true);
+          playFinishHim();
           const tShrink = setTimeout(() => setSmashDone(true), 900);
           const t1 = setTimeout(() => setTitleIn(true), 950);
           const t2 = setTimeout(() => setListIn(true), 1150);
