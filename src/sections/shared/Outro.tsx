@@ -52,7 +52,6 @@ export default function Outro({ sections }: OutroProps) {
           width: 100%;
           padding: 96px 24px 32px;
           background: var(--mk-bg-deep);
-          border-top: 6px solid var(--mk-red);
           font-family: var(--mk-font-body);
           box-sizing: border-box;
         }
